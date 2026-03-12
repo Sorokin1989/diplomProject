@@ -4,8 +4,9 @@ package com.example.diplomproject.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import static jakarta.persistence.FetchType.LAZY;
 
@@ -38,5 +39,7 @@ public class Course {
     @JoinColumn(name = "category_id")
     private Category category;
 
+    @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
+    private List<Review> reviews=new ArrayList<>();
 
 }

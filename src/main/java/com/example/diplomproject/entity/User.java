@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -17,17 +16,17 @@ import java.util.List;
 @NoArgsConstructor
 public class User {
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable=false)
+    @Column(nullable = false)
     private String name;
 
-    @Column(nullable=false)
+    @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false, unique=true)
-    @Email(message="Invalid Email")
+    @Column(nullable = false, unique = true)
+    @Email(message = "Invalid Email")
     private String email;
 
     @Enumerated(EnumType.STRING)
@@ -37,10 +36,15 @@ public class User {
     private LocalDateTime registrationDate;
 
     @PrePersist
-    protected  void onCreate() {
-        registrationDate=LocalDateTime.now();
+    protected void onCreate() {
+        registrationDate = LocalDateTime.now();
     }
 
-@OneToMany(mappedBy="user", fetch=FetchType.LAZY)
-    private List<Order> orders=new ArrayList<>();
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<Order> orders = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<Certificate> certificates = new ArrayList<>();
+
+
 }

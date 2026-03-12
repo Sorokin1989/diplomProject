@@ -4,6 +4,8 @@ package com.example.diplomproject.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +41,17 @@ public class Course {
     @JoinColumn(name = "category_id")
     private Category category;
 
+
+    @ToString.Exclude
     @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
     private List<Review> reviews=new ArrayList<>();
+
+    @ToString.Exclude
+    @OneToMany(mappedBy="course",fetch=LAZY)
+    private List<Bonus> bonuses=new ArrayList<>();
+
+    @ToString.Exclude
+    @OneToMany(mappedBy = "course",fetch = LAZY)
+    private List<Certificate>certificates=new ArrayList<>();
 
 }

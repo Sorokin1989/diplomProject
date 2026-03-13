@@ -46,5 +46,7 @@ public class User {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Certificate> certificates = new ArrayList<>();
 
+    @OneToOne(mappedBy = "user")
+    private Cart cart;
 
 }

@@ -34,4 +34,7 @@ public class Category {
     @ManyToMany(mappedBy = "applicableCategories",fetch =FetchType.LAZY)
     private List<Promocode>promocodes=new ArrayList<>();
 
+    @ToString.Exclude
+    @ManyToMany(mappedBy ="applicableCategories")
+    private List<Discount>discounts=new ArrayList<>();
 }

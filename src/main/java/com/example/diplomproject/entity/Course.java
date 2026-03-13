@@ -66,4 +66,8 @@ public class Course {
     @ToString.Exclude
     @ManyToMany(mappedBy = "applicableCourses",fetch=LAZY)
     private List<Promocode> promoCodes=new ArrayList();
+
+    @ToString.Exclude
+    @ManyToMany(mappedBy = "applicableCourses")
+    private List<Discount>discounts=new ArrayList();
 }

@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -40,13 +41,20 @@ public class User {
         registrationDate = LocalDateTime.now();
     }
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Order> orders = new ArrayList<>();
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Certificate> certificates = new ArrayList<>();
 
+    @ToString.Exclude
     @OneToOne(mappedBy = "user")
     private Cart cart;
+
+    @ToString.Exclude
+    @OneToMany(fetch=FetchType.LAZY,mappedBy = "user")
+    private List<Review>reviews=new ArrayList<>();
 
 }

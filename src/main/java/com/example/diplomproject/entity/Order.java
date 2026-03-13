@@ -4,6 +4,7 @@ import com.example.diplomproject.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 
 import java.math.BigDecimal;
@@ -35,12 +36,15 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private OrderStatus status=OrderStatus.PENDING;
 
+
+    @ToString.Exclude
     @OneToMany(mappedBy="order",
             fetch = FetchType.LAZY,
             cascade=CascadeType.ALL,
             orphanRemoval=true)
     private List<OrderItem> orderItems=new ArrayList<>();
 
+    @ToString.Exclude
     @OneToOne(mappedBy ="order",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     private Payment payment;
 

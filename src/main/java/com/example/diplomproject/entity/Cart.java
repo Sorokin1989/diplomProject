@@ -3,6 +3,7 @@ package com.example.diplomproject.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -31,7 +32,11 @@ public class Cart {
     @Column(name = "updated_at",nullable = false)
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "cart",fetch = FetchType.LAZY,cascade=CascadeType.ALL,orphanRemoval =true)
+    @ToString.Exclude
+    @OneToMany(mappedBy = "cart",
+            fetch = FetchType.LAZY,
+            cascade=CascadeType.ALL,
+            orphanRemoval =true)
     private List<OrderItem> orderItems=new ArrayList<>();
 
     @PrePersist
@@ -43,4 +48,9 @@ public class Cart {
     protected  void onUpdate() {
         updatedAt=LocalDateTime.now();
     }
+
+
+    @ToString.Exclude
+    @OneToMany(mappedBy = "cart",fetch = FetchType.LAZY,cascade=CascadeType.ALL,orphanRemoval=true)
+    private List<CartItem>cartItems=new ArrayList();
 }

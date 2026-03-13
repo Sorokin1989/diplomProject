@@ -3,6 +3,7 @@ package com.example.diplomproject.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,5 +29,9 @@ public class Category {
 
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     private List<Course> courses = new ArrayList<>();
+
+    @ToString.Exclude
+    @ManyToMany(mappedBy = "applicableCategories",fetch =FetchType.LAZY)
+    private List<Promocode>promocodes=new ArrayList<>();
 
 }

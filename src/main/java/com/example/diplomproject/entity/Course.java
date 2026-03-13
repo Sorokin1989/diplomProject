@@ -63,4 +63,7 @@ public class Course {
     @OneToMany(mappedBy = "course", fetch = LAZY)
     private List<CartItem> cartItems = new ArrayList();
 
+    @ToString.Exclude
+    @ManyToMany(mappedBy = "applicableCourses",fetch=LAZY)
+    private List<Promocode> promoCodes=new ArrayList();
 }

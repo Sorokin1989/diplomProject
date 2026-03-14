@@ -15,26 +15,27 @@ import java.util.List;
 public class Category {
 
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable=false, unique=true)
+    @Column(nullable = false, unique = true)
     private String title;
 
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "image_url")
     private String imageUrl;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     private List<Course> courses = new ArrayList<>();
 
     @ToString.Exclude
-    @ManyToMany(mappedBy = "applicableCategories",fetch =FetchType.LAZY)
-    private List<Promocode>promocodes=new ArrayList<>();
+    @ManyToMany(mappedBy = "applicableCategories", fetch = FetchType.LAZY)
+    private List<Promocode> promocodes = new ArrayList<>();
 
     @ToString.Exclude
-    @ManyToMany(mappedBy ="applicableCategories")
-    private List<Discount>discounts=new ArrayList<>();
+    @ManyToMany(mappedBy = "applicableCategories",fetch=FetchType.LAZY)
+    private List<Discount> discounts = new ArrayList<>();
 }

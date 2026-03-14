@@ -27,7 +27,7 @@ public class Certificate {
     private Course course;
 
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime date;
+    private LocalDateTime createdAt;
 
     @Column(nullable = false, unique = true)
     private String certificateId;
@@ -37,6 +37,6 @@ public class Certificate {
 
     @PrePersist
     protected void onCreate() {
-        date = LocalDateTime.now();
+        createdAt = LocalDateTime.now();
     }
 }

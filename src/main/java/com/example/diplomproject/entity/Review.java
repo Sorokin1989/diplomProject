@@ -6,7 +6,6 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 import java.time.LocalDateTime;
 
@@ -33,9 +32,9 @@ public class Review {
     @Column(columnDefinition = "TEXT")
     private String text;
 
-    @Column(nullable = false)
     @Min(1)
     @Max(5)
+    @Column(nullable = false)
     private int rating;
 
     @Column(name = "created_at", nullable = false)
@@ -43,11 +42,11 @@ public class Review {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ModerationStatus moderation;
+    private ModerationStatus moderation=ModerationStatus.PENDING;
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        moderation = ModerationStatus.PENDING;
+        this.createdAt = LocalDateTime.now();
+
     }
 }

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +37,21 @@ public class Course {
 
     @Column
     private boolean isActive = true;
+
+    @Column(nullable=false)
+    private String imageUrl;
+
+    @Column(nullable= false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt=LocalDateTime.now();
+    }
+
+    @Column(nullable = false)
+    private Integer reviewCount;
+
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "category_id")

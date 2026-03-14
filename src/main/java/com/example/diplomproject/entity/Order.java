@@ -48,6 +48,9 @@ public class Order {
     @OneToOne(mappedBy ="order",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     private Payment payment;
 
+    @OneToMany(mappedBy = "order",fetch = FetchType.LAZY)
+    private List<CourseAccess>courseAccesses=new ArrayList<>();
+
 
 
     @PrePersist

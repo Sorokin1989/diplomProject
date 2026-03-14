@@ -57,4 +57,8 @@ public class User {
     @OneToMany(fetch=FetchType.LAZY,mappedBy = "user")
     private List<Review>reviews=new ArrayList<>();
 
+    @ToString.Exclude
+    @OneToMany(fetch = FetchType.LAZY, mappedBy="user")
+    private List<CourseAccess>courseAccesses=new ArrayList<>();
+
 }

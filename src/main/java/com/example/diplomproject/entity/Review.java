@@ -42,7 +42,7 @@ public class Review {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ModerationStatus moderation=ModerationStatus.PENDING;
+    private ModerationStatus moderationStatus=ModerationStatus.PENDING;
 
     @PrePersist
     protected void onCreate() {

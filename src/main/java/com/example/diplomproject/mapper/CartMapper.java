@@ -32,7 +32,7 @@ public class CartMapper {
 
         if (cart.getUser() != null) {
             cartDto.setUserId(cart.getUser().getId());
-            cartDto.setUsername(cart.getUser().getName());
+            cartDto.setUsername(cart.getUser().getUsername());
         }
 
         return cartDto;
@@ -41,13 +41,15 @@ public class CartMapper {
     }
 
     private CartItemDto toCartItemDto(CartItem cartItem) {
-
+        if (cartItem==null){
+            return null;
+        }
         CartItemDto cartItemDto = new CartItemDto();
         cartItemDto.setId(cartItem.getId());
         cartItemDto.setCourseId(cartItem.getCourse().getId());
         cartItemDto.setCourseTitle(cartItem.getCourse().getTitle());
         cartItemDto.setPrice(cartItem.getPrice());
-        cartItemDto.setAddedAt(cartItem.getAddedAt().toString());
+        cartItemDto.setAddedAt(cartItem.getAddedAt());
         return cartItemDto;
 
     }

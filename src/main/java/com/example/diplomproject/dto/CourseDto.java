@@ -23,6 +23,6 @@ public class CourseDto {
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
-//    private List<ReviewDto>reviewDtos;
+    private List<ReviewDto>reviewDtos;
     private Integer reviewCount;
 }

@@ -27,7 +27,7 @@ public class Payment {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private PaymentStatus status;
+    private PaymentStatus paymentStatus;
 
 
     @Column(name = "transaction_id", unique = true)
@@ -50,8 +50,8 @@ public class Payment {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt=createdAt;
-        if (status == null) {
-            this.status = PaymentStatus.PENDING;
+        if (paymentStatus == null) {
+            this.paymentStatus = PaymentStatus.PENDING;
         }
     }
 

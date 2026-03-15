@@ -63,7 +63,7 @@ public class Promocode {
     private List<Category> applicableCategories=new ArrayList<>();
 
     @Column(nullable = false)
-    private Boolean active=true;
+    private boolean active=true;
 
     @Column(name = "created_at", updatable = false,nullable=false)
     private LocalDateTime createdAt;

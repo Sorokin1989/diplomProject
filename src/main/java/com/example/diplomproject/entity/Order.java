@@ -27,14 +27,14 @@ public class Order {
     private User user;
 
     @Column(name = "created_at", nullable=false)
-    private LocalDateTime date;
+    private LocalDateTime createdAt;
 
     @Column(precision = 10, scale =2)
     private BigDecimal totalSum;
 
     @Column
     @Enumerated(EnumType.STRING)
-    private OrderStatus status=OrderStatus.PENDING;
+    private OrderStatus orderStatus=OrderStatus.PENDING;
 
 
     @ToString.Exclude
@@ -55,7 +55,7 @@ public class Order {
 
     @PrePersist
     protected void onCreate() {
-        date =LocalDateTime.now();
+        createdAt =LocalDateTime.now();
     }
 
 }

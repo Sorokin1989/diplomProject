@@ -61,7 +61,7 @@ public class Discount {
     private BigDecimal minOrderAmount;
 
     @Column(nullable = false)
-    private Boolean active=true;
+    private boolean active=true;
 
     @Column(name = "created_at", nullable =false,updatable = false)
     private LocalDateTime createdAt;

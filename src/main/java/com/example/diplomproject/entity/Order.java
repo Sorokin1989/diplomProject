@@ -29,11 +29,14 @@ public class Order {
     @Column(name = "created_at", nullable=false)
     private LocalDateTime createdAt;
 
+    @Column(name = "updated_at",nullable = false)
+    private LocalDateTime updatedAt;
+
     @Column(precision = 10, scale =2)
     private BigDecimal totalSum;
 
-    @Column
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private OrderStatus orderStatus=OrderStatus.PENDING;
 
 
@@ -51,11 +54,23 @@ public class Order {
     @OneToMany(mappedBy = "order",fetch = FetchType.LAZY)
     private List<CourseAccess>courseAccesses=new ArrayList<>();
 
+    @Column(name = "discount_amount",nullable = false)
+    private BigDecimal discountAmount;
+
+    @ManyToOne(fetch = FetchType.LAZY,optional = false)
+    @JoinColumn(name = "promocode_id",nullable = false)
+    private Promocode promoCode;
+
 
 
     @PrePersist
     protected void onCreate() {
         createdAt =LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate(){
+        updatedAt=LocalDateTime.now ();
     }
 
 }

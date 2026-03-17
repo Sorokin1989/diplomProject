@@ -47,6 +47,10 @@ public class Promocode {
     private Integer usedCount=0;
 
     @ToString.Exclude
+    @OneToMany(mappedBy = "promoCode",fetch = FetchType.LAZY)
+    private List<Order> orders=new ArrayList<>();
+
+    @ToString.Exclude
     @ManyToMany
     @JoinTable(name = "course_promos",
     joinColumns= @JoinColumn (name ="promocode_id"),

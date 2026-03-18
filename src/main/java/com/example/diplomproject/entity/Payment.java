@@ -1,7 +1,7 @@
 package com.example.diplomproject.entity;
 
-import com.example.diplomproject.OrderStatus;
-import com.example.diplomproject.PaymentStatus;
+import com.example.diplomproject.enums.OrderStatus;
+import com.example.diplomproject.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;

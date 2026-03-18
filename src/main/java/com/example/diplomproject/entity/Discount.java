@@ -1,6 +1,6 @@
 package com.example.diplomproject.entity;
 
-import com.example.diplomproject.DiscountType;
+import com.example.diplomproject.enums.DiscountType;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;

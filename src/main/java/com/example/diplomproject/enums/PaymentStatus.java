@@ -1,4 +1,4 @@
-package com.example.diplomproject;
+package com.example.diplomproject.enums;
 
 public enum PaymentStatus {
     PENDING,     // ожидает подтверждения

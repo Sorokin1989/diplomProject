@@ -1,6 +1,6 @@
 package com.example.diplomproject.entity;
 
-import com.example.diplomproject.Role;
+import com.example.diplomproject.enums.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.Data;

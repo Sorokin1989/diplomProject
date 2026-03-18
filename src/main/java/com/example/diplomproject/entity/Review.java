@@ -1,6 +1,6 @@
 package com.example.diplomproject.entity;
 
-import com.example.diplomproject.ModerationStatus;
+import com.example.diplomproject.enums.ModerationStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

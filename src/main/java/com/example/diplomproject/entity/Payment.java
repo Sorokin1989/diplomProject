@@ -1,5 +1,6 @@
 package com.example.diplomproject.entity;
 
+import com.example.diplomproject.OrderStatus;
 import com.example.diplomproject.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -24,6 +25,21 @@ public class Payment {
 
     @Column(name = "total_sum", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalSum;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private OrderStatus orderStatus;
+
+    @Column(nullable = false)
+    private String currency = "RUB";
+
+    @Column(name = "failure_message", length = 500)
+    private String failureMessage;
+
+
+    @Column(name = "payment_method", nullable = false)
+    private String paymentMethod;
+
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

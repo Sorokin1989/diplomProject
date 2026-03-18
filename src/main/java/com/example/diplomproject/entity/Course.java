@@ -90,4 +90,6 @@ public class Course {
     @ToString.Exclude
     @OneToMany(mappedBy="course",fetch = LAZY)
     private List<CourseAccess>courseAccesses=new ArrayList();
+
+
 }

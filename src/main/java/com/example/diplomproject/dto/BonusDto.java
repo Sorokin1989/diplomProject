@@ -12,4 +12,6 @@ public class BonusDto {
     private String url;
     private Long courseId;
     private String courseTitle;
+    private Long userId;
+    private String username;
 }

@@ -27,4 +27,8 @@ public class Bonus {
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional=false)
+    @JoinColumn (name="user_id",nullable = false)
+    private User user;
+
 }

@@ -26,6 +26,10 @@ public class BonusMapper {
             bonusDto.setCourseId(bonus.getCourse().getId());
             bonusDto.setCourseTitle(bonus.getCourse().getTitle());
         }
+        if (bonus.getUser() != null) {
+            bonusDto.setUserId(bonus.getUser().getId());
+        }
+
 
         return bonusDto;
 

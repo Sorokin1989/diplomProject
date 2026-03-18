@@ -60,6 +60,8 @@ public class UserMapper {
             userDto.setCourseAccessDtos(user.getCourseAccesses().stream().
                     map(courseaccess -> courseAccessMapper.toCourseAccessDto(courseaccess)).toList());
         }
+
+        userDto.setBonusPoints(user.getBonusPoints());
         return userDto;
 
     }

@@ -22,6 +22,8 @@ public class UserDto {
     private Long cartId;
     private List<ReviewDto> reviewDtos;
     private List<CourseAccessDto> courseAccessDtos;
+    private List<BonusDto> bonusDtos;
+    private Integer bonusPoints;
 
 
 }

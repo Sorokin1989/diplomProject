@@ -20,8 +20,11 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String username;
+
+    @Column(name = "bonus_points", nullable = false)
+    private Integer bonusPoints = 0;
 
     @Column(nullable = false)
     private String password;
@@ -31,9 +34,10 @@ public class User {
     private String email;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Role role;
 
-    @Column(name = "registration_date")
+    @Column(name = "registration_date", nullable = false, updatable = false)
     private LocalDateTime registrationDate;
 
     @PrePersist
@@ -42,23 +46,27 @@ public class User {
     }
 
     @ToString.Exclude
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Order> orders = new ArrayList<>();
 
     @ToString.Exclude
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Certificate> certificates = new ArrayList<>();
 
     @ToString.Exclude
-    @OneToOne(mappedBy = "user")
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private Cart cart;
 
     @ToString.Exclude
-    @OneToMany(fetch=FetchType.LAZY,mappedBy = "user")
-    private List<Review>reviews=new ArrayList<>();
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user", orphanRemoval = true, cascade = CascadeType.ALL)
+    private List<Review> reviews = new ArrayList<>();
 
     @ToString.Exclude
-    @OneToMany(fetch = FetchType.LAZY, mappedBy="user")
-    private List<CourseAccess>courseAccesses=new ArrayList<>();
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user")
+    private List<CourseAccess> courseAccesses = new ArrayList<>();
+
+    @ToString.Exclude
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user", orphanRemoval = true, cascade = CascadeType.ALL)
+    private List<Bonus> bonuses;
 
 }

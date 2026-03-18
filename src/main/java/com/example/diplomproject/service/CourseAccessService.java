@@ -1,0 +1,8 @@
+package com.example.diplomproject.service;
+
+import org.springframework.stereotype.Service;
+
+@Service
+public class CourseAccessService {
+
+}

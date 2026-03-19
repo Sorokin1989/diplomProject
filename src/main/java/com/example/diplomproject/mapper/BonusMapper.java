@@ -29,9 +29,28 @@ public class BonusMapper {
         if (bonus.getUser() != null) {
             bonusDto.setUserId(bonus.getUser().getId());
         }
-
-
         return bonusDto;
+    }
+
+    /**
+     * Преобразует DTO в сущность Bonus.
+     * Связи (User, Course) устанавливаются в сервисе — не здесь.
+     * @param bonusDto объект DTO (может быть null)
+     * @return Bonus или null
+     */
+
+    public Bonus fromBonusDTOToEntity(BonusDto bonusDto){
+
+        if( bonusDto==null) {
+            return null;
+        }
+            Bonus bonus=new Bonus();
+            bonus.setId(bonusDto.getId());
+            bonus.setTitle(bonusDto.getTitle());
+            bonus.setDescription(bonusDto.getDescription());
+            bonus.setUrl(bonusDto.getUrl());
+
+            return bonus;
 
 
     }

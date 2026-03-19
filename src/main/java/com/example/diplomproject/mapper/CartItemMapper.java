@@ -28,4 +28,19 @@ public class CartItemMapper {
         return cartItemDto;
     }
 
+    public CartItem fromCartItemDtoToEntity(CartItemDto cartItemDto){
+
+        if (cartItemDto==null){
+            return null;
+        }
+        CartItem cartItem=new CartItem();
+        cartItem.setId(cartItemDto.getId());
+        cartItem.setPrice(cartItemDto.getPrice());
+        cartItem.setAddedAt(cartItemDto.getAddedAt());
+
+        return cartItem;
+
+
+    }
+
 }

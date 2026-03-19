@@ -3,13 +3,16 @@ package com.example.diplomproject.mapper;
 import com.example.diplomproject.dto.CartDto;
 import com.example.diplomproject.dto.CartItemDto;
 import com.example.diplomproject.entity.Cart;
-import com.example.diplomproject.entity.CartItem;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
 public class CartMapper {
+
+    @Autowired
+    private CartItemMapper cartItemMapper;
 
     public CartDto toCartDTO(Cart cart) {
 
@@ -24,7 +27,7 @@ public class CartMapper {
 
         if (cart.getCartItems() != null) {
             List<CartItemDto> cartItemDtos = cart.getCartItems().
-                    stream().map(this::toCartItemDto).toList();
+                    stream().map(cartItem -> cartItemMapper.toCartItemDTO(cartItem)).toList();
 
             cartDto.setCartItems(cartItemDtos);
         }
@@ -36,21 +39,25 @@ public class CartMapper {
         }
 
         return cartDto;
-
-
     }
 
-    private CartItemDto toCartItemDto(CartItem cartItem) {
-        if (cartItem==null){
+    public Cart fromCartDtoToEntity(CartDto cartDto) {
+        if (cartDto == null) {
             return null;
         }
-        CartItemDto cartItemDto = new CartItemDto();
-        cartItemDto.setId(cartItem.getId());
-        cartItemDto.setCourseId(cartItem.getCourse().getId());
-        cartItemDto.setCourseTitle(cartItem.getCourse().getTitle());
-        cartItemDto.setPrice(cartItem.getPrice());
-        cartItemDto.setAddedAt(cartItem.getAddedAt());
-        return cartItemDto;
+        Cart cart = new Cart();
+
+        cart.setId(cartDto.getId());
+        cart.setSessionId(cartDto.getSessionId());
+        cart.setCreatedAt(cartDto.getCreatedAt());
+        cart.setUpdatedAt(cartDto.getUpdatedAt());
+
+        if (cartDto.getCartItems() != null) {
+            cart.setCartItems(cartDto.getCartItems().stream().
+                    map(cartItemDto -> cartItemMapper.fromCartItemDtoToEntity(cartItemDto)).toList());
+        }
+
+        return cart;
 
     }
 }

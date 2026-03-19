@@ -2,6 +2,7 @@ package com.example.diplomproject.mapper;
 
 import com.example.diplomproject.dto.PromocodeDto;
 import com.example.diplomproject.entity.Promocode;
+import com.example.diplomproject.enums.DiscountType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -43,6 +44,24 @@ public class PromocodeMapper {
         promocodeDto.setCreatedAt(promocode.getCreatedAt());
 
         return promocodeDto;
+    }
+    public Promocode fromPromoCodeDtoToEntity(PromocodeDto promocodeDto){
+        if(promocodeDto==null){
+            return  null;
+        }
 
+        Promocode promocode=new Promocode();
+        promocode.setId(promocodeDto.getId());
+        promocode.setCode(promocodeDto.getCode());
+        promocode.setDiscountType(DiscountType.valueOf(promocodeDto.getDiscountType()));
+        promocode.setValue(promocodeDto.getValue());
+        promocode.setMinOrderAmount(promocodeDto.getMinOrderAmount());
+        promocode.setValidFrom(promocodeDto.getValidFrom());
+        promocode.setValidTo(promocodeDto.getValidTo());
+        promocode.setUsageLimit(promocodeDto.getUsageLimit());
+        promocode.setUsedCount(promocodeDto.getUsedCount());
+        promocode.setActive(promocodeDto.isActive());
+        promocode.setCreatedAt(promocodeDto.getCreatedAt());
+        return promocode;
     }
 }

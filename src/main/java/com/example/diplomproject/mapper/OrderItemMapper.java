@@ -29,4 +29,17 @@ public class OrderItemMapper {
         return orderItemDto;
     }
 
+    public OrderItem fromOrderItemDtoToEntity(OrderItemDto orderItemDto){
+
+        if(orderItemDto==null){
+            return null;
+        }
+
+        OrderItem orderItem=new OrderItem();
+        orderItem.setId(orderItemDto.getId());
+        orderItem.setPrice(orderItemDto.getPrice());
+
+        return orderItem;
+    }
+
 }

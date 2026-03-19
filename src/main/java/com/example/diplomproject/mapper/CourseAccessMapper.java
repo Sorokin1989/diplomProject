@@ -37,4 +37,18 @@ public class CourseAccessMapper {
 
         return courseAccessDTO;
     }
+
+    public CourseAccess fromCourseAccessDtoToEntity(CourseAccessDto courseAccessDto){
+        if (courseAccessDto==null)return  null;
+
+        CourseAccess courseAccess=new CourseAccess();
+
+        courseAccess.setId(courseAccessDto.getId());
+        courseAccess.setGrantedAt(courseAccessDto.getGrantedAt());
+        courseAccess.setExpiresAt(courseAccessDto.getExpiresAt());
+        courseAccess.setActive(courseAccessDto.isActive());
+        courseAccess.setCreatedAt(courseAccessDto.getCreatedAt());
+
+        return courseAccess;
+    }
 }

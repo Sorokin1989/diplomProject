@@ -16,6 +16,8 @@ public class CategoryMapper {
     public CategoryMapper(CourseMapper courseMapper) {
         this.courseMapper = courseMapper;
     }
+
+
     public CategoryDto toCategoryDTO(Category category) {
         if (category == null) {
             return null;
@@ -32,5 +34,23 @@ public class CategoryMapper {
             categoryDto.setCourseDtos(courseDtos);
         }
         return categoryDto;
+    }
+
+    public Category fromCategoryDtoToEntity(CategoryDto categoryDto){
+        if(categoryDto==null)return  null;
+
+        Category category=new Category();
+
+        category.setId(categoryDto.getId());
+        category.setTitle(categoryDto.getTitle());
+        category.setDescription(categoryDto.getDescription());
+        category.setImageUrl(categoryDto.getImageUrl());
+
+        if(categoryDto.getCourseDtos()!=null){
+        category.setCourses(categoryDto.getCourseDtos().stream().
+                map(courseMapper::fromCourseDtoToEntity).toList());
+        }
+        return category;
+
     }
 }

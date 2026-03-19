@@ -1,6 +1,5 @@
 package com.example.diplomproject.dto;
 
-import com.example.diplomproject.entity.Review;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,7 +17,7 @@ public class CourseDto {
     private String description;
     private BigDecimal price;
     private String author;
-    private String categoryTitle;
+    private Long categoryId;
     private String imageUrl;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

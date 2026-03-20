@@ -15,6 +15,7 @@ public class CartItemDto {
     private Long courseId;
     private String courseTitle;
     private BigDecimal price;
+    private int quantity;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime addedAt;

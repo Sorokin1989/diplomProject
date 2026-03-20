@@ -2,6 +2,7 @@ package com.example.diplomproject.service;
 
 import com.example.diplomproject.entity.User;
 import com.example.diplomproject.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +21,7 @@ public class BonusService {
      * Начисление бонусов за регистрацию
      */
 
+    @Transactional
     public void addBonusForRegistration(User user){
         if (user != null && user.getId() != null){
             user.setBonusPoints(user.getBonusPoints()+BONUS_FOR_REGISTRATION);
@@ -32,6 +34,7 @@ public class BonusService {
      * Начисление бонусов за оставленный отзыв
      */
 
+    @Transactional
     public void addBonusForReview(User user) {
         if(user!=null && user.getId()!= null){
             user.setBonusPoints(user.getBonusPoints() + BONUS_FOR_REVIEW);
@@ -42,6 +45,7 @@ public class BonusService {
     /**
      * Начисление бонусов за первый заказ
      */
+    @Transactional
     public void addBonusForFirstOrder (User user) {
         if (user != null && user.getId() != null && user.getOrders().size() == 1) {
             user.setBonusPoints(user.getBonusPoints() + BONUS_FOR_FIRST_ORDER);
@@ -53,9 +57,15 @@ public class BonusService {
      * Списание бонусных баллов
      * @return true, если успешно списано, иначе false
      */
-        public boolean spendBonusPoints(User user, int bonusPoint){
-            if(user.getBonusPoints()>=bonusPoint){
-                user.setBonusPoints(user.getBonusPoints()-bonusPoint);
+    @Transactional
+        public boolean spendBonusPoints(User user, int bonusPoints){
+
+        if (user==null || user.getId()==null){
+            return false;
+        }
+
+            if(user.getBonusPoints()>=bonusPoints){
+                user.setBonusPoints(user.getBonusPoints()-bonusPoints);
                 userRepository.save(user);
                 return true;
             }

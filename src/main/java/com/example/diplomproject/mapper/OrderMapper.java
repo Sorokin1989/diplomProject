@@ -2,6 +2,7 @@ package com.example.diplomproject.mapper;
 
 import com.example.diplomproject.dto.OrderDto;
 import com.example.diplomproject.entity.Order;
+import com.example.diplomproject.enums.OrderStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -50,5 +51,18 @@ public class OrderMapper {
         orderDto.setPromoCode(order.getPromoCode().getCode());
         }
         return orderDto;
+    }
+    public Order fromOrderDtoToEntity(OrderDto orderDto){
+        if (orderDto==null){
+            return null;
+        }
+        Order order=new Order();
+        order.setId(orderDto.getId());
+        order.setCreatedAt(orderDto.getCreatedAt());
+        order.setUpdatedAt(orderDto.getUpdatedAt());
+        order.setTotalSum(orderDto.getTotalSum());
+        order.setOrderStatus(OrderStatus.valueOf(orderDto.getOrderStatus()));
+
+return order;
     }
 }

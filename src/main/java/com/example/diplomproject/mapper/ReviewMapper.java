@@ -2,6 +2,7 @@ package com.example.diplomproject.mapper;
 
 import com.example.diplomproject.dto.ReviewDto;
 import com.example.diplomproject.entity.Review;
+import com.example.diplomproject.enums.ModerationStatus;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -33,6 +34,22 @@ public class ReviewMapper {
         reviewDto.setModerationStatus(String.valueOf(review.getModerationStatus()));
 
         return  reviewDto;
+    }
+
+    public Review fromReviewDtoToEntity(ReviewDto reviewDto){
+        if (reviewDto==null){
+            return null;
+        }
+
+        Review review=new Review();
+        review.setId(reviewDto.getId());
+        review.setText(reviewDto.getText());
+        review.setRating(reviewDto.getRating());
+        review.setCreatedAt(reviewDto.getCreatedAt());
+        review.setModerationStatus(ModerationStatus.valueOf(reviewDto.getModerationStatus()));
+
+        return review;
+
     }
 
 }

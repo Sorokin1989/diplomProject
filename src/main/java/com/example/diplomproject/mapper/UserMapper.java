@@ -2,6 +2,7 @@ package com.example.diplomproject.mapper;
 
 import com.example.diplomproject.dto.UserDto;
 import com.example.diplomproject.entity.User;
+import com.example.diplomproject.enums.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -64,5 +65,22 @@ public class UserMapper {
         userDto.setBonusPoints(user.getBonusPoints());
         return userDto;
 
+    }
+
+    public User fromUserDtoToEntity(UserDto userDto) {
+        if (userDto == null) {
+            return null;
+        }
+
+        User user = new User();
+        user.setId(userDto.getId());
+        user.setUsername(userDto.getUsername());
+        user.setEmail(userDto.getEmail());
+        user.setRole(Role.valueOf(userDto.getRole()));
+        user.setRegistrationDate(userDto.getRegistrationDate());
+
+
+        user.setBonusPoints(userDto.getBonusPoints());
+        return user;
     }
 }

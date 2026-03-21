@@ -30,4 +30,7 @@ public class OrderItem {
     @ManyToOne(fetch=FetchType.LAZY,optional = false)
     @JoinColumn(nullable=false,name="cart_id")
     private Cart cart;
+
+    @Column(nullable = false, name ="quantity")
+    private Integer quantity;
 }

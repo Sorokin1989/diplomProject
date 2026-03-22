@@ -35,7 +35,7 @@ public class Review {
     @Min(1)
     @Max(5)
     @Column(nullable = false)
-    private int rating;
+    private Integer rating;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

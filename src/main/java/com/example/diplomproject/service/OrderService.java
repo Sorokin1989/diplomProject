@@ -1,5 +1,6 @@
 package com.example.diplomproject.service;
 
+import com.example.diplomproject.entity.Course;
 import com.example.diplomproject.entity.Order;
 import com.example.diplomproject.entity.OrderItem;
 import com.example.diplomproject.entity.User;
@@ -113,4 +114,11 @@ public class OrderService {
         orderRepository.delete(deleteOrder);
     }
 
+    /**
+     * Проверка на то что пользователь уже приобрел данный заказ
+     */
+
+    public boolean hasUserPurchasedCourse(User user, Course course) {
+        return orderRepository.existsByUserAndCourse(user, course);
+    }
 }

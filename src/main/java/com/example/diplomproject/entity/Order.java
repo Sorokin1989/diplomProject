@@ -61,6 +61,10 @@ public class Order {
     @JoinColumn(name = "promocode_id",nullable = false)
     private Promocode promoCode;
 
+    @ToString.Exclude
+    @OneToMany(mappedBy = "order",fetch = FetchType.LAZY)
+    private List<Course> courses=new ArrayList<>();
+
 
 
     @PrePersist

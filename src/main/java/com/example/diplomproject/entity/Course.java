@@ -91,5 +91,9 @@ public class Course {
     @OneToMany(mappedBy="course",fetch = LAZY)
     private List<CourseAccess>courseAccesses=new ArrayList();
 
+    @ManyToOne(optional = false,fetch = LAZY)
+    @JoinColumn(name = "order_id",nullable=false)
+    private Order order;
+
 
 }

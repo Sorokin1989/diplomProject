@@ -5,6 +5,7 @@ import com.example.diplomproject.entity.Order;
 import com.example.diplomproject.entity.OrderItem;
 import com.example.diplomproject.entity.User;
 import com.example.diplomproject.enums.OrderStatus;
+import com.example.diplomproject.repository.CourseAccessRepository;
 import com.example.diplomproject.repository.OrderItemRepository;
 import com.example.diplomproject.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,9 @@ public class OrderService {
 
     @Autowired
     private CertificateService certificateService;
+
+    @Autowired
+    private CourseAccessRepository courseAccessRepository;
 
     /**
      * Получение всех заказов
@@ -114,11 +118,12 @@ public class OrderService {
         orderRepository.delete(deleteOrder);
     }
 
+
     /**
      * Проверка на то что пользователь уже приобрел данный заказ
      */
 
     public boolean hasUserPurchasedCourse(User user, Course course) {
-        return orderRepository.existsByUserAndCourse(user, course);
+        return courseAccessRepository.existsByUserAndCourse(user, course);
     }
 }

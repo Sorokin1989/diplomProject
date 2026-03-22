@@ -1,8 +1,11 @@
 package com.example.diplomproject.service;
 
+import com.example.diplomproject.dto.RegistrationDto;
 import com.example.diplomproject.entity.User;
+import com.example.diplomproject.enums.Role;
 import com.example.diplomproject.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +17,9 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     /**
      * Получение пользователя по ID.
@@ -47,6 +53,9 @@ public class UserService {
      */
     @Transactional
     public User createUser(User user) {
+
+
+
         if (user == null) {
             throw new IllegalArgumentException("Пользователь не может быть null");
         }
@@ -57,15 +66,28 @@ public class UserService {
         if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
             throw new IllegalArgumentException("Email не может быть пустым");
         }
+
+        // Проверка уникальности username
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            throw new IllegalArgumentException("Пользователь с таким именем уже существует");
+        }
+
         // Проверка уникальности email
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Пользователь с таким email уже существует");
         }
-        // Если есть поле password, следует проверить его наличие и захешировать перед сохранением
-        // if (user.getPassword() == null || user.getPassword().isEmpty()) {
-        //     throw new IllegalArgumentException("Пароль не может быть пустым");
-        // }
-        // user.setPassword(passwordEncoder.encode(user.getPassword()));
+         //Если есть поле password, следует проверить его наличие и захешировать перед сохранением
+         if (user.getPassword() == null || user.getPassword().isEmpty()) {
+             throw new IllegalArgumentException("Пароль не может быть пустым");
+         }
+
+        // ✅ Устанавливаем роль по умолчанию, если она не задана
+        if (user.getRole() == null) {
+            user.setRole(Role.USER); // используем ваш enum Role
+        }
+
+        // Хэшируем пароль
+         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         return userRepository.save(user);
     }
@@ -126,5 +148,23 @@ public class UserService {
      */
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    @Transactional
+    public User registerNewUser(RegistrationDto dto) {
+        // Проверка совпадения паролей
+        if (!dto.getPassword().equals(dto.getConfirmPassword())) {
+            throw new IllegalArgumentException("Пароли не совпадают");
+        }
+
+        // Создаём сущность User из DTO
+        User user = new User();
+        user.setUsername(dto.getUsername());
+        user.setEmail(dto.getEmail());
+        user.setPassword(dto.getPassword()); // пароль ещё не закодирован
+        user.setRole(Role.USER); // роль по умолчанию
+
+        // Передаём в createUser, который закодирует пароль и сохранит пользователя
+        return createUser(user);
     }
 }

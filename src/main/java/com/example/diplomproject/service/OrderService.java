@@ -22,8 +22,10 @@ public class OrderService {
     @Autowired
     private OrderRepository orderRepository;
 
+//    @Autowired
+//    private OrderItemRepository orderItemRepository;
     @Autowired
-    private OrderItemRepository orderItemRepository;
+    private OrderItemService orderItemService;
 
 
     @Autowired
@@ -80,7 +82,7 @@ public class OrderService {
         // Привязываем элементы к заказу и сохраняем их
         for (OrderItem item : orderItems) {
             item.setOrder(savedOrder);
-            orderItemRepository.save(item);
+            orderItemService.createOrderItem(item);
 
             // Предоставляем доступ к курсу
             courseAccessService.grantAccessToCourse(user, item.getCourse());
@@ -124,6 +126,6 @@ public class OrderService {
      */
 
     public boolean hasUserPurchasedCourse(User user, Course course) {
-        return courseAccessRepository.existsByUserAndCourse(user, course);
+        return courseAccessService.hasAccessToUser(user, course);
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 public class PaymentService {
@@ -71,6 +72,13 @@ public class PaymentService {
     public boolean isPaymentSuccessful(Long paymentId) {
         Payment payment = getPaymentById(paymentId);
         return PaymentStatus.SUCCESS.equals(payment.getPaymentStatus());
+    }
+
+    /**
+     * Поиск платежа по заказу
+     */
+    public Optional<Payment> getPaymentByOrder(Order order) {
+        return paymentRepository.findByOrder(order);
     }
 
 }

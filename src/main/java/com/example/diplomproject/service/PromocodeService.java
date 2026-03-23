@@ -10,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class PromocodeService {
@@ -187,4 +189,38 @@ public class PromocodeService {
         promocode.setUsedCount(promocode.getUsedCount() + 1);
         promocodeRepository.save(promocode);
     }
+
+    public List<Promocode> getAllPromocodes() {
+        return promocodeRepository.findAll();
+    }
+
+    public Promocode getPromocodeById(Long id){
+        return promocodeRepository.findById(id).
+                orElseThrow(()->
+                        new NoSuchElementException("промокод отсутсвует"));
+    }
+
+    @Transactional
+    public void updatePromocode(Long id, String code, DiscountType discountType,
+                                BigDecimal value, BigDecimal minOrderAmount,
+                                Integer usageLimit, LocalDateTime validFrom,
+                                LocalDateTime validTo, boolean active) {
+        Promocode existing = getPromocodeById(id);
+        // обновляем поля (с проверками)
+        existing.setCode(code.trim().toUpperCase());
+        existing.setDiscountType(discountType);
+        existing.setValue(value);
+        existing.setMinOrderAmount(minOrderAmount);
+        existing.setValidFrom(validFrom);
+        existing.setValidTo(validTo);
+        existing.setUsageLimit(usageLimit);
+        existing.setActive(active);
+        promocodeRepository.save(existing);
+    }
+
+    @Transactional
+    public void deletePromocode(Long id){
+        promocodeRepository.deleteById(id);
+    }
+
 }

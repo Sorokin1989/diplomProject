@@ -5,8 +5,10 @@ import com.example.diplomproject.entity.Order;
 import com.example.diplomproject.entity.OrderItem;
 import com.example.diplomproject.entity.User;
 import com.example.diplomproject.enums.OrderStatus;
+import com.example.diplomproject.service.CartService;
 import com.example.diplomproject.service.CourseService;
 import com.example.diplomproject.service.OrderService;
+import com.example.diplomproject.service.PromocodeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -22,11 +24,19 @@ import java.util.stream.Collectors;
 @RequestMapping("/orders")
 public class OrderController {
 
-    @Autowired
+
+    private CartService cartService;//для получения стоимости
+    private PromocodeService promocodeService;//применить купон
     private OrderService orderService;
+    private CourseService courseService; // предположим, что он нужен для формы создания
 
     @Autowired
-    private CourseService courseService; // предположим, что он нужен для формы создания
+    public OrderController(CartService cartService, PromocodeService promocodeService, OrderService orderService, CourseService courseService) {
+        this.cartService = cartService;
+        this.promocodeService = promocodeService;
+        this.orderService = orderService;
+        this.courseService = courseService;
+    }
 
     /**
      * Список заказов.
@@ -130,6 +140,26 @@ public class OrderController {
         }
         Order order = orderService.createOrder(currentUser, orderItems);
         return "redirect:/orders/" + order.getId();
+    }
+//метод для применения промокода при оформлении заказа
+    @PostMapping("/apply-promocode")
+    public String applyPromocode(@RequestParam String promocode,
+                                 @AuthenticationPrincipal User user,
+                                 Model model) {
+        try {
+            BigDecimal currentTotal = cartService.getTotalPrice(user);
+            BigDecimal discountedTotal = promocodeService.applyPromocode(currentTotal, promocode);
+            // Сохраняем применённый промокод в сессии или временно для текущего заказа
+            // Например, в сессионный атрибут
+            // session.setAttribute("appliedPromocode", promocode);
+            // session.setAttribute("discountedTotal", discountedTotal);
+            model.addAttribute("discountedTotal", discountedTotal);
+            model.addAttribute("promocodeApplied", true);
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("promocodeError", e.getMessage());
+        }
+        // Вернуться на страницу корзины/оформления
+        return "pages/cart/checkout";
     }
 
     // Вспомогательный метод для проверки роли администратора

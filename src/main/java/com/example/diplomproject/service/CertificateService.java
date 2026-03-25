@@ -15,8 +15,12 @@ import java.util.NoSuchElementException;
 @Service
 public class CertificateService {
 
+    private final CertificateRepository certificateRepository;
+
     @Autowired
-    private CertificateRepository certificateRepository;
+    public CertificateService(CertificateRepository certificateRepository) {
+        this.certificateRepository = certificateRepository;
+    }
 
     /**
      * Генерация сертификата после покупки курса

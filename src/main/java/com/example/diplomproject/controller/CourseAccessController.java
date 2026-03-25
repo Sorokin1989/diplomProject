@@ -3,6 +3,7 @@ package com.example.diplomproject.controller;
 import com.example.diplomproject.entity.Course;
 import com.example.diplomproject.entity.User;
 import com.example.diplomproject.service.CourseAccessService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,6 +18,7 @@ public class CourseAccessController {
 
     private final CourseAccessService courseAccessService;
 
+    @Autowired
     public CourseAccessController(CourseAccessService courseAccessService) {
         this.courseAccessService = courseAccessService;
     }

@@ -15,8 +15,12 @@ import java.util.NoSuchElementException;
 @Service
 public class CourseAccessService {
 
+    private final CourseAccessRepository courseAccessRepository;
+
     @Autowired
-    private CourseAccessRepository courseAccessRepository;
+    public CourseAccessService(CourseAccessRepository courseAccessRepository) {
+        this.courseAccessRepository = courseAccessRepository;
+    }
 
     /**
      * Предоставление доступа к курсу пользователю

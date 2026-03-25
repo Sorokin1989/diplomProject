@@ -3,6 +3,7 @@ package com.example.diplomproject.controller;
 import com.example.diplomproject.entity.Certificate;
 import com.example.diplomproject.entity.User;
 import com.example.diplomproject.service.CertificateService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,6 +19,7 @@ public class CertificateController {
 
     private final CertificateService certificateService;
 
+    @Autowired
     public CertificateController(CertificateService certificateService) {
         this.certificateService = certificateService;
     }

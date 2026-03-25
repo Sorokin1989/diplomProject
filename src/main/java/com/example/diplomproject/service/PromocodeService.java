@@ -16,8 +16,12 @@ import java.util.NoSuchElementException;
 @Service
 public class PromocodeService {
 
+    private final PromocodeRepository promocodeRepository;
+
     @Autowired
-    private PromocodeRepository promocodeRepository;
+    public PromocodeService(PromocodeRepository promocodeRepository) {
+        this.promocodeRepository = promocodeRepository;
+    }
 
     /**
      * Создание нового промокода.

@@ -15,9 +15,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 @RequestMapping("/register")
 public class RegistrationController {
+    private UserService userService;
 
     @Autowired
-    private UserService userService;
+    public RegistrationController(UserService userService) {
+        this.userService = userService;
+    }
 
     /**
      * Показать форму регистрации

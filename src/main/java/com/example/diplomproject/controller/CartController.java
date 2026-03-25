@@ -4,6 +4,7 @@ import com.example.diplomproject.entity.Course;
 import com.example.diplomproject.entity.User;
 import com.example.diplomproject.service.CartService;
 import com.example.diplomproject.service.CourseService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,6 +17,7 @@ public class CartController {
     private final CartService cartService;
     private final CourseService courseService;
 
+    @Autowired
     public CartController(CartService cartService, CourseService courseService) {
         this.cartService = cartService;
         this.courseService = courseService;

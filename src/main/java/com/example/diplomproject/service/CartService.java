@@ -15,11 +15,14 @@ import java.util.List;
 @Service
 public class CartService {
 
-    @Autowired
-    private CartRepository cartRepository;
+    private final CartRepository cartRepository;
+    private final CartItemService cartItemService;
 
     @Autowired
-    private CartItemService cartItemService;
+    public CartService(CartRepository cartRepository, CartItemService cartItemService) {
+        this.cartRepository = cartRepository;
+        this.cartItemService = cartItemService;
+    }
 
     /**
      * Получение корзины пользователя (создаёт, если нет)

@@ -4,7 +4,6 @@ import com.example.diplomproject.entity.Cart;
 import com.example.diplomproject.entity.CartItem;
 import com.example.diplomproject.entity.Course;
 import com.example.diplomproject.repository.CartItemRepository;
-import com.example.diplomproject.repository.CartRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,11 +13,12 @@ import java.util.List;
 @Service
 public class CartItemService {
 
-    @Autowired
-    private CartItemRepository cartItemRepository;
+    private final CartItemRepository cartItemRepository;
 
     @Autowired
-    private CartRepository cartRepository;
+    public CartItemService(CartItemRepository cartItemRepository) {
+        this.cartItemRepository = cartItemRepository;
+    }
 
     /**
      * Добавление курса в корзину

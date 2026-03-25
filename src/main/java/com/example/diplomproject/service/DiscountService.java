@@ -14,8 +14,12 @@ import java.util.NoSuchElementException;
 @Service
 public class DiscountService {
 
+    private final DiscountRepository discountRepository;
+
     @Autowired
-    private DiscountRepository discountRepository;
+    public DiscountService(DiscountRepository discountRepository) {
+        this.discountRepository = discountRepository;
+    }
 
     /**
      * Получение всех скидок

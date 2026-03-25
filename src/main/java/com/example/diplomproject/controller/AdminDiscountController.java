@@ -2,6 +2,7 @@ package com.example.diplomproject.controller;
 
 import com.example.diplomproject.entity.Discount;
 import com.example.diplomproject.service.DiscountService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,7 +16,7 @@ import java.util.List;
 public class AdminDiscountController {
 
     private final DiscountService discountService;
-
+    @Autowired
     public AdminDiscountController(DiscountService discountService) {
         this.discountService = discountService;
     }

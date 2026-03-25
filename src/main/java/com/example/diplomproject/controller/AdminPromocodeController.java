@@ -1,13 +1,13 @@
-package com.example.diplomproject.controller.admin;
+package com.example.diplomproject.controller;
 
 import com.example.diplomproject.entity.Promocode;
 import com.example.diplomproject.enums.DiscountType;
 import com.example.diplomproject.service.PromocodeService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,7 +18,7 @@ import java.util.List;
 public class AdminPromocodeController {
 
     private final PromocodeService promocodeService;
-
+    @Autowired
     public AdminPromocodeController(PromocodeService promocodeService) {
         this.promocodeService = promocodeService;
     }
@@ -54,7 +54,7 @@ public class AdminPromocodeController {
         Promocode promocode = promocodeService.getPromocodeById(id); // нужен метод в сервисе
         model.addAttribute("promocode", promocode);
         model.addAttribute("discountTypes", DiscountType.values());
-        return "admin/promocodes/form";
+        return "pages/admin/promocodes/form";
     }
 
     @PostMapping("/{id}")

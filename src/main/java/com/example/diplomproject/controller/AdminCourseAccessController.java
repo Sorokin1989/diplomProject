@@ -5,6 +5,7 @@ import com.example.diplomproject.entity.User;
 import com.example.diplomproject.service.CourseAccessService;
 import com.example.diplomproject.service.CourseService;
 import com.example.diplomproject.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,6 +22,7 @@ public class AdminCourseAccessController {
     private final CourseService courseService;
     private final UserService userService;
 
+    @Autowired
     public AdminCourseAccessController(CourseAccessService courseAccessService,
                                        CourseService courseService,
                                        UserService userService) {

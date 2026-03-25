@@ -16,7 +16,6 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity(prePostEnabled = true) // для @PreAuthorize
 public class SecurityConfig {
 
-
     private final CustomUserDetailsService userDetailsService;
 
     @Autowired

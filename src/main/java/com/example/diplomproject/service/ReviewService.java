@@ -15,11 +15,14 @@ import java.util.NoSuchElementException;
 @Service
 public class ReviewService {
 
-    @Autowired
-    private ReviewRepository reviewRepository;
+    private final ReviewRepository reviewRepository;
+    private final OrderService orderService;
 
     @Autowired
-    private OrderService orderService;
+    public ReviewService(ReviewRepository reviewRepository, OrderService orderService) {
+        this.reviewRepository = reviewRepository;
+        this.orderService = orderService;
+    }
 
     /**
      * Создание нового отзыва.

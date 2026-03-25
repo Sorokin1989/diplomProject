@@ -19,23 +19,22 @@ import java.util.NoSuchElementException;
 
 @Service
 public class OrderService {
-    @Autowired
-    private OrderRepository orderRepository;
 
-//    @Autowired
-//    private OrderItemRepository orderItemRepository;
-    @Autowired
-    private OrderItemService orderItemService;
-
+    private final OrderRepository orderRepository;
+    private final OrderItemService orderItemService;
+    private final CourseAccessService courseAccessService;
+    private final CertificateService certificateService;
 
     @Autowired
-    private CourseAccessService courseAccessService;
-
-    @Autowired
-    private CertificateService certificateService;
-
-    @Autowired
-    private CourseAccessRepository courseAccessRepository;
+    public OrderService(OrderRepository orderRepository,
+                        OrderItemService orderItemService,
+                        CourseAccessService courseAccessService,
+                        CertificateService certificateService) {
+        this.orderRepository = orderRepository;
+        this.orderItemService = orderItemService;
+        this.courseAccessService = courseAccessService;
+        this.certificateService = certificateService;
+    }
 
     /**
      * Получение всех заказов

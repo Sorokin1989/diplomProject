@@ -12,8 +12,12 @@ import java.util.NoSuchElementException;
 @Service
 public class OrderItemService {
 
+    private final OrderItemRepository orderItemRepository;
+
     @Autowired
-    private OrderItemRepository orderItemRepository;
+    public OrderItemService(OrderItemRepository orderItemRepository) {
+        this.orderItemRepository = orderItemRepository;
+    }
 
     /**
      * Получение всех элементов заказа

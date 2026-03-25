@@ -14,21 +14,19 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+
 
 @Controller
 @RequestMapping("/orders")
 public class OrderController {
 
-
-    private CartService cartService;//для получения стоимости
-    private PromocodeService promocodeService;//применить купон
-    private OrderService orderService;
-    private CourseService courseService; // предположим, что он нужен для формы создания
+    private final CartService cartService;//для получения стоимости
+    private final PromocodeService promocodeService;//применить купон
+    private final OrderService orderService;
+    private final CourseService courseService; // предположим, что он нужен для формы создания
 
     @Autowired
     public OrderController(CartService cartService, PromocodeService promocodeService, OrderService orderService, CourseService courseService) {
@@ -52,7 +50,7 @@ public class OrderController {
         }
         model.addAttribute("orders", orders);
         model.addAttribute("isAdmin", isAdmin(currentUser));
-        return "orders/list";
+        return "pages/orders/list";
     }
 
     /**
@@ -71,7 +69,7 @@ public class OrderController {
         model.addAttribute("order", order);
         model.addAttribute("isAdmin", isAdmin(currentUser));
         model.addAttribute("availableStatuses", OrderStatus.values());
-        return "orders/view";
+        return "pages/orders/detail";
     }
 
     /**
@@ -114,7 +112,7 @@ public class OrderController {
         List<Course> availableCourses = courseService.getAllCourses(); // все доступные курсы
         model.addAttribute("courses", availableCourses);
         model.addAttribute("orderRequest", new OrderRequest());
-        return "orders/create";
+        return "pages/orders/create";
     }
 
     /**

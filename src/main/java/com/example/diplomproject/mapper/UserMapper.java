@@ -9,17 +9,21 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserMapper {
 
-    @Autowired
-    private OrderMapper orderMapper;
+    private final OrderMapper orderMapper;
+    private final CertificateMapper certificateMapper;
+    private final ReviewMapper reviewMapper;
+    private final CourseAccessMapper courseAccessMapper;
 
     @Autowired
-    private CertificateMapper certificateMapper;
-
-    @Autowired
-    private ReviewMapper reviewMapper;
-
-    @Autowired
-    private CourseAccessMapper courseAccessMapper;
+    public UserMapper(OrderMapper orderMapper,
+                      CertificateMapper certificateMapper,
+                      ReviewMapper reviewMapper,
+                      CourseAccessMapper courseAccessMapper) {
+        this.orderMapper = orderMapper;
+        this.certificateMapper = certificateMapper;
+        this.reviewMapper = reviewMapper;
+        this.courseAccessMapper = courseAccessMapper;
+    }
 
     public UserDto toUserDto(User user) {
 
@@ -30,7 +34,6 @@ public class UserMapper {
         UserDto userDto = new UserDto();
 
         userDto.setId(user.getId());
-
         userDto.setUsername(user.getUsername());
         userDto.setEmail(user.getEmail());
         userDto.setRole(String.valueOf(user.getRole()));
@@ -61,10 +64,8 @@ public class UserMapper {
             userDto.setCourseAccessDtos(user.getCourseAccesses().stream().
                     map(courseaccess -> courseAccessMapper.toCourseAccessDto(courseaccess)).toList());
         }
-
         userDto.setBonusPoints(user.getBonusPoints());
         return userDto;
-
     }
 
     public User fromUserDtoToEntity(UserDto userDto) {
@@ -78,8 +79,6 @@ public class UserMapper {
         user.setEmail(userDto.getEmail());
         user.setRole(Role.valueOf(userDto.getRole()));
         user.setRegistrationDate(userDto.getRegistrationDate());
-
-
         user.setBonusPoints(userDto.getBonusPoints());
         return user;
     }

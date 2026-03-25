@@ -2,6 +2,7 @@ package com.example.diplomproject.controller;
 
 import com.example.diplomproject.entity.User;
 import com.example.diplomproject.service.BonusService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class BonusController {
 
     private final BonusService bonusService;
-
+    @Autowired
     public BonusController(BonusService bonusService) {
         this.bonusService = bonusService;
     }

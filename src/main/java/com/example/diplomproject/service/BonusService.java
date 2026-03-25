@@ -8,9 +8,12 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class BonusService {
+    private final UserRepository userRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    public BonusService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     private static final int BONUS_FOR_REVIEW = 10;
     private static final int BONUS_FOR_FIRST_ORDER=100;

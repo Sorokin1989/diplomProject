@@ -1,10 +1,44 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<div th:fragment="_header" class="site-header">
+    <div class="header-container">
+        <div class="logo">
+            <a th:href="@{/}">
+                <span class="logo-text">Виктория</span>
+                <span class="logo-sub">учебный центр</span>
+            </a>
+        </div>
 
-</body>
+        <input type="checkbox" id="nav-toggle" class="nav-toggle">
+        <label for="nav-toggle" class="nav-toggle-label">
+            <i class="fas fa-bars"></i>
+        </label>
+
+        <nav class="main-nav">
+            <ul class="nav-list">
+                <li><a th:href="@{/}" class="nav-link">Главная</a></li>
+                <!-- Блок для анонимного пользователя -->
+                <li sec:authorize="isAnonymous()">
+                    <a th:href="@{/register}" class="nav-link">Регистрация</a>
+                </li>
+                <li sec:authorize="isAnonymous()">
+                    <a th:href="@{/login}" class="nav-link">Вход</a>
+                </li>
+                <!-- Блок для аутентифицированного пользователя -->
+                <li sec:authorize="isAuthenticated()">
+                    <a th:href="@{/profile}" class="nav-link">Мой профиль</a>
+                </li>
+                <li sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{/admin/users}" class="nav-link">Админка</a>
+                </li>
+                <li sec:authorize="isAuthenticated()">
+                    <form th:action="@{/logout}" method="post" style="display: inline;">
+                        <button type="submit" class="nav-link logout-btn">Выйти</button>
+                    </form>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
 </html>

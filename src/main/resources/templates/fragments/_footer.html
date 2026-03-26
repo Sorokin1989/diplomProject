@@ -1,10 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-
-</body>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<div th:fragment="_footer" class="site-footer">
+    <div class="footer-container">
+        <div class="footer-content">
+            <div class="footer-logo">
+                <span class="footer-logo-text">Виктория</span>
+                <span class="footer-logo-sub">учебный центр индустрии красоты</span>
+            </div>
+            <div class="footer-links">
+                <ul class="footer-nav">
+                    <li><a th:href="@{/}">Главная</a></li>
+                    <li><a th:href="@{/profile}">Профиль</a></li>
+                    <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/admin/users}">Администрирование</a></li>
+                    <li><a th:href="@{/contacts}">Контакты</a></li>
+                </ul>
+            </div>
+            <div class="footer-info">
+                <p>&copy; 2025 Учебный центр "Виктория". Все права защищены.</p>
+                <p class="license-info">Лицензия на образовательную деятельность № Л035-01298-77/00123456</p>
+            </div>
+        </div>
+    </div>
+</div>
 </html>

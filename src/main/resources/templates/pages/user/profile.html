@@ -1,10 +1,59 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="profile-content" class="profile-container">
+    <div class="profile-card">
+        <div class="brand">
+            <h1>Виктория</h1>
+            <p>учебный центр индустрии красоты</p>
+        </div>
 
-</body>
+        <div class="form-header">
+            <h2>Мой профиль</h2>
+            <p>Ваши персональные данные</p>
+        </div>
+
+        <!-- Сообщение об успешном обновлении -->
+        <div th:if="${param.updated}" class="message-box success">
+            <i class="fas fa-check-circle"></i>
+            <span>Профиль успешно обновлён!</span>
+        </div>
+
+        <div th:object="${user}" class="profile-info">
+            <div class="info-group">
+                <label>Имя пользователя</label>
+                <div class="info-value">
+                    <i class="fas fa-user"></i>
+                    <span th:text="*{username}">Имя пользователя</span>
+                </div>
+            </div>
+
+            <div class="info-group">
+                <label>Email</label>
+                <div class="info-value">
+                    <i class="fas fa-envelope"></i>
+                    <span th:text="*{email}">email@example.com</span>
+                </div>
+            </div>
+
+            <div class="info-group">
+                <label>Роль</label>
+                <div class="info-value">
+                    <i class="fas fa-user-tag"></i>
+                    <span th:text="*{role}">Роль</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-actions">
+            <a th:href="@{/profile/edit}" class="edit-btn">
+                <i class="fas fa-edit"></i> Редактировать профиль
+            </a>
+        </div>
+
+        <hr>
+        <div class="home-link">
+            <a th:href="@{/}">На главную</a>
+        </div>
+    </div>
+</div>
 </html>

@@ -1,23 +1,63 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Вход</title>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/_head :: _head('Вход | Учебный центр Виктория')}">
+
 </head>
 <body>
-<h2>Вход в систему</h2>
-<div th:if="${error}" th:text="${error}" style="color: red"></div>
-<div th:if="${message}" th:text="${message}" style="color: green"></div>
-<form th:action="@{/login}" method="post">
-    <div>
-        <label>Имя пользователя:</label>
-        <input type="text" name="username"/>
+
+<div class="login-card">
+    <div class="brand">
+        <h1>Виктория</h1>
+        <p>учебный центр индустрии красоты</p>
     </div>
-    <div>
-        <label>Пароль:</label>
-        <input type="password" name="password"/>
+
+    <div class="form-header">
+        <h2>Добро пожаловать</h2>
+        <p>Войдите в личный кабинет</p>
     </div>
-    <button type="submit">Войти</button>
-</form>
-<a href="/register">Зарегистрироваться</a>
+
+    <!-- Сообщения об ошибках и успехе -->
+    <div th:if="${param.error}" class="message-box error">
+        <i class="fas fa-circle-exclamation"></i>
+        <span>Неверное имя пользователя или пароль</span>
+    </div>
+    <div th:if="${param.registered}" class="message-box success">
+        <i class="fas fa-check-circle"></i>
+        <span>Регистрация прошла успешно! Теперь вы можете войти.</span>
+    </div>
+    <div th:if="${message}" class="message-box success">
+        <i class="fas fa-check-circle"></i>
+        <span th:text="${message}"></span>
+    </div>
+
+    <form th:action="@{/login}" method="post">
+        <div class="input-group">
+            <label for="username">Имя пользователя</label>
+            <div class="input-field">
+                <i class="fas fa-user"></i>
+                <input type="text" id="username" name="username" placeholder="Введите ваш логин или email" autofocus required>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="password">Пароль</label>
+            <div class="input-field">
+                <i class="fas fa-key"></i>
+                <input type="password" id="password" name="password" placeholder="••••••••" required>
+            </div>
+        </div>
+
+        <button type="submit" class="login-btn">
+            <i class="fas fa-arrow-right-to-bracket"></i> Войти в кабинет
+        </button>
+    </form>
+
+    <hr>
+    <div class="register-link">
+        Нет аккаунта? <a th:href="@{/register}">Зарегистрироваться</a>
+    </div>
+</div>
+
 </body>
 </html>

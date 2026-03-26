@@ -225,4 +225,9 @@ public class UserService {
         return userRepository.findAll(pageable);
 
     }
+
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new NoSuchElementException("Пользователь не найден"));
+    }
 }

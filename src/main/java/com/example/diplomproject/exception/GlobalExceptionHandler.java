@@ -17,19 +17,19 @@ public class GlobalExceptionHandler {
     public String handleNotFound(NoSuchElementException ex, Model model) {
         log.warn("Resource not found: {}", ex.getMessage());
         model.addAttribute("error", ex.getMessage());
-        return "error/404";
+        return "pages/errors/404";
     }
 
     @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
     public String handleBadRequest(RuntimeException ex, Model model) {
         log.warn("Bad request: {}", ex.getMessage());
         model.addAttribute("error", ex.getMessage());
-        return "error/400";
+        return "pages/errors/400";
     }
     @ExceptionHandler(Exception.class)
     public String handleGenericException(Exception ex, Model model) {
         log.error("Unexpected error", ex);
         model.addAttribute("error", "Произошла непредвиденная ошибка");
-        return "error/500";
+        return "pages/errors/500";
     }
 }

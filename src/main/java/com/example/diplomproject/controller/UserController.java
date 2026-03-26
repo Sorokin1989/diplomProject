@@ -1,6 +1,5 @@
 package com.example.diplomproject.controller;
 
-import com.example.diplomproject.dto.RegistrationDto;
 import com.example.diplomproject.dto.UserDto;
 import com.example.diplomproject.entity.User;
 import com.example.diplomproject.enums.Role;
@@ -19,6 +18,8 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+
 @Controller
 public class UserController {
 
@@ -31,70 +32,59 @@ public class UserController {
         this.userMapper = userMapper;
     }
 
-    // === Регистрация ===
-
-    @PreAuthorize("isAnonymous()")
-    @GetMapping("/register")
-    public String showRegistrationForm(Model model) {
-        model.addAttribute("registrationDto", new RegistrationDto());
-        return "pages/user/register";
-    }
-
-    @PostMapping("/register")
-    public String registerUser(@Valid @ModelAttribute("registrationDto") RegistrationDto dto,
-                               BindingResult bindingResult, Model model) {
-        if (bindingResult.hasErrors()) {
-            return "pages/user/register";
-        }
-        try {
-            userService.registerNewUser(dto);
-            return "redirect:/login?registered";
-        } catch (IllegalArgumentException e) {
-            model.addAttribute("error", e.getMessage());
-            return "pages/user/register";
-        }
-    }
-
     // === Профиль пользователя ===
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/profile")
-    public String showProfile(@AuthenticationPrincipal User currentUser, Model model) {
-        // Загружаем актуальные данные из БД (на случай, если currentUser – неполный объект)
-        User user = userService.getUserById(currentUser.getId());
+    public String showProfile(@AuthenticationPrincipal(expression = "username") String currentUser, Model model) {
+
+
+
+        User user = userService.findByUsername(currentUser);
         UserDto userDto = userMapper.toUserDto(user);
+        model.addAttribute("title", "Мой профиль");
         model.addAttribute("user", userDto);
-        return "pages/user/profile";
+        model.addAttribute("content", "pages/user/profile :: profile-content");
+        return "layouts/main";
     }
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/profile/edit")
-    public String showEditProfileForm(@AuthenticationPrincipal User currentUser, Model model) {
-        User user = userService.getUserById(currentUser.getId());
+    public String showEditProfileForm(@AuthenticationPrincipal(expression = "username") String currentUser, Model model) {
+        User user = userService.findByUsername(currentUser);
         UserDto userDto = userMapper.toUserDto(user);
+        model.addAttribute("title", "Редактирование профиля");
         model.addAttribute("user", userDto);
-        return "pages/user/edit-profile";
+        model.addAttribute("content", "pages/user/edit-profile :: edit-profile-content");
+        return "layouts/main";
     }
 
     @PostMapping("/profile/edit")
-    public String updateProfile(@AuthenticationPrincipal User currentUser,
+    public String updateProfile(@AuthenticationPrincipal(expression = "username") String currentUsername,
                                 @Valid @ModelAttribute UserDto userDto,
                                 BindingResult bindingResult,
                                 Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("title", "Редактирование профиля");
+            model.addAttribute("user", userDto);
+            model.addAttribute("content", "pages/user/edit-profile :: edit-profile-content");
+            return "layouts/main";
+        }
         try {
-            if (bindingResult.hasErrors()) {
-                model.addAttribute("user", userDto);
-                return "pages/user/edit-profile";
-            }
-
-            userService.updateUserFromDto(currentUser.getId(), userDto);
-
+            User user = userService.findByUsername(currentUsername);
+            userService.updateUserFromDto(user.getId(), userDto);
             return "redirect:/profile?updated";
         } catch (IllegalArgumentException e) {
+            // Загружаем актуальные данные из БД, чтобы показать текущие значения
+            User freshUser = userService.findByUsername(currentUsername);
+            UserDto freshUserDto = userMapper.toUserDto(freshUser);
             model.addAttribute("error", e.getMessage());
-            model.addAttribute("user", userService.getUserById(currentUser.getId()));
-            return "pages/user/edit-profile";
+            model.addAttribute("user", freshUserDto);
+            model.addAttribute("title", "Редактирование профиля");
+            model.addAttribute("content", "pages/user/edit-profile :: edit-profile-content");
+            return "layouts/main";
         }
+
     }
 
     // === Административные методы ===

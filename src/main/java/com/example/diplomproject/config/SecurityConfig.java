@@ -13,6 +13,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
+
 @EnableMethodSecurity(prePostEnabled = true) // для @PreAuthorize
 public class SecurityConfig {
 

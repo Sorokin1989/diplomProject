@@ -1,14 +1,6 @@
-<!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-
-<head th:replace="~{fragments/_head :: _head('Вход | Учебный центр Виктория')}">
-
-</head>
-<body>
-
-<div class="login-card">
+<div class="login-card" th:fragment="login-content" xmlns:th="http://www.thymeleaf.org">
     <div class="brand">
-        <h1>Виктория</h1>
+        <h1>Школа красоты</h1>
         <p>учебный центр индустрии красоты</p>
     </div>
 
@@ -58,6 +50,3 @@
         Нет аккаунта? <a th:href="@{/register}">Зарегистрироваться</a>
     </div>
 </div>
-
-</body>
-</html>

@@ -1,14 +1,15 @@
+
 <!DOCTYPE html>
 <html lang="ru" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head th:replace="~{fragments/_head :: _head('Виктория - ' + ${title})}"></head>
+<head th:replace="~{fragments/_head :: _head('Школа красоты - ' + ${title})}"></head>
 <body>
-<div th:replace="~{fragments/_header :: _header}"></div>
+<header th:replace="~{fragments/_header :: _header}"></header>
 
 <main class="main-content">
     <div th:replace="~{__${content}__}"></div>
 </main>
 
-<div th:replace="~{fragments/_footer :: _footer}"></div>
+<footer th:replace="~{fragments/_footer :: _footer}"></footer>
 </body>
 </html>

@@ -1,9 +1,7 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
 <div th:fragment="edit-profile-content" class="edit-profile-container">
     <div class="edit-profile-card">
         <div class="brand">
-            <h1>Виктория</h1>
+            <h1>Школа красоты</h1>
             <p>учебный центр индустрии красоты</p>
         </div>
 
@@ -12,10 +10,16 @@
             <p>Измените свои данные</p>
         </div>
 
-        <!-- Сообщение об ошибке (если есть) -->
+        <!-- Сообщение об ошибке -->
         <div th:if="${error}" class="message-box error">
             <i class="fas fa-circle-exclamation"></i>
             <span th:text="${error}">Ошибка</span>
+        </div>
+
+        <!-- Сообщение о том, что данные не изменены -->
+        <div th:if="${message}" class="message-box success">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${message}"></span>
         </div>
 
         <form th:action="@{/profile/edit}" th:object="${user}" method="post">
@@ -37,17 +41,6 @@
                 <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="field-error"></span>
             </div>
 
-            <!-- При желании можно добавить поля для смены пароля, но пока их нет в UserDto -->
-            <!--
-            <div class="input-group">
-                <label for="password">Новый пароль</label>
-                <div class="input-field">
-                    <i class="fas fa-lock"></i>
-                    <input type="password" id="password" name="password" placeholder="Оставьте пустым, если не меняете">
-                </div>
-            </div>
-            -->
-
             <button type="submit" class="save-btn">
                 <i class="fas fa-save"></i> Сохранить изменения
             </button>
@@ -59,4 +52,3 @@
         </div>
     </div>
 </div>
-</html>

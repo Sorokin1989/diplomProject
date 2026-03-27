@@ -1,9 +1,7 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<div th:fragment="register-content" class="register-container">
+<div th:fragment="register-content" class="register-container" xmlns:th="http://www.thymeleaf.org">
     <div class="register-card">
         <div class="brand">
-            <h1>Виктория</h1>
+            <h1>Школа красоты</h1>
             <p>учебный центр индустрии красоты</p>
         </div>
 
@@ -12,7 +10,6 @@
             <p>Присоединяйтесь к нашему учебному центру</p>
         </div>
 
-        <!-- Сообщение об ошибке -->
         <div th:if="${error}" class="message-box error">
             <i class="fas fa-circle-exclamation"></i>
             <span th:text="${error}">Ошибка</span>
@@ -66,4 +63,3 @@
         </div>
     </div>
 </div>
-</html>

@@ -1,10 +1,53 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<div th:fragment="cart-content" class="cart-container" xmlns:th="http://www.thymeleaf.org">
+    <div class="cart-header">
+        <h1>Корзина</h1>
+        <p>Ваши выбранные курсы</p>
+    </div>
 
-</body>
-</html>
+    <div th:if="${cartItems == null or cartItems.isEmpty()}" class="empty-cart">
+        <i class="fas fa-shopping-cart"></i>
+        <p>Ваша корзина пуста</p>
+        <a th:href="@{/catalog}" class="btn-primary">Перейти к курсам</a>
+    </div>
+
+    <div th:unless="${cartItems == null or cartItems.isEmpty()}" class="cart-content">
+        <div class="cart-items">
+            <div class="cart-item" th:each="item : ${cartItems}">
+                <div class="item-image">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="item-details">
+                    <h3 th:text="${item.course != null ? item.course.title : 'Курс удален'}">Название курса</h3>
+                    <p th:text="${item.course != null ? item.course.description : 'Описание недоступно'}">Описание</p>
+                    <div class="item-price" th:text="${item.course != null && item.course.price != null ? item.course.price + ' ₽' : 'Цена не указана'}">5 000 ₽</div>
+                </div>
+                <div class="item-actions">
+                    <div class="quantity-control">
+                        <button th:onclick="'updateQuantity(' + ${item.id} + ', ' + ${item.quantity-1} + ')'" class="quantity-btn">-</button>
+                        <span class="quantity" th:text="${item.quantity}">1</span>
+                        <button th:onclick="'updateQuantity(' + ${item.id} + ', ' + ${item.quantity+1} + ')'" class="quantity-btn">+</button>
+                    </div>
+                    <button th:onclick="'removeItem(' + ${item.id} + ')'" class="remove-btn">
+                        <i class="fas fa-trash-alt"></i> Удалить
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="cart-summary">
+            <h3>Итого</h3>
+            <div class="summary-row">
+                <span>Количество товаров:</span>
+                <span th:text="${cartItems.size()}">0</span>
+            </div>
+            <div class="summary-row total">
+                <span>Сумма:</span>
+                <span th:text="${totalPrice} + ' ₽'">0 ₽</span>
+            </div>
+            <button class="checkout-btn">Оформить заказ</button>
+        </div>
+    </div>
+    <script th:src="@{/js/cart.js}"></script>
+</div>
+
+

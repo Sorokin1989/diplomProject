@@ -23,7 +23,9 @@ public class CategoryController {
     @GetMapping
     public String listCategories(Model model) {
         model.addAttribute("categories", categoryService.getAllCategories());
-        return "pages/categories/list";
+        model.addAttribute("title", "Категории курсов");
+        model.addAttribute("content", "/pages/categories/categories :: categories-content"); // путь к фрагменту
+        return "layouts/main";
     }
 
     // Форма создания категории (только для админов)

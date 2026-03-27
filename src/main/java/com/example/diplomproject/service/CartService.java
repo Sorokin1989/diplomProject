@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -79,8 +80,9 @@ public class CartService {
      * Получение всех элементов корзины пользователя
      */
     public List<CartItem> getAllItems(User user) {
-        Cart cart = getOrCreateCart(user);
-        return cartItemService.getCartItemsByCart(cart);
+        return cartRepository.findByUser(user)
+                .map(cart -> cartItemService.getCartItemsByCart(cart))
+                .orElse(Collections.<CartItem>emptyList()); // <-- явное указание типа
     }
 
     /**
@@ -99,8 +101,8 @@ public class CartService {
 
     public BigDecimal getTotalPrice(User user) {
         return getAllItems(user).stream()
-                .map(item -> item.getCourse().getPrice()
-                        .multiply(BigDecimal.valueOf(item.getQuantity())))
+                .filter(item -> item.getCourse() != null && item.getCourse().getPrice() != null)
+                .map(item -> item.getCourse().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
@@ -109,8 +111,9 @@ public class CartService {
      */
 
     public boolean isCourseInCart(User user, Course course) {
-        Cart cart = getOrCreateCart(user);
-        return cartItemService.isCourseInCart(cart, course);
+        return cartRepository.findByUser(user)
+                .map(cart -> cartItemService.isCourseInCart(cart, course))
+                .orElse(false);
     }
 
 

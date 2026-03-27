@@ -25,14 +25,17 @@ public class AuthController {
         if (logout != null) {
             model.addAttribute("message", "Вы успешно вышли из системы");
         }
-        return "pages/user/login";
+        model.addAttribute("content", "pages/user/login :: login-content"); // <-- добавьте эту строку
+        return "layouts/main";
     }
 
     /**
      * Главная страница после входа.
      */
     @GetMapping("/")
-    public String home() {
-        return "pages/index";
+    public String home(Model model) {
+        model.addAttribute("title", "Главная");
+        model.addAttribute("content", "pages/home/index :: index-content");
+        return "layouts/main";
     }
 }

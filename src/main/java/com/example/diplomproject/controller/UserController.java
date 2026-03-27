@@ -17,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
 
@@ -38,9 +39,11 @@ public class UserController {
     @GetMapping("/profile")
     public String showProfile(@AuthenticationPrincipal(expression = "username") String currentUser, Model model) {
 
-
-
+        System.out.println(">>> showProfile called with user: " + currentUser);
         User user = userService.findByUsername(currentUser);
+        System.out.println(">>> user found: " + user);
+
+//        User user = userService.findByUsername(currentUser);
         UserDto userDto = userMapper.toUserDto(user);
         model.addAttribute("title", "Мой профиль");
         model.addAttribute("user", userDto);
@@ -63,7 +66,8 @@ public class UserController {
     public String updateProfile(@AuthenticationPrincipal(expression = "username") String currentUsername,
                                 @Valid @ModelAttribute UserDto userDto,
                                 BindingResult bindingResult,
-                                Model model) {
+                                Model model,
+                                RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("title", "Редактирование профиля");
             model.addAttribute("user", userDto);
@@ -72,10 +76,23 @@ public class UserController {
         }
         try {
             User user = userService.findByUsername(currentUsername);
-            userService.updateUserFromDto(user.getId(), userDto);
-            return "redirect:/profile?updated";
+            boolean updated = userService.updateUserFromDto(user.getId(), userDto);
+
+
+            if (updated) {
+                redirectAttributes.addFlashAttribute("updated", true);
+                return "redirect:/profile";
+            }
+            else {
+                model.addAttribute("message", "Данные не были изменены");
+                User freshUser = userService.findByUsername(currentUsername);
+                UserDto freshUserDto = userMapper.toUserDto(freshUser);
+                model.addAttribute("user", freshUserDto);
+                model.addAttribute("title", "Редактирование профиля");
+                model.addAttribute("content", "pages/user/edit-profile :: edit-profile-content");
+                return "layouts/main";
+            }
         } catch (IllegalArgumentException e) {
-            // Загружаем актуальные данные из БД, чтобы показать текущие значения
             User freshUser = userService.findByUsername(currentUsername);
             UserDto freshUserDto = userMapper.toUserDto(freshUser);
             model.addAttribute("error", e.getMessage());
@@ -84,9 +101,7 @@ public class UserController {
             model.addAttribute("content", "pages/user/edit-profile :: edit-profile-content");
             return "layouts/main";
         }
-
     }
-
     // === Административные методы ===
 
     @PreAuthorize("hasRole('ADMIN')")

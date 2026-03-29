@@ -169,8 +169,27 @@ header, footer {
     color: #3e3e4a;
     margin-bottom: 0.5rem;
 }
+.input-field textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.input-field input,
+.input-field select,
+.input-field textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.9rem 0;
+    border: none;
+    background: transparent;
+    font-size: 1rem;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+}
 
 .input-field {
+    width: 100%;
+    box-sizing: border-box;
     position: relative;
     display: flex;
     align-items: center;
@@ -1227,7 +1246,6 @@ ul.nav-list {
 .category-icon {
     width: 80px;
     height: 80px;
-    background: linear-gradient(135deg, #f3e9fc, #e7ddf5);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -1340,4 +1358,179 @@ ul.nav-list {
     .categories-card .form-header h2 {
         font-size: 1.5rem;
     }
+}
+
+/* Кнопки для админских действий */
+.admin-actions {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #f0e6eb;
+}
+
+.edit-btn-small,
+.delete-btn-small {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    background: none;
+    font-family: inherit;
+}
+
+.edit-btn-small {
+    background: linear-gradient(100deg, #f0eef8, #e7e1f5);
+    color: #8461c2;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.edit-btn-small:hover {
+    background: linear-gradient(100deg, #e2daf0, #d8cee8);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(132, 97, 194, 0.15);
+}
+
+.delete-btn-small {
+    background: linear-gradient(100deg, #fff5f5, #ffe8e8);
+    color: #e05a5a;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.delete-btn-small:hover {
+    background: linear-gradient(100deg, #ffe0e0, #ffd4d4);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(224, 90, 90, 0.15);
+}
+
+.category-icon {
+    background: none;
+}
+
+
+/* Скрытый элемент */
+.hidden {
+    display: none;
+}
+
+/* Блок текущего изображения */
+.current-image-wrapper {
+    margin-bottom: 1rem;
+}
+
+.current-image {
+    position: relative;
+    display: inline-block;
+}
+
+.current-image img {
+    max-width: 150px;
+    max-height: 150px;
+    border-radius: 0.5rem;
+    border: 1px solid #ddd;
+    padding: 4px;
+    background: #f9f9f9;
+}
+
+/* Кнопка удаления изображения */
+.delete-image-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.2s;
+}
+
+.delete-image-btn:hover {
+    background: #c82333;
+    transform: scale(1.05);
+}
+
+.image-hint {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-top: 0.5rem;
+}
+
+.orders-table-container {
+    overflow-x: auto;
+    margin-top: 1.5rem;
+}
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.orders-table th,
+.orders-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+.orders-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #2c3e50;
+}
+.orders-table tr:hover {
+    background: #f8f9fa;
+}
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 2rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+.status-badge.pending {
+    background: #fff3cd;
+    color: #856404;
+}
+.status-badge.paid {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+.status-badge.completed {
+    background: #d4edda;
+    color: #155724;
+}
+.status-badge.cancelled {
+    background: #f8d7da;
+    color: #721c24;
+}
+.status-select {
+    padding: 0.4rem 0.8rem;
+    border-radius: 0.5rem;
+    border: 1px solid #ddd;
+    background: white;
+    cursor: pointer;
+}
+.status-select:hover {
+    border-color: #9b59b6;
+}
+.empty-message {
+    text-align: center;
+    color: #6c757d;
+    padding: 2rem;
 }

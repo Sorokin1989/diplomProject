@@ -49,8 +49,8 @@ public class Course {
         createdAt=LocalDateTime.now();
     }
 
-    @Column(nullable = false)
-    private Integer reviewCount;
+    @Column
+    private Integer reviewCount = 0;
 
 
     @ManyToOne(fetch = LAZY)
@@ -91,8 +91,8 @@ public class Course {
     @OneToMany(mappedBy="course",fetch = LAZY)
     private List<CourseAccess>courseAccesses=new ArrayList();
 
-    @ManyToOne(optional = false,fetch = LAZY)
-    @JoinColumn(name = "order_id",nullable=false)
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "order_id")
     private Order order;
 
 

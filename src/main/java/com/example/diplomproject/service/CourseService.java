@@ -48,6 +48,10 @@ public class CourseService {
                 compareTo(java.math.BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Цена должна быть больше или равна нулю");
         }
+        // Проверка категории
+        if (course.getCategory() == null || course.getCategory().getId() == null) {
+            throw new IllegalArgumentException("Выберите категорию");
+        }
         return courseRepository.save(course);
     }
 
@@ -73,6 +77,9 @@ public class CourseService {
         if (updatedCourse.getCategory() != null) {
             existingCourse.setCategory(updatedCourse.getCategory());
         }
+
+        existingCourse.setImageUrl(updatedCourse.getImageUrl());
+
         return courseRepository.save(existingCourse);
 
     }

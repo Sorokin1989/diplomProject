@@ -32,9 +32,10 @@ public class CourseController {
      */
     @GetMapping
     public String listCourses(Model model) {
-        List<Course> courses = courseService.getAllCourses();
-        model.addAttribute("courses", courses);
-        return "pages/courses/list";
+        model.addAttribute("courses", courseService.getAllCourses());
+        model.addAttribute("title", "Курсы");
+        model.addAttribute("content", "pages/courses/courses :: user-courses-content");
+        return "layouts/main";
     }
 
     /**
@@ -58,60 +59,4 @@ public class CourseController {
         return "pages/courses/list";
     }
 
-    // === Административные методы (только для роли ADMIN) ===
-
-    /**
-     * Форма создания нового курса
-     */
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/create")
-    public String showCreateForm(Model model) {
-        model.addAttribute("course", new Course());
-        List<Category> categories = categoryService.getAllCategories();
-        model.addAttribute("categories", categories);
-        return "pages/admin/courses/form";
-    }
-
-    /**
-     * Обработка создания курса
-     */
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping
-    public String createCourse(@ModelAttribute("course") Course course) {
-        courseService.createNewCourse(course);
-        return "redirect:/courses";
-    }
-
-    /**
-     * Форма редактирования курса
-     */
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/edit/{id}")
-    public String showEditForm(@PathVariable Long id, Model model) {
-        Course course = courseService.getCourseById(id);
-        model.addAttribute("course", course);
-        List<Category> categories = categoryService.getAllCategories();
-        model.addAttribute("categories", categories);
-        return "pages/admin/courses/form";
-    }
-
-    /**
-     * Обработка обновления курса
-     */
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/{id}")
-    public String updateCourse(@PathVariable Long id, @ModelAttribute("course") Course updatedCourse) {
-        courseService.updateCourse(updatedCourse, id);
-        return "redirect:/courses";
-    }
-
-    /**
-     * Удаление курса (POST‑запрос для безопасности)
-     */
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/delete/{id}")
-    public String deleteCourse(@PathVariable Long id) {
-        courseService.deleteCourseByID(id);
-        return "redirect:/courses";
-    }
 }

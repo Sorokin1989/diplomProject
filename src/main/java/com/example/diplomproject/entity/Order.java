@@ -1,10 +1,11 @@
 package com.example.diplomproject.entity;
-
 import com.example.diplomproject.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 
 import java.math.BigDecimal;
@@ -16,65 +17,48 @@ import java.util.List;
 @Table(name = "orders")
 @Data
 @NoArgsConstructor
-public class Order {
-
+public class Order{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch=FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable=false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "created_at", nullable=false)
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at",nullable = false)
+    @UpdateTimestamp
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(precision = 10, scale =2)
+    @Column(precision = 10, scale = 2)
     private BigDecimal totalSum;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private OrderStatus orderStatus=OrderStatus.PENDING;
-
-
-    @ToString.Exclude
-    @OneToMany(mappedBy="order",
-            fetch = FetchType.LAZY,
-            cascade=CascadeType.ALL,
-            orphanRemoval=true)
-    private List<OrderItem> orderItems=new ArrayList<>();
+    private OrderStatus orderStatus = OrderStatus.PENDING;
 
     @ToString.Exclude
-    @OneToOne(mappedBy ="order",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> orderItems = new ArrayList<>();
+
+    @ToString.Exclude
+    @OneToOne(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Payment payment;
 
-    @OneToMany(mappedBy = "order",fetch = FetchType.LAZY)
-    private List<CourseAccess>courseAccesses=new ArrayList<>();
+    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
+    private List<CourseAccess> courseAccesses = new ArrayList<>();
 
-    @Column(name = "discount_amount",nullable = false)
-    private BigDecimal discountAmount;
+    @Column(name = "discount_amount")
+    private BigDecimal discountAmount = BigDecimal.ZERO;
 
-    @ManyToOne(fetch = FetchType.LAZY,optional = false)
-    @JoinColumn(name = "promocode_id",nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "promocode_id")
     private Promocode promoCode;
 
-    @ToString.Exclude
-    @OneToMany(mappedBy = "order",fetch = FetchType.LAZY)
-    private List<Course> courses=new ArrayList<>();
-
-
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt =LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate(){
-        updatedAt=LocalDateTime.now ();
-    }
-
+    // Удалено поле courses – дублирование
 }

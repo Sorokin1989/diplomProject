@@ -19,8 +19,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.security.Principal;
-
 @Controller
 public class UserController {
 
@@ -102,66 +100,5 @@ public class UserController {
             return "layouts/main";
         }
     }
-    // === Административные методы ===
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/admin/users")
-    public String listUsers(
-            @PageableDefault(size = 20, sort = "username", direction = Sort.Direction.ASC)
-            Pageable pageable,
-            Model model) {
-        Page<User> userPage = userService.getUsersByPages(pageable);
-
-        model.addAttribute("users", userPage.map(
-                userMapper::toUserDto
-        ));
-        model.addAttribute("currentPage", userPage.getNumber() +1);
-        model.addAttribute("totalPages",userPage.getTotalPages());
-        model.addAttribute("totalItems",userPage.getTotalElements());
-        return "pages/admin/users/list";
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/admin/users/{id}/edit")
-    public String showAdminEditUserForm(@PathVariable Long id, Model model) {
-        User user = userService.getUserById(id);
-        UserDto userDto = userMapper.toUserDto(user);
-        model.addAttribute("user", userDto);
-        return "pages/admin/users/edit";
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/admin/users/{id}")
-    public String updateUserByAdmin(
-            @AuthenticationPrincipal User currentUser,
-            @PathVariable Long id,
-                                    @RequestParam String username,
-                                    @RequestParam String email,
-                                    @RequestParam(required = false) Role role) {
-
-        if(currentUser.getId().equals(id)){
-            throw new IllegalArgumentException("Вы не можете редактировать свой профиль");
-        }
-
-        UserDto userDto = new UserDto();
-        userDto.setUsername(username);
-        userDto.setEmail(email);
-        if (null != role) {
-            userDto.setRole(role.name());
-        }
-
-        userService.updateUserFromDto(id, userDto);
-        return "redirect:/admin/users";
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/admin/users/{id}/delete")
-    public String deleteUser(@AuthenticationPrincipal User currentUser,
-                             @PathVariable Long id) {
-        if(currentUser.getId().equals(id)){
-            throw new IllegalArgumentException("Нельзя удалить самого себя");
-        }
-        userService.deleteUser(id);
-        return "redirect:/admin/users";
-    }
 }

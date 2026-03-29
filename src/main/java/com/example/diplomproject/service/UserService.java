@@ -182,7 +182,13 @@ public class UserService {
         }
 
         if (updated) {
-            userRepository.save(user);
+            User saved = userRepository.save(user);
+            System.out.println("Сохранённый пользователь: id=" + saved.getId() +
+                    ", username=" + saved.getUsername() +
+                    ", email=" + saved.getEmail() +
+                    ", role=" + saved.getRole());
+
+
             // Если имя изменилось – обновляем аутентификацию в SecurityContext
             if (!oldUsername.equals(user.getUsername())) {
                 updateAuthentication(oldUsername, user.getUsername());
@@ -201,6 +207,7 @@ public class UserService {
     public void deleteUser(Long id) {
         User user = getUserById(id);
         userRepository.delete(user);
+        System.out.println("Deleting user: " + user.getUsername());
     }
 
     // === ВСПОМОГАТЕЛЬНЫЙ МЕТОД ДЛЯ ОБНОВЛЕНИЯ АУТЕНТИФИКАЦИИ ===
@@ -213,5 +220,12 @@ public class UserService {
                     updatedUser, auth.getCredentials(), updatedUser.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(newAuth);
         }
+    }
+    public boolean existsByUsername(String username) {
+        return userRepository.findByUsername(username).isPresent();
+    }
+
+    public boolean existsByEmail(String email) {
+        return userRepository.findByEmail(email).isPresent();
     }
 }

@@ -1,0 +1,53 @@
+<div th:fragment="admin-categories-content" class="categories-card" xmlns:th="http://www.thymeleaf.org">
+    <div class="brand">
+        <h1>Школа красоты</h1>
+        <p>учебный центр индустрии красоты</p>
+    </div>
+
+    <div class="form-header">
+        <h2>Управление категориями</h2>
+        <p>Добавляйте, редактируйте и удаляйте категории</p>
+    </div>
+
+    <div class="admin-actions-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <a th:href="@{/admin}" class="btn-secondary">
+            <i class="fas fa-arrow-left"></i> Назад
+        </a>
+        <a th:href="@{/admin/categories/new}" class="btn-primary">
+            <i class="fas fa-plus"></i> Добавить категорию
+        </a>
+    </div>
+
+    <div class="categories-grid">
+        <div th:each="category : ${categories}" class="category-card">
+            <a th:href="@{/admin/courses(categoryId=${category.id})}" class="category-link-icon">
+                <div class="category-icon">
+                    <i th:if="${category.imageUrl != null}" th:style="'background-image: url(' + ${category.imageUrl} + '); background-size: cover;'"></i>
+                    <i th:unless="${category.imageUrl != null}" class="fas fa-folder"></i>
+                </div>
+            </a>
+            <div class="category-info">
+                <h3 th:text="${category.title}">Название</h3>
+                <p th:text="${category.description != null ? category.description : 'Описание категории'}">
+                    Описание
+                </p>
+                <div class="admin-actions">
+                    <a th:href="@{/admin/categories/edit/{id}(id=${category.id})}" class="edit-btn-small">
+                        <i class="fas fa-edit"></i> Редактировать
+                    </a>
+                    <form th:action="@{/admin/categories/delete/{id}(id=${category.id})}" method="post"
+                          style="display: inline;"
+                          onsubmit="return confirm('Удалить категорию? Это можно сделать только если в ней нет курсов.');">
+                        <button type="submit" class="delete-btn-small">
+                            <i class="fas fa-trash-alt"></i> Удалить
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div th:if="${categories == null or categories.isEmpty()}" class="empty-categories">
+            <i class="fas fa-folder-open"></i>
+            <p>Категории не найдены</p>
+        </div>
+    </div>
+</div>

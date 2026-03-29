@@ -1,0 +1,18 @@
+<div th:fragment="admin-dashboard" class="categories-card" xmlns:th="http://www.thymeleaf.org">
+    <div class="brand">
+        <h1>Школа красоты</h1>
+        <p>административная панель</p>
+    </div>
+
+    <div class="form-header">
+        <h2>Управление</h2>
+        <p>Выберите раздел для управления</p>
+    </div>
+
+    <div class="admin-links" style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a th:href="@{/admin/categories}" class="btn-primary">Категории</a>
+        <a th:href="@{/admin/courses}" class="btn-primary">Курсы</a>
+        <a th:href="@{/admin/users}" class="btn-primary">Пользователи</a>
+        <a th:href="@{/admin/orders}" class="btn-primary">Заказы</a>
+    </div>
+</div>

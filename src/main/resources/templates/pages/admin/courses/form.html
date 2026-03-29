@@ -1,10 +1,104 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<div th:fragment="course-form" class="categories-card" xmlns:th="http://www.thymeleaf.org">
+    <div class="brand">
+        <h1>Школа красоты</h1>
+        <p>учебный центр индустрии красоты</p>
+    </div>
 
-</body>
-</html>
+    <div class="form-header">
+        <div th:if="${param.error}" class="message-box error">
+            <i class="fas fa-circle-exclamation"></i>
+            <span th:text="${param.error}">Ошибка</span>
+        </div>
+        <div th:if="${param.success}" class="message-box success">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${param.success}">Успешно</span>
+        </div>
+        <h2 th:text="${course.id != null ? 'Редактирование курса' : 'Создание курса'}">Форма курса</h2>
+        <p>Заполните данные курса</p>
+    </div>
+
+    <form th:action="@{${course.id != null ? '/admin/courses/' + course.id : '/admin/courses'}}"
+          method="post" th:object="${course}" enctype="multipart/form-data">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <!-- Скрытое поле для автора, если нужно -->
+        <input type="hidden" th:field="*{author}" />
+
+        <div class="input-group">
+            <label for="title">Название курса *</label>
+            <div class="input-field">
+                <i class="fas fa-book"></i>
+                <input type="text" id="title" th:field="*{title}" placeholder="Например: Маникюр для начинающих" required>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="description">Описание</label>
+            <div class="input-field">
+                <i class="fas fa-align-left"></i>
+                <textarea id="description" th:field="*{description}" rows="4"
+                          placeholder="Подробное описание курса"></textarea>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="price">Цена (руб.) *</label>
+            <div class="input-field">
+                <i class="fas fa-ruble-sign"></i>
+                <input type="number" id="price" th:field="*{price}" step="0.01" required>
+            </div>
+        </div>
+
+        <!-- Выбор категории (отдельный параметр) -->
+        <div class="input-group">
+            <label>Категория *</label>
+            <div class="input-field">
+                <i class="fas fa-tag"></i>
+                <select name="categoryId" required>
+                    <option value="">-- Выберите категорию --</option>
+                    <option th:each="cat : ${categories}"
+                            th:value="${cat.id}"
+                            th:text="${cat.title}"
+                            th:selected="${course.category != null && course.category.id == cat.id}"></option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Блок изображения -->
+        <div class="input-group">
+            <label>Изображение курса</label>
+
+            <!-- Блок с текущим изображением (только при редактировании и если есть картинка) -->
+            <div th:if="${course.id != null and course.imageUrl != null}" class="current-image-wrapper">
+                <div class="current-image">
+                    <img th:src="${course.imageUrl}" alt="current image">
+                    <button type="button" class="delete-image-btn"
+                            th:data-url="@{/admin/courses/{id}/delete-image(id=${course.id})}">
+                        <i class="fas fa-times-circle"></i>
+                    </button>
+                </div>
+                <p class="image-hint">Текущее изображение. Нажмите ✕ чтобы удалить.</p>
+            </div>
+
+            <!-- Поле выбора файла (скрыто, если есть картинка и это редактирование) -->
+            <div th:classappend="${course.id != null and course.imageUrl != null} ? 'hidden' : ''">
+                <div class="input-field">
+                    <i class="fas fa-image"></i>
+                    <input type="file" id="imageFile" name="imageFile" accept="image/*">
+                </div>
+                <small style="color: #6b5b7e; margin-top: 0.25rem; display: block;">
+                    <i class="fas fa-info-circle"></i> Загрузите изображение (необязательно)
+                </small>
+            </div>
+        </div>
+
+        <button type="submit" class="save-btn">
+            <i class="fas fa-save"></i> Сохранить курс
+        </button>
+    </form>
+
+    <hr>
+    <div class="home-link">
+        <a th:href="@{/admin/courses}">Вернуться к списку курсов</a>
+    </div>
+</div>

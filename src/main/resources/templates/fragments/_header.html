@@ -16,7 +16,8 @@
         <nav class="main-nav">
             <ul class="nav-list">
                 <li><a th:href="@{/}" class="nav-link">Главная</a></li>
-                <li><a th:href="@{/categories}" class="nav-link">Категории</a></li> <!-- новая вкладка -->
+                <li><a th:href="@{/categories}" class="nav-link">Категории</a></li>
+
                 <!-- Блок для анонимного пользователя -->
                 <li sec:authorize="isAnonymous()">
                     <a th:href="@{/register}" class="nav-link">Регистрация</a>
@@ -24,18 +25,23 @@
                 <li sec:authorize="isAnonymous()">
                     <a th:href="@{/login}" class="nav-link">Вход</a>
                 </li>
+
                 <!-- Блок для аутентифицированного пользователя -->
                 <li sec:authorize="isAuthenticated()">
                     <a th:href="@{/profile}" class="nav-link">Мой профиль</a>
                 </li>
+
+                <!-- Админская панель: управление категориями -->
                 <li sec:authorize="hasRole('ADMIN')">
-                    <a th:href="@{/admin/users}" class="nav-link">Админка</a>
+                    <a th:href="@{/admin}" class="nav-link">Админка</a>
                 </li>
+
                 <li sec:authorize="isAuthenticated()">
                     <form th:action="@{/logout}" method="post" style="display: inline;">
                         <button type="submit" class="nav-link logout-btn">Выйти</button>
                     </form>
                 </li>
+
                 <li><a th:href="@{/cart}" class="nav-link"><i class="fas fa-shopping-cart"></i> Корзина</a></li>
             </ul>
         </nav>

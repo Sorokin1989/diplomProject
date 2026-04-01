@@ -1,13 +1,14 @@
 package com.example.diplomproject.controller;
 
 import com.example.diplomproject.entity.Category;
+import com.example.diplomproject.entity.Certificate;
 import com.example.diplomproject.entity.Course;
-import com.example.diplomproject.entity.User;
 import com.example.diplomproject.service.CategoryService;
+import com.example.diplomproject.service.CertificateService;
 import com.example.diplomproject.service.CourseService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Controller
 @RequestMapping("/admin/courses")
 @PreAuthorize("hasRole('ADMIN')")
@@ -30,11 +32,15 @@ public class AdminCourseController {
 
     private final CourseService courseService;
     private final CategoryService categoryService;
+    private final CertificateService certificateService;
 
     @Autowired
-    public AdminCourseController(CourseService courseService, CategoryService categoryService) {
+    public AdminCourseController(CourseService courseService,
+                                 CategoryService categoryService,
+                                 CertificateService certificateService) {
         this.courseService = courseService;
         this.categoryService = categoryService;
+        this.certificateService = certificateService;
     }
 
     // Список курсов (админ) с возможностью фильтрации по категории
@@ -74,7 +80,6 @@ public class AdminCourseController {
                                @RequestParam(value = "categoryId", required = false) Long categoryId,
                                @RequestParam("imageFile") MultipartFile imageFile,
                                RedirectAttributes redirectAttributes) {
-        // Проверка выбора категории
         if (categoryId == null || categoryId == 0) {
             redirectAttributes.addAttribute("error", "Пожалуйста, выберите категорию");
             return "redirect:/admin/courses/new";
@@ -86,8 +91,6 @@ public class AdminCourseController {
             return "redirect:/admin/courses/new";
         }
         course.setCategory(category);
-
-        // Автор остаётся из формы, ничего не меняем
 
         try {
             if (!imageFile.isEmpty()) {
@@ -102,6 +105,7 @@ public class AdminCourseController {
             return "redirect:/admin/courses/new";
         }
     }
+
     // Форма редактирования курса
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Long id, Model model) {
@@ -123,7 +127,6 @@ public class AdminCourseController {
         try {
             Course existing = courseService.getCourseById(id);
 
-            // Обработка категории
             if (categoryId == null || categoryId == 0) {
                 redirectAttributes.addAttribute("error", "Пожалуйста, выберите категорию");
                 return "redirect:/admin/courses/edit/" + id;
@@ -135,7 +138,6 @@ public class AdminCourseController {
             }
             course.setCategory(category);
 
-            // Обработка изображения
             if (!imageFile.isEmpty()) {
                 String newImagePath = saveImage(imageFile, "courses");
                 if (newImagePath != null) {
@@ -143,65 +145,49 @@ public class AdminCourseController {
                     course.setImageUrl(newImagePath);
                 }
             } else {
-                // Если новая картинка не загружена, оставляем старую
                 course.setImageUrl(existing.getImageUrl());
             }
 
-            // Обновляем курс
             courseService.updateCourse(course, id);
             redirectAttributes.addAttribute("success", "Курс обновлён");
             return "redirect:/admin/courses";
-
         } catch (Exception e) {
             redirectAttributes.addAttribute("error", "Ошибка обновления: " + e.getMessage());
             return "redirect:/admin/courses/edit/" + id;
         }
     }
 
-    // Удаление курса (удаляем и картинку)
+    // Удаление курса (с проверкой на сертификаты)
     @PostMapping("/delete/{id}")
-    public String deleteCourse(@PathVariable Long id,
-                               RedirectAttributes redirectAttributes) {
+    public String deleteCourse(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             Course course = courseService.getCourseById(id);
+
+            // Проверяем наличие активных сертификатов
+            List<Certificate> active = certificateService.getActiveCertificatesByCourse(course);
+            if (!active.isEmpty()) {
+                redirectAttributes.addAttribute("error",
+                        "Невозможно удалить курс. На него выдано " + active.size() + " активных сертификат(ов). Сначала отзовите их.");
+                return "redirect:/admin/courses";
+            }
+
+            // Удаляем отозванные сертификаты (чтобы снять внешний ключ)
+            certificateService.deleteRevokedCertificatesForCourse(course);
+
+            // Удаляем картинку, если есть
             deleteOldImage(course.getImageUrl());
+
+            // Удаляем курс
             courseService.deleteCourseByID(id);
-            redirectAttributes.addFlashAttribute("success", "Курс удалён");
+
+            redirectAttributes.addAttribute("success", "Курс \"" + course.getTitle() + "\" успешно удалён");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Ошибка удаления: " + e.getMessage());
+            redirectAttributes.addAttribute("error", "Ошибка удаления: " + e.getMessage());
         }
         return "redirect:/admin/courses";
     }
 
-    // Вспомогательные методы для работы с изображениями
-    private String saveImage(MultipartFile file, String subdir) throws IOException {
-        String uploadDir = "src/main/resources/static/uploads/" + subdir;
-        Path uploadPath = Paths.get(uploadDir);
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
-        String originalFilename = file.getOriginalFilename();
-        String extension = "";
-        if (originalFilename != null && originalFilename.contains(".")) {
-            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-        }
-        String fileName = UUID.randomUUID().toString() + extension;
-        Path filePath = uploadPath.resolve(fileName);
-        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-        return "/uploads/" + subdir + "/" + fileName;
-    }
-
-    private void deleteOldImage(String imageUrl) {
-        if (imageUrl != null && !imageUrl.isEmpty()) {
-            try {
-                Path path = Paths.get("src/main/resources/static" + imageUrl);
-                Files.deleteIfExists(path);
-            } catch (IOException e) {
-                System.err.println("Не удалось удалить файл: " + e.getMessage());
-            }
-        }
-    }
-
+    // Удаление изображения курса (крестик)
     @PostMapping("/{id}/delete-image")
     public String deleteCourseImage(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         Course course = courseService.getCourseById(id);
@@ -216,5 +202,37 @@ public class AdminCourseController {
         courseService.updateCourse(course, id);
         redirectAttributes.addAttribute("success", "Изображение удалено");
         return "redirect:/admin/courses/edit/" + id;
+    }
+
+    // ========== Работа с изображениями ==========
+    private String saveImage(MultipartFile file, String subdir) throws IOException {
+        String uploadDir = "uploads/" + subdir;               // внешняя папка
+        Path uploadPath = Paths.get(uploadDir);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+        String originalFilename = file.getOriginalFilename();
+        String extension = "";
+        if (originalFilename != null && originalFilename.contains(".")) {
+            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        }
+        String fileName = UUID.randomUUID().toString() + extension;
+        Path filePath = uploadPath.resolve(fileName);
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+        log.debug("Сохранён файл: {}", filePath.toAbsolutePath());
+        return "/uploads/" + subdir + "/" + fileName;
+    }
+
+    private void deleteOldImage(String imageUrl) {
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            try {
+                String relativePath = imageUrl.startsWith("/") ? imageUrl.substring(1) : imageUrl;
+                Path path = Paths.get(relativePath);
+                Files.deleteIfExists(path);
+                log.debug("Удалён файл: {}", path.toAbsolutePath());
+            } catch (IOException e) {
+                log.warn("Не удалось удалить файл: {}", imageUrl, e);
+            }
+        }
     }
 }

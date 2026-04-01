@@ -87,7 +87,7 @@ public class OrderService {
             courseAccessService.grantAccessToCourse(user, item.getCourse());
 
             // Выдаём сертификат за покупку
-            certificateService.generateCertificateForPurchase(user, item.getCourse());
+//            certificateService.generateCertificateForPurchase(user, item.getCourse());
         }
 
         return savedOrder;

@@ -3,78 +3,88 @@ package com.example.diplomproject.controller;
 import com.example.diplomproject.entity.Promocode;
 import com.example.diplomproject.enums.DiscountType;
 import com.example.diplomproject.service.PromocodeService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+@Slf4j
 @Controller
 @RequestMapping("/admin/promocodes")
 @PreAuthorize("hasRole('ADMIN')")
+@RequiredArgsConstructor
 public class AdminPromocodeController {
 
     private final PromocodeService promocodeService;
-    @Autowired
-    public AdminPromocodeController(PromocodeService promocodeService) {
-        this.promocodeService = promocodeService;
-    }
 
     @GetMapping
     public String listPromocodes(Model model) {
-        List<Promocode> promocodes = promocodeService.getAllPromocodes(); // нужно добавить метод в сервис
-        model.addAttribute("promocodes", promocodes);
-        return "admin/promocodes/list";
+        model.addAttribute("promocodes", promocodeService.getAllPromocodes());
+        model.addAttribute("title", "Управление промокодами");
+        model.addAttribute("content", "pages/admin/promocodes/admin-list :: admin-promocodes-content");
+        return "layouts/main";
     }
 
-    @GetMapping("/create")
+    @GetMapping("/new")
     public String showCreateForm(Model model) {
         model.addAttribute("promocode", new Promocode());
         model.addAttribute("discountTypes", DiscountType.values());
-        return "admin/promocodes/form";
+        model.addAttribute("title", "Создание промокода");
+        model.addAttribute("content", "pages/admin/promocodes/form :: promo-form");
+        return "layouts/main";
     }
 
     @PostMapping
-    public String createPromocode(@RequestParam String code,
-                                  @RequestParam DiscountType discountType,
-                                  @RequestParam BigDecimal value,
-                                  @RequestParam BigDecimal minOrderAmount,
-                                  @RequestParam(required = false) Integer usageLimit,
-                                  @RequestParam(required = false) LocalDateTime validFrom,
-                                  @RequestParam(required = false) LocalDateTime validTo) {
-        promocodeService.createPromoCode(code, discountType, value, minOrderAmount, usageLimit, validFrom, validTo);
-        return "redirect:/admin/promocodes";
+    public String createPromocode(@ModelAttribute Promocode promocode,
+                                  RedirectAttributes redirectAttributes) {
+        try {
+            promocodeService.createPromoCode(promocode);
+            redirectAttributes.addAttribute("success", "Промокод успешно создан");
+            return "redirect:/admin/promocodes";
+        } catch (Exception e) {
+            log.error("Ошибка создания промокода", e);
+            redirectAttributes.addAttribute("error", "Ошибка создания: " + e.getMessage());
+            return "redirect:/admin/promocodes/new";
+        }
     }
 
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Long id, Model model) {
-        Promocode promocode = promocodeService.getPromocodeById(id); // нужен метод в сервисе
+        Promocode promocode = promocodeService.getPromocodeById(id);
         model.addAttribute("promocode", promocode);
         model.addAttribute("discountTypes", DiscountType.values());
-        return "pages/admin/promocodes/form";
+        model.addAttribute("title", "Редактирование промокода");
+        model.addAttribute("content", "pages/admin/promocodes/form :: promo-form");
+        return "layouts/main";
     }
 
     @PostMapping("/{id}")
     public String updatePromocode(@PathVariable Long id,
-                                  @RequestParam String code,
-                                  @RequestParam DiscountType discountType,
-                                  @RequestParam BigDecimal value,
-                                  @RequestParam BigDecimal minOrderAmount,
-                                  @RequestParam(required = false) Integer usageLimit,
-                                  @RequestParam(required = false) LocalDateTime validFrom,
-                                  @RequestParam(required = false) LocalDateTime validTo,
-                                  @RequestParam boolean active) {
-        // обновление промокода (нужно добавить метод в сервис)
-        promocodeService.updatePromocode(id, code, discountType, value, minOrderAmount, usageLimit, validFrom, validTo, active);
-        return "redirect:/admin/promocodes";
+                                  @ModelAttribute Promocode promocode,
+                                  RedirectAttributes redirectAttributes) {
+        try {
+            promocodeService.updatePromocode(id, promocode);
+            redirectAttributes.addAttribute("success", "Промокод обновлён");
+            return "redirect:/admin/promocodes";
+        } catch (Exception e) {
+            log.error("Ошибка обновления промокода {}", id, e);
+            redirectAttributes.addAttribute("error", "Ошибка обновления: " + e.getMessage());
+            return "redirect:/admin/promocodes/edit/" + id;
+        }
     }
 
     @PostMapping("/delete/{id}")
-    public String deletePromocode(@PathVariable Long id) {
-        promocodeService.deletePromocode(id);
+    public String deletePromocode(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            promocodeService.deletePromocode(id);
+            redirectAttributes.addAttribute("success", "Промокод удалён");
+        } catch (Exception e) {
+            log.error("Ошибка удаления промокода {}", id, e);
+            redirectAttributes.addAttribute("error", "Ошибка удаления: " + e.getMessage());
+        }
         return "redirect:/admin/promocodes";
     }
 }

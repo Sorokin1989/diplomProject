@@ -141,7 +141,7 @@ public class AdminCategoryController {
     }
 
     private String saveImage(MultipartFile file, String subdir) throws IOException {
-        String uploadDir = "src/main/resources/static/uploads/" + subdir;
+        String uploadDir = "uploads/" + subdir;
         Path uploadPath = Paths.get(uploadDir);
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);

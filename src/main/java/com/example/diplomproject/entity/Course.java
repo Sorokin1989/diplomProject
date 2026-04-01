@@ -38,7 +38,7 @@ public class Course {
     @Column
     private boolean isActive = true;
 
-    @Column(nullable=false)
+    @Column
     private String imageUrl;
 
     @Column(nullable= false)

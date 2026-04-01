@@ -3,6 +3,7 @@ package com.example.diplomproject.service;
 import com.example.diplomproject.entity.Promocode;
 import com.example.diplomproject.enums.DiscountType;
 import com.example.diplomproject.repository.PromocodeRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+@Slf4j
 @Service
 public class PromocodeService {
 
@@ -23,16 +25,10 @@ public class PromocodeService {
         this.promocodeRepository = promocodeRepository;
     }
 
+    // ==================== ОСНОВНЫЕ МЕТОДЫ ====================
+
     /**
-     * Создание нового промокода.
-     * @param code            код промокода (будет приведён к верхнему регистру и обрезан)
-     * @param discountType    тип скидки (PERCENT или FIXED)
-     * @param value           значение скидки (для PERCENT от 0 до 100, для FIXED >= 0)
-     * @param minOrderAmount  минимальная сумма заказа для применения
-     * @param usageLimit      максимальное количество использований (если null, будет установлено значение по умолчанию)
-     * @param validFrom       дата начала действия (если null, будет установлено текущее время)
-     * @param validTo         дата окончания действия (если null, будет установлено текущее время + 30 дней)
-     * @return сохранённый промокод
+     * Создание нового промокода (с параметрами).
      */
     public Promocode createPromoCode(String code,
                                      DiscountType discountType,
@@ -73,9 +69,9 @@ public class PromocodeService {
             throw new IllegalArgumentException("Промокод с таким кодом уже существует");
         }
 
-        // Установка значений по умолчанию для необязательных параметров
+        // Установка значений по умолчанию
         if (usageLimit == null || usageLimit <= 0) {
-            usageLimit = 100; // по умолчанию 100 использований
+            usageLimit = 100;
         }
         LocalDateTime now = LocalDateTime.now();
         if (validFrom == null) {
@@ -99,74 +95,70 @@ public class PromocodeService {
         promocode.setUsedCount(0);
         promocode.setActive(true);
 
+        log.info("Создан промокод: {}", promocode.getCode());
         return promocodeRepository.save(promocode);
     }
 
     /**
-     * Применение промокода к цене с автоматическим увеличением счётчика использований.
-     * Метод выполняется в транзакции, что гарантирует атомарность проверок и обновления.
-     * @param price исходная цена заказа
-     * @param code  код промокода
-     * @return цена после применения скидки (не может быть меньше 0)
+     * Создание промокода из объекта (удобно для @ModelAttribute).
+     */
+    public Promocode createPromoCode(Promocode promocode) {
+        return createPromoCode(
+                promocode.getCode(),
+                promocode.getDiscountType(),
+                promocode.getValue(),
+                promocode.getMinOrderAmount(),
+                promocode.getUsageLimit(),
+                promocode.getValidFrom(),
+                promocode.getValidTo()
+        );
+    }
+
+    /**
+     * Применение промокода к цене с автоматическим увеличением счётчика.
      */
     @Transactional
     public BigDecimal applyPromocode(BigDecimal price, String code) {
-        // Получаем промокод
         Promocode promocode = promocodeRepository.findByCode(code)
                 .orElseThrow(() -> new IllegalArgumentException("Промокод не найден"));
 
-        // Проверка на null обязательных полей (защита от некорректных данных в БД)
         if (promocode.getMinOrderAmount() == null || promocode.getDiscountType() == null) {
             throw new IllegalStateException("Промокод настроен некорректно: отсутствуют обязательные поля");
         }
 
-        // Проверка активности
         if (!isPromocodeActive(promocode)) {
             throw new IllegalArgumentException("Промокод недействителен или истёк");
         }
 
-        // Проверка минимальной суммы заказа
         if (price.compareTo(promocode.getMinOrderAmount()) < 0) {
             throw new IllegalArgumentException("Сумма заказа ниже минимальной для применения промокода");
         }
 
-        // Расчёт скидки
         BigDecimal discount = calculateDiscount(price, promocode);
         BigDecimal discountedPrice = price.subtract(discount);
         if (discountedPrice.compareTo(BigDecimal.ZERO) < 0) {
             discountedPrice = BigDecimal.ZERO;
         }
 
-        // Увеличиваем счётчик использований
         promocode.setUsedCount(promocode.getUsedCount() + 1);
         promocodeRepository.save(promocode);
+        log.info("Применён промокод {} к цене {}. Новая цена: {}", code, price, discountedPrice);
 
         return discountedPrice;
     }
 
-    /**
-     * Расчёт суммы скидки в зависимости от типа промокода.
-     * @param price     исходная цена
-     * @param promocode промокод
-     * @return сумма скидки
-     */
+    // ==================== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ====================
+
     private BigDecimal calculateDiscount(BigDecimal price, Promocode promocode) {
         BigDecimal discountValue = promocode.getValue();
         if (promocode.getDiscountType() == DiscountType.PERCENT) {
-            // Сначала делим процент на 100 для повышения точности, затем умножаем на цену
             BigDecimal percent = discountValue.divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
             return price.multiply(percent).setScale(2, RoundingMode.HALF_UP);
-        } else { // FIXED
+        } else {
             return discountValue;
         }
     }
 
-    /**
-     * Проверка, активен ли промокод в текущий момент.
-     * Учитываются поля active, validFrom, validTo, а также лимит использований.
-     * @param promocode промокод
-     * @return true, если промокод активен и может быть применён
-     */
     public boolean isPromocodeActive(Promocode promocode) {
         if (promocode == null) return false;
         LocalDateTime now = LocalDateTime.now();
@@ -176,16 +168,6 @@ public class PromocodeService {
                 && promocode.getUsedCount() < promocode.getUsageLimit();
     }
 
-    // ------------------------------------------------------------
-    // Вспомогательные методы (если необходимы отдельно)
-    // ------------------------------------------------------------
-
-    /**
-     * Увеличить счётчик использований промокода (без проверок активности).
-     * <b>Внимание:</b> этот метод не содержит проверок активности и лимита,
-     * он предназначен только для случаев, когда применение уже проверено отдельно.
-     * Для обычного сценария используйте {@link #applyPromocode(BigDecimal, String)}.
-     */
     @Transactional
     public void incrementUsage(String code) {
         Promocode promocode = promocodeRepository.findByCode(code)
@@ -198,19 +180,20 @@ public class PromocodeService {
         return promocodeRepository.findAll();
     }
 
-    public Promocode getPromocodeById(Long id){
-        return promocodeRepository.findById(id).
-                orElseThrow(()->
-                        new NoSuchElementException("промокод отсутсвует"));
+    public Promocode getPromocodeById(Long id) {
+        return promocodeRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Промокод отсутствует"));
     }
 
+    /**
+     * Обновление промокода (с параметрами).
+     */
     @Transactional
     public void updatePromocode(Long id, String code, DiscountType discountType,
                                 BigDecimal value, BigDecimal minOrderAmount,
                                 Integer usageLimit, LocalDateTime validFrom,
                                 LocalDateTime validTo, boolean active) {
         Promocode existing = getPromocodeById(id);
-        // обновляем поля (с проверками)
         existing.setCode(code.trim().toUpperCase());
         existing.setDiscountType(discountType);
         existing.setValue(value);
@@ -220,11 +203,30 @@ public class PromocodeService {
         existing.setUsageLimit(usageLimit);
         existing.setActive(active);
         promocodeRepository.save(existing);
+        log.info("Обновлён промокод id={}", id);
+    }
+
+    /**
+     * Обновление промокода из объекта (удобно для @ModelAttribute).
+     */
+    @Transactional
+    public void updatePromocode(Long id, Promocode promocode) {
+        updatePromocode(
+                id,
+                promocode.getCode(),
+                promocode.getDiscountType(),
+                promocode.getValue(),
+                promocode.getMinOrderAmount(),
+                promocode.getUsageLimit(),
+                promocode.getValidFrom(),
+                promocode.getValidTo(),
+                promocode.isActive()
+        );
     }
 
     @Transactional
-    public void deletePromocode(Long id){
+    public void deletePromocode(Long id) {
         promocodeRepository.deleteById(id);
+        log.info("Удалён промокод id={}", id);
     }
-
 }

@@ -39,4 +39,9 @@ public class Certificate {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
     }
+    @Column(name = "revoked")
+    private boolean revoked = false;
+
+    @Column(name = "revoked_date",nullable=false)
+    private LocalDateTime revokedDate;
 }

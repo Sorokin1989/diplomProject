@@ -1,10 +1,98 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<div th:fragment="promo-form" class="categories-card" xmlns:th="http://www.thymeleaf.org">
+    <div class="brand">
+        <h1>Школа красоты</h1>
+        <p>учебный центр индустрии красоты</p>
+    </div>
 
-</body>
-</html>
+    <div class="form-header">
+        <div th:if="${param.error}" class="message-box error">
+            <i class="fas fa-circle-exclamation"></i>
+            <span th:text="${param.error}">Ошибка</span>
+        </div>
+        <div th:if="${param.success}" class="message-box success">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${param.success}">Успешно</span>
+        </div>
+        <h2 th:text="${promocode.id != null ? 'Редактирование промокода' : 'Создание промокода'}">Форма промокода</h2>
+        <p>Заполните данные промокода</p>
+    </div>
+
+    <form th:action="@{${promocode.id != null ? '/admin/promocodes/' + promocode.id : '/admin/promocodes'}}"
+          method="post" th:object="${promocode}">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <div class="input-group">
+            <label for="code">Код промокода *</label>
+            <div class="input-field">
+                <i class="fas fa-ticket-alt"></i>
+                <input type="text" id="code" th:field="*{code}" placeholder="Например: SUMMER2025" required>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="discountType">Тип скидки *</label>
+            <div class="input-field">
+                <i class="fas fa-tag"></i>
+                <select id="discountType" th:field="*{discountType}" required>
+                    <option th:each="type : ${discountTypes}" th:value="${type}" th:text="${type.name()}"></option>
+                </select>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="value" id="valueLabel">Скидка *</label>
+            <div class="input-field">
+                <i id="valueIcon" class="fas" th:classappend="${promocode.discountType?.name() == 'FIXED' ? 'fa-ruble-sign' : 'fa-percent'}"></i>
+                <input type="number" id="value" th:field="*{value}" step="0.01" required>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="minOrderAmount">Минимальная сумма заказа (руб.)</label>
+            <div class="input-field">
+                <i class="fas fa-shopping-cart"></i>
+                <input type="number" id="minOrderAmount" th:field="*{minOrderAmount}" step="0.01" placeholder="0">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="validFrom">Дата начала</label>
+            <div class="input-field">
+                <i class="fas fa-calendar-alt"></i>
+                <input type="datetime-local" id="validFrom" th:field="*{validFrom}">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="validTo">Дата окончания</label>
+            <div class="input-field">
+                <i class="fas fa-calendar-check"></i>
+                <input type="datetime-local" id="validTo" th:field="*{validTo}">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="usageLimit">Лимит использований</label>
+            <div class="input-field">
+                <i class="fas fa-chart-line"></i>
+                <input type="number" id="usageLimit" th:field="*{usageLimit}" min="0" placeholder="0 = неограниченно">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label class="checkbox-label">
+                <input type="checkbox" th:field="*{active}" />
+                <span>Активен</span>
+            </label>
+        </div>
+
+        <button type="submit" class="save-btn">
+            <i class="fas fa-save"></i> Сохранить промокод
+        </button>
+    </form>
+
+    <hr>
+    <div class="home-link">
+        <a th:href="@{/admin/promocodes}">Вернуться к списку промокодов</a>
+    </div>
+</div>

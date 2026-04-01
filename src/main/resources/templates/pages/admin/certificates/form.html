@@ -1,0 +1,63 @@
+<div th:fragment="admin-certificate-form" class="categories-card">
+    <div class="brand">
+        <h1>Школа красоты</h1>
+        <p>учебный центр индустрии красоты</p>
+    </div>
+
+    <div class="form-header">
+        <div th:if="${param.error}" class="message-box error">
+            <i class="fas fa-circle-exclamation"></i>
+            <span th:text="${param.error}">Ошибка</span>
+        </div>
+        <div th:if="${param.success}" class="message-box success">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${param.success}">Успешно</span>
+        </div>
+        <h2>Создание сертификата вручную</h2>
+        <p>Выберите пользователя, курс и загрузите файл сертификата</p>
+    </div>
+
+    <form th:action="@{/admin/certificates/new}" method="post" enctype="multipart/form-data">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <div class="input-group">
+            <label for="userId">Пользователь *</label>
+            <div class="input-field">
+                <i class="fas fa-user"></i>
+                <select id="userId" name="userId" required>
+                    <option value="">-- Выберите пользователя --</option>
+                    <option th:each="user : ${users}" th:value="${user.id}" th:text="${user.username} + ' (' + ${user.email} + ')'"></option>
+                </select>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="courseId">Курс *</label>
+            <div class="input-field">
+                <i class="fas fa-book"></i>
+                <select id="courseId" name="courseId" required>
+                    <option value="">-- Выберите курс --</option>
+                    <option th:each="course : ${courses}" th:value="${course.id}" th:text="${course.title}"></option>
+                </select>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="certificateFile">Файл сертификата *</label>
+            <div class="input-field">
+                <i class="fas fa-file-pdf"></i>
+                <input type="file" id="certificateFile" name="certificateFile" accept=".pdf,.jpg,.png" required>
+            </div>
+            <small>Поддерживаемые форматы: PDF, JPG, PNG</small>
+        </div>
+
+        <button type="submit" class="save-btn">
+            <i class="fas fa-upload"></i> Создать и загрузить
+        </button>
+    </form>
+
+    <hr>
+    <div class="home-link">
+        <a th:href="@{/admin/certificates}">Вернуться к списку</a>
+    </div>
+</div>

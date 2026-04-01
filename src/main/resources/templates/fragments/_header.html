@@ -16,7 +16,10 @@
         <nav class="main-nav">
             <ul class="nav-list">
                 <li><a th:href="@{/}" class="nav-link">Главная</a></li>
-                <li><a th:href="@{/categories}" class="nav-link">Категории</a></li>
+
+                <li sec:authorize="!hasRole('ADMIN')">
+                    <a th:href="@{/categories}" class="nav-link">Категории</a>
+                </li>
 
                 <!-- Блок для анонимного пользователя -->
                 <li sec:authorize="isAnonymous()">

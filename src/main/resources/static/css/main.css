@@ -1385,6 +1385,7 @@ ul.nav-list {
     border: none;
     background: none;
     font-family: inherit;
+
 }
 
 .edit-btn-small {
@@ -1533,4 +1534,237 @@ ul.nav-list {
     text-align: center;
     color: #6c757d;
     padding: 2rem;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 2rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+.status-badge.active {
+    background: #d4edda;
+    color: #155724;
+}
+.status-badge.inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+.actions-cell {
+    white-space: nowrap;
+}
+.edit-btn-small, .delete-btn-small {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    margin: 0 0.25rem;
+    padding: 0.25rem;
+    transition: color 0.2s;
+}
+.edit-btn-small {
+    color: #9b59b6;
+}
+.edit-btn-small:hover {
+    color: #7d3c98;
+}
+.delete-btn-small {
+    color: #e74c3c;
+}
+.delete-btn-small:hover {
+    color: #c0392b;
+}
+.empty-message {
+    text-align: center;
+    color: #6c757d;
+    padding: 2rem;
+}
+.orders-table-container {
+    overflow-x: auto;
+}
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.orders-table th, .orders-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+.orders-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #2c3e50;
+}
+.orders-table tr:hover {
+    background: #f8f9fa;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+.checkbox-label input {
+    width: auto;
+    margin: 0;
+}
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 2rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+.status-badge.active {
+    background: #d4edda;
+    color: #155724;
+}
+.status-badge.inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+.actions-cell {
+    white-space: nowrap;
+}
+.edit-btn-small, .delete-btn-small {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    margin: 0 0.25rem;
+    padding: 0.25rem;
+    transition: color 0.2s;
+}
+.edit-btn-small {
+    color: #9b59b6;
+}
+.edit-btn-small:hover {
+    color: #7d3c98;
+}
+.delete-btn-small {
+    color: #e74c3c;
+}
+.delete-btn-small:hover {
+    color: #c0392b;
+}
+.empty-message {
+    text-align: center;
+    color: #6c757d;
+    padding: 2rem;
+}
+.orders-table-container {
+    overflow-x: auto;
+}
+.orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.orders-table th, .orders-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+.orders-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #2c3e50;
+}
+.orders-table tr:hover {
+    background: #f8f9fa;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+.checkbox-label input {
+    width: auto;
+    margin: 0;
+}
+
+.view-btn-small {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #3498db;
+    font-size: 1.2rem;
+    margin: 0 0.25rem;
+}
+.view-btn-small:hover {
+    color: #2980b9;
+}
+.revoke-btn-small {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #e74c3c;
+    font-size: 1.2rem;
+    margin: 0 0.25rem;
+}
+.revoke-btn-small:hover {
+    color: #c0392b;
+}
+.status-badge.active {
+    background: #d4edda;
+    color: #155724;
+}
+.status-badge.revoked {
+    background: #f8d7da;
+    color: #721c24;
+}
+.certificate-details {
+    background: #f9f9f9;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    margin: 1rem 0;
+}
+.detail-row {
+    margin-bottom: 0.75rem;
+}
+.detail-row strong {
+    display: inline-block;
+    width: 180px;
+    color: #2c3e50;
+}
+.download-link {
+    color: #9b59b6;
+    text-decoration: none;
+}
+.download-link:hover {
+    text-decoration: underline;
+}
+.btn-danger {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-left: 2rem;
+
+}
+.btn-danger:hover {
+    background: #c0392b;
+}
+.status-badge.active {
+    background: #d4edda;
+    color: #155724;
+}
+.status-badge.revoked {
+    background: #f8d7da;
+    color: #721c24;
 }

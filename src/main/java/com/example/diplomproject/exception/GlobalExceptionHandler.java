@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.NoSuchElementException;
 
@@ -25,6 +26,12 @@ public class GlobalExceptionHandler {
         log.warn("Bad request: {}", ex.getMessage());
         model.addAttribute("error", ex.getMessage());
         return "pages/errors/400";
+    }
+    @ExceptionHandler(NoResourceFoundException.class)
+    public String handleNoResourceFound(NoResourceFoundException ex, Model model) {
+        log.debug("Static resource not found: {}", ex.getResourcePath());
+        model.addAttribute("error", "Запрашиваемый ресурс не найден");
+        return "pages/errors/404";  // можно использовать вашу существующую страницу 404
     }
     @ExceptionHandler(Exception.class)
     public String handleGenericException(Exception ex, Model model) {

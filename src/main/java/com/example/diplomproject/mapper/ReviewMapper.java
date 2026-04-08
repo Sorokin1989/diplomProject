@@ -9,47 +9,64 @@ import org.springframework.stereotype.Component;
 public class ReviewMapper {
 
     public ReviewDto toReviewDTO(Review review) {
-
-        if (review == null)
-            return null;
+        if (review == null) return null;
 
         ReviewDto reviewDto = new ReviewDto();
-
         reviewDto.setId(review.getId());
 
-        if(review.getUser()!=null){
-        reviewDto.setUserId(review.getUser().getId());
-        reviewDto.setUsername(review.getUser().getUsername());
+        if (review.getUser() != null) {
+            reviewDto.setUserId(review.getUser().getId());
+            reviewDto.setUsername(review.getUser().getUsername());
         }
 
-        if (review.getCourse() !=null){
-        reviewDto.setCourseId(review.getCourse().getId());
-        reviewDto.setCourseTitle(review.getCourse().getTitle());
+        if (review.getCourse() != null) {
+            reviewDto.setCourseId(review.getCourse().getId());
+            reviewDto.setCourseTitle(review.getCourse().getTitle());
         }
 
         reviewDto.setText(review.getText());
         reviewDto.setRating(review.getRating());
-
         reviewDto.setCreatedAt(review.getCreatedAt());
         reviewDto.setModerationStatus(String.valueOf(review.getModerationStatus()));
 
-        return  reviewDto;
+        // Если в сущности есть updatedAt, добавьте:
+        // reviewDto.setUpdatedAt(review.getUpdatedAt());
+
+        return reviewDto;
     }
 
-    public Review fromReviewDtoToEntity(ReviewDto reviewDto){
-        if (reviewDto==null){
-            return null;
-        }
+    /**
+     * Преобразование DTO в новую сущность (только для создания).
+     * Поле createdAt НЕ копируется – оно установится автоматически.
+     */
+    public Review toNewEntity(ReviewDto reviewDto) {
+        if (reviewDto == null) return null;
 
-        Review review=new Review();
-        review.setId(reviewDto.getId());
+        Review review = new Review();
         review.setText(reviewDto.getText());
         review.setRating(reviewDto.getRating());
-        review.setCreatedAt(reviewDto.getCreatedAt());
-        review.setModerationStatus(ModerationStatus.valueOf(reviewDto.getModerationStatus()));
-
+        if (reviewDto.getModerationStatus() != null) {
+            review.setModerationStatus(ModerationStatus.valueOf(reviewDto.getModerationStatus()));
+        }
+        // Связи (user, course) устанавливаются отдельно в сервисе
         return review;
-
     }
 
+    /**
+     * Обновление существующей сущности из DTO (для редактирования).
+     * Не трогает id, createdAt, связи.
+     */
+    public void updateEntityFromDto(Review review, ReviewDto reviewDto) {
+        if (reviewDto == null) return;
+        if (reviewDto.getText() != null) {
+            review.setText(reviewDto.getText());
+        }
+        if (reviewDto.getRating() != null) {
+            review.setRating(reviewDto.getRating());
+        }
+        if (reviewDto.getModerationStatus() != null) {
+            review.setModerationStatus(ModerationStatus.valueOf(reviewDto.getModerationStatus()));
+        }
+        // updatedAt обычно обновляется автоматически через @UpdateTimestamp
+    }
 }

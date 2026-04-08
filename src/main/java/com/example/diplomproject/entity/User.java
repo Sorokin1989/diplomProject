@@ -69,9 +69,9 @@ public class User implements UserDetails {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "user")
     private List<CourseAccess> courseAccesses = new ArrayList<>();
 
-    @ToString.Exclude
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user", orphanRemoval = true, cascade = CascadeType.ALL)
-    private List<Bonus> bonuses;
+//    @ToString.Exclude
+//    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user", orphanRemoval = true, cascade = CascadeType.ALL)
+//    private List<Bonus> bonuses;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

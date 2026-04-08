@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -40,6 +41,10 @@ public class Review {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ModerationStatus moderationStatus=ModerationStatus.PENDING;
@@ -47,6 +52,6 @@ public class Review {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-
     }
+    private boolean hidden = false;
 }

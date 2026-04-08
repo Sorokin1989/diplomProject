@@ -1,6 +1,5 @@
 package com.example.diplomproject.entity;
 
-
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -38,33 +37,24 @@ public class Course {
     @Column
     private boolean isActive = true;
 
-    @Column
-    private String imageUrl;
-
-    @Column(nullable= false)
+    @Column(nullable = false)
     private LocalDateTime createdAt;
 
     @PrePersist
     protected void onCreate() {
-        createdAt=LocalDateTime.now();
+        createdAt = LocalDateTime.now();
     }
 
     @Column
     private Integer reviewCount = 0;
 
-
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
 
-
-    @ToString.Exclude
-    @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
-    private List<Review> reviews = new ArrayList<>();
-
     @ToString.Exclude
     @OneToMany(mappedBy = "course", fetch = LAZY)
-    private List<Bonus> bonuses = new ArrayList<>();
+    private List<Review> reviews = new ArrayList<>();
 
     @ToString.Exclude
     @OneToMany(mappedBy = "course", fetch = LAZY)
@@ -72,28 +62,36 @@ public class Course {
 
     @ToString.Exclude
     @OneToMany(mappedBy = "course", fetch = LAZY)
-    private List<OrderItem> orderItems = new ArrayList();
-
+    private List<OrderItem> orderItems = new ArrayList<>();
 
     @ToString.Exclude
     @OneToMany(mappedBy = "course", fetch = LAZY)
-    private List<CartItem> cartItems = new ArrayList();
+    private List<CartItem> cartItems = new ArrayList<>();
 
     @ToString.Exclude
-    @ManyToMany(mappedBy = "applicableCourses",fetch=LAZY)
-    private List<Promocode> promoCodes=new ArrayList();
+    @ManyToMany(mappedBy = "applicableCourses", fetch = LAZY)
+    private List<Promocode> promoCodes = new ArrayList<>();
 
     @ToString.Exclude
     @ManyToMany(mappedBy = "applicableCourses")
-    private List<Discount>discounts=new ArrayList();
+    private List<Discount> discounts = new ArrayList<>();
 
     @ToString.Exclude
-    @OneToMany(mappedBy="course",fetch = LAZY)
-    private List<CourseAccess>courseAccesses=new ArrayList();
+    @OneToMany(mappedBy = "course", fetch = LAZY)
+    private List<CourseAccess> courseAccesses = new ArrayList<>();
 
-    @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "order_id")
-    private Order order;
+    // Связь с изображениями (множественные)
+    @ToString.Exclude
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("sortOrder ASC")
+    private List<CourseImage> images = new ArrayList<>();
 
-
+    // Вспомогательный метод для получения главного изображения
+    public String getMainImageUrl() {
+        return images.stream()
+                .filter(CourseImage::isMain)
+                .findFirst()
+                .map(CourseImage::getFilePath)
+                .orElse(null);
+    }
 }

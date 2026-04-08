@@ -16,6 +16,7 @@ public class CartItemDto {
     private String courseTitle;
     private BigDecimal price;
     private int quantity;
+    private String imageUrl; // URL главного изображения курса
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime addedAt;

@@ -33,12 +33,18 @@ public class PaymentService {
         if (paymentMethod == null || paymentMethod.trim().isEmpty()) {
             throw new IllegalArgumentException("Метод оплаты должен указываться");
         }
+        // Проверяем, нет ли уже платежа для этого заказа
+        if (paymentRepository.findByOrder(order).isPresent()) {
+            throw new IllegalStateException("Платёж для этого заказа уже существует");
+        }
+
         Payment payment = new Payment();
         payment.setOrder(order);
         payment.setTotalSum(order.getTotalSum());
         payment.setPaymentMethod(paymentMethod);
-        payment.setCreatedAt(LocalDateTime.now());
         payment.setPaymentStatus(PaymentStatus.PENDING);
+        payment.setCurrency("RUB");
+        // createdAt и updatedAt установятся в @PrePersist
         return paymentRepository.save(payment);
     }
 
@@ -48,6 +54,9 @@ public class PaymentService {
     @Transactional
     public Payment confirmPayment(Long paymentId) {
         Payment payment = getPaymentById(paymentId);
+        if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
+            throw new IllegalStateException("Невозможно подтвердить платёж со статусом " + payment.getPaymentStatus());
+        }
         payment.setPaymentStatus(PaymentStatus.SUCCESS);
         return paymentRepository.save(payment);
     }
@@ -58,6 +67,9 @@ public class PaymentService {
     @Transactional
     public Payment cancelPayment(Long paymentId) {
         Payment payment = getPaymentById(paymentId);
+        if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
+            throw new IllegalStateException("Невозможно отменить платёж со статусом " + payment.getPaymentStatus());
+        }
         payment.setPaymentStatus(PaymentStatus.CANCELLED);
         return paymentRepository.save(payment);
     }
@@ -66,8 +78,8 @@ public class PaymentService {
      * Получение платежа по ID
      */
     public Payment getPaymentById(Long id) {
-        return paymentRepository.findById(id).
-                orElseThrow(() -> new NoSuchElementException("Платёж с таким ID отсутствует"));
+        return paymentRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Платёж с таким ID отсутствует"));
     }
 
     /**
@@ -84,5 +96,4 @@ public class PaymentService {
     public Optional<Payment> getPaymentByOrder(Order order) {
         return paymentRepository.findByOrder(order);
     }
-
 }

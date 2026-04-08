@@ -55,25 +55,32 @@ public class CertificateService {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("Файл сертификата не загружен");
         }
-
-        // По желанию можно разрешить повторную выдачу или запретить – здесь запрещаем
         if (certificateRepository.existsByUserAndCourse(user, course)) {
             throw new IllegalStateException("Сертификат на этот курс уже существует");
         }
 
-        // Сохраняем файл
-        String fileUrl = saveCertificateFile(file);
-
+        // Сначала создаём запись без URL
         Certificate certificate = new Certificate();
         certificate.setUser(user);
         certificate.setCourse(course);
         certificate.setCreatedAt(LocalDateTime.now());
         certificate.setCertificateId(generateCertificateNumber());
-        certificate.setCertificateUrl(fileUrl);
         certificate.setRevoked(false);
+        // URL пока не устанавливаем
 
-        certificateRepository.save(certificate);
-        log.info("Создан ручной сертификат для пользователя {} по курсу {}", user.getUsername(), course.getTitle());
+        // Сохраняем запись в БД (чтобы получить ID, если нужно)
+        Certificate saved = certificateRepository.save(certificate);
+
+        // Теперь сохраняем файл и обновляем URL
+        try {
+            String fileUrl = saveCertificateFile(file);
+            saved.setCertificateUrl(fileUrl);
+            certificateRepository.save(saved); // обновляем
+            log.info("Создан ручной сертификат для пользователя {} по курсу {}", user.getUsername(), course.getTitle());
+        } catch (Exception e) {
+            // Если сохранение файла не удалось, удаляем запись из БД (откат транзакции)
+            throw new RuntimeException("Ошибка сохранения файла сертификата, операция отменена", e);
+        }
     }
 
     private String saveCertificateFile(MultipartFile file) {
@@ -98,7 +105,7 @@ public class CertificateService {
     }
 
     public Certificate getCertificateById(Long id) {
-        return certificateRepository.findById(id)
+        return certificateRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new NoSuchElementException("Сертификат не найден"));
     }
 
@@ -110,7 +117,7 @@ public class CertificateService {
         if (user == null) {
             throw new IllegalArgumentException("Пользователь не может быть null");
         }
-        return certificateRepository.findByUser(user);
+        return certificateRepository.findByUserWithDetails(user);
     }
 
     public List<Certificate> getCertificatesByCourse(Course course) {

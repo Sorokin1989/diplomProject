@@ -23,7 +23,7 @@ public class Cart {
     @JoinColumn(name="user_id",unique=true,nullable=false)
     private User user;
 
-    @Column(nullable = false,unique = true)
+    @Column(unique = true)
     private String sessionId;
 
     @Column(name ="created_at",nullable =false)

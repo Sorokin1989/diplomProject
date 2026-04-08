@@ -4,6 +4,7 @@ import com.example.diplomproject.entity.Cart;
 import com.example.diplomproject.entity.CartItem;
 import com.example.diplomproject.entity.Course;
 import com.example.diplomproject.repository.CartItemRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +26,10 @@ public class CartItemService {
      */
     @Transactional
     public CartItem addCourseToCart(Cart cart, Course course, int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Количество должно быть больше 0");
+        }
+
         // Проверяем, есть ли уже такой курс в корзине
         CartItem existingItem = cartItemRepository.findByCartAndCourse(cart, course);
         if (existingItem != null) {
@@ -36,6 +41,7 @@ public class CartItemService {
             CartItem newItem = new CartItem();
             newItem.setCart(cart);
             newItem.setCourse(course);
+            newItem.setPrice(course.getPrice());
             newItem.setQuantity(quantity);
             return cartItemRepository.save(newItem);
         }
@@ -46,20 +52,27 @@ public class CartItemService {
      */
     @Transactional
     public void removeCartItem(Long cartItemId) {
+        if (!cartItemRepository.existsById(cartItemId)) {
+            throw new EntityNotFoundException("Элемент корзины не найден с id: " + cartItemId);
+        }
         cartItemRepository.deleteById(cartItemId);
     }
 
     /**
-     * Обновление количества курсов в элементе корзины
+     * Обновление количества курсов в элементе корзины.
+     * Если quantity <= 0, элемент удаляется.
+     * @return CartItem если количество > 0, иначе null (элемент удалён)
      */
     @Transactional
     public CartItem updateQuantity(Long cartItemId, int quantity) {
-        if (quantity <= 0) {
-            throw new IllegalArgumentException("Количество должно быть больше 0");
-        }
-
         CartItem item = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new IllegalArgumentException("Элемент корзины не найден"));
+                .orElseThrow(() -> new EntityNotFoundException("Элемент корзины не найден с id: " + cartItemId));
+
+        if (quantity <= 0) {
+            // Удаляем элемент, если количество равно нулю или отрицательное
+            cartItemRepository.delete(item);
+            return null;
+        }
 
         item.setQuantity(quantity);
         return cartItemRepository.save(item);
@@ -85,7 +98,7 @@ public class CartItemService {
      */
     public CartItem getCartItemById(Long cartItemId) {
         return cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new IllegalArgumentException("Элемент корзины не найден"));
+                .orElseThrow(() -> new EntityNotFoundException("Элемент корзины не найден с id: " + cartItemId));
     }
 
     /**

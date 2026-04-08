@@ -1,10 +1,10 @@
 package com.example.diplomproject.entity;
 
-import com.example.diplomproject.enums.OrderStatus;
 import com.example.diplomproject.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -27,24 +27,17 @@ public class Payment {
     private BigDecimal totalSum;
 
     @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private OrderStatus orderStatus;
-
-    @Column(nullable = false)
     private String currency = "RUB";
 
     @Column(name = "failure_message", length = 500)
     private String failureMessage;
 
-
     @Column(name = "payment_method", nullable = false)
     private String paymentMethod;
-
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
-
 
     @Column(name = "transaction_id", unique = true)
     private String transactionId;
@@ -55,19 +48,22 @@ public class Payment {
     @Column(name = "payment_gateway")
     private String paymentGateway;
 
-
-    @Column(name = "created_at", updatable = false,nullable = false)
+    @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at",nullable=false)
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
-        updatedAt=createdAt;
+        updatedAt = createdAt;
         if (paymentStatus == null) {
             this.paymentStatus = PaymentStatus.PENDING;
+        }
+        if (currency == null) {
+            this.currency = "RUB";
         }
     }
 
@@ -75,6 +71,4 @@ public class Payment {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-
-
 }

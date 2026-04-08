@@ -14,10 +14,12 @@ public class ReviewDto {
     private Long courseId;
     private String courseTitle;
     private String text;
-    private int rating;
+    private Integer rating;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime updatedAt;
     private String moderationStatus;
 
 

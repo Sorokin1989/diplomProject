@@ -31,6 +31,8 @@ public class CertificateMapper {
 
         certificateDto.setCertificateId(certificate.getCertificateId());
         certificateDto.setCertificateUrl(certificate.getCertificateUrl());
+        certificateDto.setRevoked(certificate.isRevoked());
+        certificateDto.setRevokedDate(certificate.getRevokedDate()); // или getRevokedDate, смотрите по вашей сущности
 
         return certificateDto;
     }
@@ -43,6 +45,8 @@ public class CertificateMapper {
         certificate.setCreatedAt(certificateDto.getCreatedAt());
         certificate.setCertificateId(certificateDto.getCertificateId());
         certificate.setCertificateUrl(certificateDto.getCertificateUrl());
+        certificate.setRevoked(certificateDto.isRevoked());
+        certificate.setRevokedDate(certificateDto.getRevokedDate());
 
         return certificate;
 

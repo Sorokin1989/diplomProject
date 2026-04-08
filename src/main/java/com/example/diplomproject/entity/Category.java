@@ -24,8 +24,8 @@ public class Category {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "image_url")
-    private String imageUrl;
+//    @Column(name = "image_url")
+//    private String imageUrl;
 
     @ToString.Exclude
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
@@ -38,4 +38,18 @@ public class Category {
     @ToString.Exclude
     @ManyToMany(mappedBy = "applicableCategories",fetch=FetchType.LAZY)
     private List<Discount> discounts = new ArrayList<>();
+
+    @ToString.Exclude
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("sortOrder ASC")
+    private List<CategoryImage> images = new ArrayList<>();
+
+    // Вспомогательный метод для получения главного изображения
+    public String getMainImageUrl() {
+        return images.stream()
+                .filter(CategoryImage::isMain)
+                .findFirst()
+                .map(CategoryImage::getFilePath)
+                .orElse(null);
+    }
 }

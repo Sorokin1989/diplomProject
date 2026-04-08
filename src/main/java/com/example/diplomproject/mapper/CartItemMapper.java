@@ -25,6 +25,7 @@ public class CartItemMapper {
         cartItemDto.setPrice(cartItem.getPrice() != null ? cartItem.getPrice() : BigDecimal.ZERO);
         cartItemDto.setAddedAt(cartItem.getAddedAt() != null ? cartItem.getAddedAt() : LocalDateTime.now());
         cartItemDto.setQuantity(cartItem.getQuantity());
+        cartItemDto.setImageUrl(cartItem.getCourse().getMainImageUrl());
 
         return cartItemDto;
     }

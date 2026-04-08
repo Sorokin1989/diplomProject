@@ -24,43 +24,20 @@ public class ReviewService {
         this.orderService = orderService;
     }
 
-    /**
-     * Создание нового отзыва.
-     * @param user     пользователь, оставляющий отзыв
-     * @param course   курс, на который оставляется отзыв
-     * @param text     текст отзыва
-     * @param rating   оценка (1-5)
-     * @return сохранённый отзыв
-     */
     @Transactional
     public Review createReview(User user, Course course, String text, Integer rating) {
-        // 1. Валидация входных данных
-        if (user == null) {
-            throw new IllegalArgumentException("Пользователь не может быть null");
-        }
-        if (course == null) {
-            throw new IllegalArgumentException("Курс не может быть null");
-        }
-        if (text == null || text.trim().isEmpty()) {
-            throw new IllegalArgumentException("Содержание отзыва должно содержать текст");
-        }
-        if (rating == null || rating < 1 || rating > 5) {
-            throw new IllegalArgumentException("Рейтинг должен быть от 1 до 5");
-        }
+        if (user == null) throw new IllegalArgumentException("Пользователь не может быть null");
+        if (course == null) throw new IllegalArgumentException("Курс не может быть null");
+        if (text == null || text.trim().isEmpty()) throw new IllegalArgumentException("Содержание отзыва должно содержать текст");
+        if (rating == null || rating < 1 || rating > 5) throw new IllegalArgumentException("Рейтинг должен быть от 1 до 5");
 
-        // 2. Проверка, что пользователь уже не оставлял отзыв на этот курс
-        //    Используем метод existsByUserAndCourse, если он объявлен в репозитории.
-        //    Если нет – следует добавить его: boolean existsByUserAndCourse(User user, Course course);
         if (reviewRepository.existsByUserAndCourse(user, course)) {
             throw new IllegalArgumentException("Вы уже оставили отзыв на этот курс");
         }
 
-        // 3. Бизнес-правило: пользователь может оставить отзыв только после покупки курса.
-        //    Для этого необходимо внедрить сервис заказов и проверить наличие завершённого заказа.
-        //    В данном примере оставляем заглушку, но в реальном приложении следует реализовать.
-         if (!orderService.hasUserPurchasedCourse(user, course)) {
-             throw new SecurityException("Вы не можете оставить отзыв на курс, который не приобрели");
-         }
+        if (!orderService.hasUserPurchasedCourse(user, course)) {
+            throw new SecurityException("Вы не можете оставить отзыв на курс, который не приобрели");
+        }
 
         Review review = new Review();
         review.setUser(user);
@@ -68,99 +45,124 @@ public class ReviewService {
         review.setText(text.trim());
         review.setRating(rating);
         review.setCreatedAt(LocalDateTime.now());
+        review.setHidden(false);
 
         return reviewRepository.save(review);
     }
 
-    /**
-     * Получение отзыва по ID.
-     * @param id идентификатор отзыва
-     * @return найденный отзыв
-     * @throws NoSuchElementException если отзыв не найден
-     */
     public Review getReviewById(Long id) {
         return reviewRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Отзыв не найден!"));
     }
 
-    /**
-     * Получение всех отзывов курса.
-     * @param course курс
-     * @return список отзывов (может быть пустым)
-     */
     public List<Review> getReviewsByCourse(Course course) {
-        if (course == null) {
-            throw new IllegalArgumentException("Не указан курс для получения списка отзывов.");
-        }
-        return reviewRepository.findByCourse(course);
+        if (course == null) throw new IllegalArgumentException("Не указан курс");
+        // Используем метод с сортировкой
+        return reviewRepository.findByCourseAndHiddenFalseOrderByCreatedAtDesc(course);
     }
 
-    /**
-     * Обновление отзыва.
-     * @param id          идентификатор отзыва
-     * @param text        новый текст (если не null и не пустой)
-     * @param rating      новая оценка (если не null, проверяется диапазон)
-     * @param currentUser пользователь, выполняющий операцию (должен быть автором отзыва)
-     * @return обновлённый отзыв
-     * @throws SecurityException если пользователь не является автором
-     */
     @Transactional
     public Review updateReview(Long id, String text, Integer rating, User currentUser) {
         Review review = getReviewById(id);
-
-        // Проверка прав: только автор может редактировать
         if (!review.getUser().equals(currentUser)) {
             throw new SecurityException("Вы не можете редактировать чужой отзыв");
         }
 
-        // Обновление текста
+        if ((text == null || text.trim().isEmpty()) && rating == null) {
+            throw new IllegalArgumentException("Не указаны данные для обновления");
+        }
+
         if (text != null && !text.trim().isEmpty()) {
             review.setText(text.trim());
         }
-
-        // Обновление рейтинга с валидацией
         if (rating != null) {
-            if (rating < 1 || rating > 5) {
-                throw new IllegalArgumentException("Рейтинг должен быть от 1 до 5");
-            }
+            if (rating < 1 || rating > 5) throw new IllegalArgumentException("Рейтинг должен быть от 1 до 5");
             review.setRating(rating);
         }
-
-        // Явный save не обязателен, т.к. объект находится в persistence context,
-        // но оставляем для наглядности.
         return reviewRepository.save(review);
     }
 
-    /**
-     * Удаление отзыва.
-     * @param id          идентификатор отзыва
-     * @param currentUser пользователь, выполняющий операцию (должен быть автором)
-     * @throws SecurityException если пользователь не является автором
-     */
     @Transactional
     public void deleteReview(Long id, User currentUser) {
         Review review = getReviewById(id);
-
         if (!review.getUser().equals(currentUser)) {
             throw new SecurityException("Вы не можете удалить чужой отзыв");
         }
-
         reviewRepository.delete(review);
     }
 
-    /**
-     * Получение среднего рейтинга курса.
-     * @param course курс
-     * @return средний рейтинг (0.0, если отзывов нет)
-     */
     public double averageRateForCourse(Course course) {
         List<Review> reviews = getReviewsByCourse(course);
-        if (reviews.isEmpty()) {
-            return 0.0;
-        }
-        return reviews.stream()
-                .mapToInt(Review::getRating)
-                .average()
-                .orElse(0.0);
+        if (reviews.isEmpty()) return 0.0;
+        return reviews.stream().mapToInt(Review::getRating).average().orElse(0.0);
     }
+
+    public boolean hasUserReviewedCourse(User user, Course course) {
+        return reviewRepository.existsByUserAndCourse(user, course);
+    }
+
+    // ========== Административные методы ==========
+
+    public List<Review> getAllReviews() {
+        // Сортировка через findAll с Sort (если нужна, можно оставить без сортировки)
+        return reviewRepository.findAll(); // при желании добавьте сортировку
+    }
+
+    public List<Review> getReviewsByCourseId(Long courseId) {
+        return reviewRepository.findByCourseIdOrderByCreatedAtDesc(courseId);
+    }
+
+    public List<Review> getReviewsByUserId(Long userId) {
+        return reviewRepository.findByUserIdOrderByCreatedAtDesc(userId);
+    }
+
+    public List<Review> getReviewsWithMinRating(Integer minRating) {
+        return reviewRepository.findByRatingGreaterThanEqualOrderByCreatedAtDesc(minRating);
+    }
+
+    @Transactional
+    public Review updateReviewByAdmin(Long reviewId, String text, Integer rating) {
+        Review review = getReviewById(reviewId);
+        if ((text == null || text.trim().isEmpty()) && rating == null) {
+            throw new IllegalArgumentException("Не указаны данные для обновления");
+        }
+        if (text != null && !text.trim().isEmpty()) {
+            review.setText(text.trim());
+        }
+        if (rating != null) {
+            if (rating < 1 || rating > 5) throw new IllegalArgumentException("Рейтинг должен быть от 1 до 5");
+            review.setRating(rating);
+        }
+        return reviewRepository.save(review);
+    }
+
+    @Transactional
+    public void deleteReviewById(Long reviewId) {
+        Review review = getReviewById(reviewId);
+        reviewRepository.delete(review);
+    }
+
+    @Transactional
+    public void hideReview(Long reviewId) {
+        Review review = getReviewById(reviewId);
+        review.setHidden(true);
+        reviewRepository.save(review);
+    }
+
+    @Transactional
+    public void showReview(Long reviewId) {
+        Review review = getReviewById(reviewId);
+        review.setHidden(false);
+        reviewRepository.save(review);
+    }
+
+    public List<Review> findByCourseId(Long id) {
+        return reviewRepository.findByCourseId(id);
+    }
+
+//    public List<Review> getReviewsByCourseId(Long courseId) {
+//        return reviewRepository.findByCourseId(courseId);
+//    }
+
+
 }

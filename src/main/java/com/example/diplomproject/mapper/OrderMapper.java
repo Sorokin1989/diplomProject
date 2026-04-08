@@ -43,6 +43,8 @@ public class OrderMapper {
 
         if(order.getPayment()!=null){
         orderDto.setPaymentId(order.getPayment().getId());
+        orderDto.setPaymentType(order.getPayment().getPaymentMethod());   // добавить
+            orderDto.setPaymentStatus(String.valueOf(order.getPayment().getPaymentStatus()));
         }
 
         orderDto.setDiscountAmount(order.getDiscountAmount());

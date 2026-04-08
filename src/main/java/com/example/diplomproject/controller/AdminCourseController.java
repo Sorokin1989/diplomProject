@@ -8,6 +8,7 @@ import com.example.diplomproject.service.CertificateService;
 import com.example.diplomproject.service.CourseService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,14 +16,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Controller
@@ -43,30 +42,40 @@ public class AdminCourseController {
         this.certificateService = certificateService;
     }
 
-    // Список курсов (админ) с возможностью фильтрации по категории
     @GetMapping
-    public String adminList(@RequestParam(required = false) Long categoryId, Model model) {
+    public String adminList(@RequestParam(required = false) Long categoryId,
+                            @RequestParam(required = false) String success,
+                            @RequestParam(required = false) String error,
+                            Model model) {
+        log.info("GET /admin/courses - categoryId={}", categoryId);
         List<Course> courses;
         if (categoryId != null) {
             Category category = categoryService.getCategoryById(categoryId);
             if (category != null) {
                 courses = courseService.getByCategory(category);
                 model.addAttribute("selectedCategory", category);
+                log.debug("Filtered by category: {}", category.getTitle());
             } else {
                 courses = Collections.emptyList();
+                log.warn("Category not found: id={}", categoryId);
             }
         } else {
             courses = courseService.getAllCourses();
+            log.debug("All courses count: {}", courses.size());
         }
         model.addAttribute("courses", courses);
         model.addAttribute("title", "Управление курсами");
         model.addAttribute("content", "pages/admin/courses/admin-list :: admin-courses-content");
+
+        if (success != null) model.addAttribute("success", success);
+        if (error != null) model.addAttribute("error", error);
+
         return "layouts/main";
     }
 
-    // Форма создания курса
     @GetMapping("/new")
     public String showCreateForm(Model model) {
+        log.info("GET /admin/courses/new");
         model.addAttribute("course", new Course());
         model.addAttribute("categories", categoryService.getAllCategories());
         model.addAttribute("title", "Создание курса");
@@ -74,41 +83,45 @@ public class AdminCourseController {
         return "layouts/main";
     }
 
-    // Сохранение курса (с картинкой)
     @PostMapping
     public String createCourse(@ModelAttribute Course course,
                                @RequestParam(value = "categoryId", required = false) Long categoryId,
-                               @RequestParam("imageFile") MultipartFile imageFile,
+                               @RequestParam(value = "newImages", required = false) MultipartFile[] images,
                                RedirectAttributes redirectAttributes) {
+        log.info("POST /admin/courses - create course: title='{}', categoryId={}", course.getTitle(), categoryId);
         if (categoryId == null || categoryId == 0) {
+            log.warn("Category not selected");
             redirectAttributes.addAttribute("error", "Пожалуйста, выберите категорию");
             return "redirect:/admin/courses/new";
         }
 
         Category category = categoryService.getCategoryById(categoryId);
         if (category == null) {
+            log.error("Category id={} not found", categoryId);
             redirectAttributes.addAttribute("error", "Выбранная категория не существует");
             return "redirect:/admin/courses/new";
         }
         course.setCategory(category);
 
         try {
-            if (!imageFile.isEmpty()) {
-                String imagePath = saveImage(imageFile, "courses");
-                course.setImageUrl(imagePath);
+            Course savedCourse = courseService.createNewCourse(course);
+            log.info("Course created with id={}", savedCourse.getId());
+            if (images != null && images.length > 0 && !images[0].isEmpty()) {
+                courseService.addImagesToCourse(savedCourse.getId(), images);
+                log.debug("Added {} images to course id={}", images.length, savedCourse.getId());
             }
-            courseService.createNewCourse(course);
             redirectAttributes.addAttribute("success", "Курс успешно создан");
             return "redirect:/admin/courses";
         } catch (Exception e) {
+            log.error("Error creating course: {}", e.getMessage(), e);
             redirectAttributes.addAttribute("error", "Ошибка создания: " + e.getMessage());
             return "redirect:/admin/courses/new";
         }
     }
 
-    // Форма редактирования курса
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Long id, Model model) {
+        log.info("GET /admin/courses/edit/{}", id);
         Course course = courseService.getCourseById(id);
         model.addAttribute("course", course);
         model.addAttribute("categories", categoryService.getAllCategories());
@@ -117,122 +130,131 @@ public class AdminCourseController {
         return "layouts/main";
     }
 
-    // Обновление курса (с картинкой)
     @PostMapping("/{id}")
     public String updateCourse(@PathVariable Long id,
                                @ModelAttribute("course") Course course,
                                @RequestParam("categoryId") Long categoryId,
-                               @RequestParam("imageFile") MultipartFile imageFile,
+                               @RequestParam(value = "newImages", required = false) MultipartFile[] newImages,
                                RedirectAttributes redirectAttributes) {
+        log.info("POST /admin/courses/{} - update, title='{}', categoryId={}", id, course.getTitle(), categoryId);
         try {
             Course existing = courseService.getCourseById(id);
+            if (existing == null) {
+                log.error("Course id={} not found for update", id);
+                redirectAttributes.addAttribute("error", "Курс не найден");
+                return "redirect:/admin/courses";
+            }
 
             if (categoryId == null || categoryId == 0) {
+                log.warn("Category not selected for update");
                 redirectAttributes.addAttribute("error", "Пожалуйста, выберите категорию");
                 return "redirect:/admin/courses/edit/" + id;
             }
             Category category = categoryService.getCategoryById(categoryId);
             if (category == null) {
+                log.error("Category id={} not found", categoryId);
                 redirectAttributes.addAttribute("error", "Выбранная категория не существует");
                 return "redirect:/admin/courses/edit/" + id;
             }
             course.setCategory(category);
 
-            if (!imageFile.isEmpty()) {
-                String newImagePath = saveImage(imageFile, "courses");
-                if (newImagePath != null) {
-                    deleteOldImage(existing.getImageUrl());
-                    course.setImageUrl(newImagePath);
-                }
-            } else {
-                course.setImageUrl(existing.getImageUrl());
+            courseService.updateCourse(course, id);
+            log.info("Course id={} updated", id);
+
+            if (newImages != null && newImages.length > 0) {
+                courseService.addImagesToCourse(id, newImages);
+                log.debug("Added {} new images to course id={}", newImages.length, id);
             }
 
-            courseService.updateCourse(course, id);
             redirectAttributes.addAttribute("success", "Курс обновлён");
             return "redirect:/admin/courses";
         } catch (Exception e) {
+            log.error("Error updating course id={}: {}", id, e.getMessage(), e);
             redirectAttributes.addAttribute("error", "Ошибка обновления: " + e.getMessage());
             return "redirect:/admin/courses/edit/" + id;
         }
     }
 
-    // Удаление курса (с проверкой на сертификаты)
     @PostMapping("/delete/{id}")
     public String deleteCourse(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        log.info("POST /admin/courses/delete/{}", id);
         try {
             Course course = courseService.getCourseById(id);
+            if (course == null) {
+                log.warn("Course id={} not found for deletion", id);
+                redirectAttributes.addAttribute("error", "Курс не найден");
+                return "redirect:/admin/courses";
+            }
 
-            // Проверяем наличие активных сертификатов
             List<Certificate> active = certificateService.getActiveCertificatesByCourse(course);
             if (!active.isEmpty()) {
+                log.warn("Cannot delete course id={}, active certificates: {}", id, active.size());
                 redirectAttributes.addAttribute("error",
                         "Невозможно удалить курс. На него выдано " + active.size() + " активных сертификат(ов). Сначала отзовите их.");
                 return "redirect:/admin/courses";
             }
 
-            // Удаляем отозванные сертификаты (чтобы снять внешний ключ)
             certificateService.deleteRevokedCertificatesForCourse(course);
 
-            // Удаляем картинку, если есть
-            deleteOldImage(course.getImageUrl());
+            // Сохраняем пути к изображениям до удаления курса (если нужно)
+            List<String> imagePaths = course.getImages().stream()
+                    .map(img -> img.getFilePath())
+                    .collect(Collectors.toList());
 
-            // Удаляем курс
-            courseService.deleteCourseByID(id);
+            // Сначала удаляем курс из БД
+            courseService.deleteCourseById(id);
+            log.info("Course id={} ('{}') deleted", id, course.getTitle());
+
+            // Только после успешного удаления из БД удаляем физические файлы
+            for (String filePath : imagePaths) {
+                try {
+                    Path fullPath = Paths.get(System.getProperty("user.dir"), filePath);
+                    Files.deleteIfExists(fullPath);
+                    log.debug("Deleted image file: {}", fullPath);
+                } catch (Exception e) {
+                    log.warn("Failed to delete image file: {} - {}", filePath, e.getMessage());
+                }
+            }
 
             redirectAttributes.addAttribute("success", "Курс \"" + course.getTitle() + "\" успешно удалён");
+
+        } catch (DataIntegrityViolationException e) {
+            log.error("Integrity violation while deleting course id={}: {}", id, e.getMessage());
+            redirectAttributes.addAttribute("error",
+                    "Невозможно удалить курс, так как он добавлен в корзины пользователей. Сначала удалите его из корзин.");
         } catch (Exception e) {
+            log.error("Error deleting course id={}: {}", id, e.getMessage(), e);
             redirectAttributes.addAttribute("error", "Ошибка удаления: " + e.getMessage());
         }
         return "redirect:/admin/courses";
     }
-
-    // Удаление изображения курса (крестик)
-    @PostMapping("/{id}/delete-image")
-    public String deleteCourseImage(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        Course course = courseService.getCourseById(id);
-        if (course == null) {
-            redirectAttributes.addAttribute("error", "Курс не найден");
-            return "redirect:/admin/courses";
-        }
-        if (course.getImageUrl() != null && !course.getImageUrl().isEmpty()) {
-            deleteOldImage(course.getImageUrl());
-        }
-        course.setImageUrl(null);
-        courseService.updateCourse(course, id);
-        redirectAttributes.addAttribute("success", "Изображение удалено");
-        return "redirect:/admin/courses/edit/" + id;
-    }
-
-    // ========== Работа с изображениями ==========
-    private String saveImage(MultipartFile file, String subdir) throws IOException {
-        String uploadDir = "uploads/" + subdir;               // внешняя папка
-        Path uploadPath = Paths.get(uploadDir);
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
-        String originalFilename = file.getOriginalFilename();
-        String extension = "";
-        if (originalFilename != null && originalFilename.contains(".")) {
-            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-        }
-        String fileName = UUID.randomUUID().toString() + extension;
-        Path filePath = uploadPath.resolve(fileName);
-        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-        log.debug("Сохранён файл: {}", filePath.toAbsolutePath());
-        return "/uploads/" + subdir + "/" + fileName;
-    }
-
-    private void deleteOldImage(String imageUrl) {
-        if (imageUrl != null && !imageUrl.isEmpty()) {
-            try {
-                String relativePath = imageUrl.startsWith("/") ? imageUrl.substring(1) : imageUrl;
-                Path path = Paths.get(relativePath);
-                Files.deleteIfExists(path);
-                log.debug("Удалён файл: {}", path.toAbsolutePath());
-            } catch (IOException e) {
-                log.warn("Не удалось удалить файл: {}", imageUrl, e);
+    @PostMapping("/{id}/images/{imageId}/main")
+    public String setMainImage(@PathVariable Long id,
+                               @PathVariable Long imageId,
+                               RedirectAttributes redirectAttributes) {
+        log.info("POST /admin/courses/{}/images/{}/main", id, imageId);
+        try {
+            Course course = courseService.getCourseById(id);
+            if (course == null) {
+                log.warn("Course id={} not found for setting main image", id);
+                redirectAttributes.addAttribute("error", "Курс не найден");
+                return "redirect:/admin/courses";
             }
+
+            boolean belongs = course.getImages().stream().anyMatch(img -> img.getId().equals(imageId));
+            if (!belongs) {
+                log.error("Image id={} does not belong to course id={}", imageId, id);
+                redirectAttributes.addAttribute("error", "Изображение не принадлежит данному курсу");
+                return "redirect:/admin/courses/edit/" + id;
+            }
+
+            courseService.setMainImage(imageId);
+            log.info("Image id={} set as main for course id={}", imageId, id);
+            redirectAttributes.addAttribute("success", "Главное изображение обновлено");
+        } catch (Exception e) {
+            log.error("Error setting main image id={} for course id={}: {}", imageId, id, e.getMessage(), e);
+            redirectAttributes.addAttribute("error", "Не удалось установить главное изображение: " + e.getMessage());
         }
+        return "redirect:/admin/courses/edit/" + id;
     }
 }

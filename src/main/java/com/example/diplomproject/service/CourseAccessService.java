@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 public class CourseAccessService {
@@ -56,11 +57,18 @@ public class CourseAccessService {
     /**
      * Получение всех курсов, к которым есть доступ у пользователя
      */
+//    public List<Course> getCoursesByUser(User user) {
+//        if (user == null) {
+//            throw new IllegalArgumentException("Пользователь не может быть null");
+//        }
+//        return courseAccessRepository.findCoursesByUser(user);
+//    }
+
     public List<Course> getCoursesByUser(User user) {
-        if (user == null) {
-            throw new IllegalArgumentException("Пользователь не может быть null");
-        }
-        return courseAccessRepository.findCoursesByUser(user);
+        if (user == null) throw new IllegalArgumentException("Пользователь не может быть null");
+        return courseAccessRepository.findCoursesByUserWithImages(user).stream()
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     /**

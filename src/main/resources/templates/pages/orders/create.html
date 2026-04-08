@@ -1,10 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<div th:fragment="order-create-content" class="order-create-container">
+    <div class="page-header">
+        <h1>Создание заказа</h1>
+        <p>Выберите курсы и укажите количество</p>
+    </div>
 
-</body>
-</html>
+    <form th:action="@{/orders/create}" method="post" th:object="${orderRequest}" class="create-order-form">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <div class="courses-selection">
+            <h3>Доступные курсы</h3>
+            <div class="courses-grid">
+                <div th:each="course, iterStat : ${courses}" class="course-selection-item">
+                    <div class="course-info">
+                        <img th:if="${course.imageUrl != null}" th:src="${course.imageUrl}" class="course-thumb">
+                        <i th:unless="${course.imageUrl != null}" class="fas fa-graduation-cap"></i>
+                        <div class="course-details">
+                            <h4 th:text="${course.title}"></h4>
+                            <p th:text="${course.price} + ' ₽'"></p>
+                        </div>
+                    </div>
+                    <div class="quantity-input">
+                        <label>Количество:</label>
+                        <input type="number" th:name="'items[' + ${iterStat.index} + '].quantity'"
+                               min="0" max="99" value="0" step="1" class="quantity-field">
+                        <input type="hidden" th:name="'items[' + ${iterStat.index} + '].courseId'" th:value="${course.id}">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">Оформить заказ</button>
+            <a th:href="@{/courses}" class="btn-secondary">Продолжить покупки</a>
+        </div>
+    </form>
+</div>

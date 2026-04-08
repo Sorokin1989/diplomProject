@@ -1,4 +1,4 @@
-<div th:fragment="cart-content" class="cart-container" xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="cart-content" class="cart-container">
     <div class="cart-header">
         <h1>Корзина</h1>
         <p>Ваши выбранные курсы</p>
@@ -7,27 +7,37 @@
     <div th:if="${cartItems == null or cartItems.isEmpty()}" class="empty-cart">
         <i class="fas fa-shopping-cart"></i>
         <p>Ваша корзина пуста</p>
-        <a th:href="@{/catalog}" class="btn-primary">Перейти к курсам</a>
+        <a th:href="@{/categories}" class="btn-primary">Перейти к категориям</a>
     </div>
 
     <div th:unless="${cartItems == null or cartItems.isEmpty()}" class="cart-content">
         <div class="cart-items">
             <div class="cart-item" th:each="item : ${cartItems}">
                 <div class="item-image">
-                    <i class="fas fa-graduation-cap"></i>
+                    <img th:if="${item.imageUrl != null}"
+                         th:src="${item.imageUrl}"
+                         alt="course image"
+                         style="width: 80px; height: 80px; object-fit: cover; border-radius: 12px;">
+                    <i th:unless="${item.imageUrl != null}" class="fas fa-graduation-cap" style="font-size: 2.5rem;"></i>
                 </div>
                 <div class="item-details">
-                    <h3 th:text="${item.course != null ? item.course.title : 'Курс удален'}">Название курса</h3>
-                    <p th:text="${item.course != null ? item.course.description : 'Описание недоступно'}">Описание</p>
-                    <div class="item-price" th:text="${item.course != null && item.course.price != null ? item.course.price + ' ₽' : 'Цена не указана'}">5 000 ₽</div>
+                    <h3 th:text="${item.courseTitle}">Название курса</h3>
+                    <div class="item-price" th:text="${item.price != null ? item.price + ' ₽' : 'Цена не указана'}">0 ₽</div>
                 </div>
                 <div class="item-actions">
                     <div class="quantity-control">
-                        <button th:onclick="'updateQuantity(' + ${item.id} + ', ' + ${item.quantity-1} + ')'" class="quantity-btn">-</button>
+                        <button class="quantity-btn" th:data-id="${item.id}"
+                                onclick="updateQuantity(this.getAttribute('data-id'), parseInt(this.parentElement.querySelector('.quantity').innerText) - 1)">
+                            -
+                        </button>
                         <span class="quantity" th:text="${item.quantity}">1</span>
-                        <button th:onclick="'updateQuantity(' + ${item.id} + ', ' + ${item.quantity+1} + ')'" class="quantity-btn">+</button>
+                        <button class="quantity-btn" th:data-id="${item.id}"
+                                onclick="updateQuantity(this.getAttribute('data-id'), parseInt(this.parentElement.querySelector('.quantity').innerText) + 1)">
+                            +
+                        </button>
                     </div>
-                    <button th:onclick="'removeItem(' + ${item.id} + ')'" class="remove-btn">
+                    <button class="remove-btn" th:data-id="${item.id}"
+                            onclick="removeItem(this.getAttribute('data-id'))">
                         <i class="fas fa-trash-alt"></i> Удалить
                     </button>
                 </div>
@@ -38,16 +48,17 @@
             <h3>Итого</h3>
             <div class="summary-row">
                 <span>Количество товаров:</span>
-                <span th:text="${cartItems.size()}">0</span>
+                <span th:text="${#aggregates.sum(cartItems.![quantity])}">0</span>
             </div>
             <div class="summary-row total">
                 <span>Сумма:</span>
-                <span th:text="${totalPrice} + ' ₽'">0 ₽</span>
+                <span th:text="${totalPrice != null ? totalPrice + ' ₽' : '0 ₽'}">0 ₽</span>
             </div>
-            <button class="checkout-btn">Оформить заказ</button>
+            <button class="checkout-btn" id="checkoutBtn" onclick="checkout()">Оформить заказ</button>
+            <button class="btn-secondary clear-cart-btn" onclick="clearCart()">Очистить корзину</button>
+            <div class="home-link" style="margin-top: 1rem; text-align: center;">
+                <a th:href="@{/categories}">Продолжить покупки</a>
+            </div>
         </div>
     </div>
-    <script th:src="@{/js/cart.js}"></script>
 </div>
-
-

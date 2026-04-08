@@ -1,10 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<div th:fragment="my-courses-content" class="my-courses-container">
+    <div class="page-header">
+        <h1>Мои курсы</h1>
+        <p>Курсы, которые вы приобрели или на которые у вас есть доступ</p>
+    </div>
 
-</body>
-</html>
+    <div th:if="${courses == null or courses.isEmpty()}" class="empty-state">
+        <i class="fas fa-book-open"></i>
+        <p>У вас пока нет приобретённых курсов</p>
+        <a th:href="@{/courses}" class="btn-primary">Перейти к каталогу</a>
+    </div>
+
+    <div th:unless="${courses == null or courses.isEmpty()}" class="courses-grid">
+        <div th:each="course : ${courses}" class="course-card">
+            <img th:if="${course.imageUrl != null}" th:src="${course.imageUrl}" class="course-image">
+            <i th:unless="${course.imageUrl != null}" class="fas fa-graduation-cap"></i>
+            <h3 th:text="${course.title}">Название</h3>
+            <p th:text="${course.description}">Описание</p>
+            <a th:href="@{/courses/{id}(id=${course.id})}" class="btn-course">Перейти к курсу</a>
+        </div>
+    </div>
+</div>

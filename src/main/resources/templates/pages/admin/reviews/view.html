@@ -1,0 +1,83 @@
+<div th:fragment="admin-review-view-content" class="categories-card">
+    <div class="brand">
+        <h1>Школа красоты</h1>
+        <p>учебный центр индустрии красоты</p>
+    </div>
+
+    <div class="form-header">
+        <div th:if="${param.error}" class="message-box error">
+            <i class="fas fa-circle-exclamation"></i>
+            <span th:text="${param.error}">Ошибка</span>
+        </div>
+        <div th:if="${param.success}" class="message-box success">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${param.success}">Успешно</span>
+        </div>
+        <h2>Просмотр отзыва</h2>
+        <p>Детальная информация об отзыве</p>
+    </div>
+
+    <div class="admin-actions-bar">
+        <a th:href="@{/admin/reviews}" class="btn-secondary">
+            <i class="fas fa-arrow-left"></i> Назад к списку
+        </a>
+        <a th:href="@{/admin/reviews/{id}/edit(id=${review.id})}" class="btn-primary">
+            <i class="fas fa-pen"></i> Редактировать
+        </a>
+    </div>
+
+    <div class="review-details">
+        <div class="detail-row">
+            <strong>ID:</strong> <span th:text="${review.id}"></span>
+        </div>
+        <div class="detail-row">
+            <strong>Пользователь:</strong>
+            <span th:text="${review.user.username}"></span> (ID: <span th:text="${review.user.id}"></span>)
+        </div>
+        <div class="detail-row">
+            <strong>Курс:</strong>
+            <span th:text="${review.course.title}"></span> (ID: <span th:text="${review.course.id}"></span>)
+        </div>
+        <div class="detail-row">
+            <strong>Рейтинг:</strong>
+            <span th:text="${review.rating}"></span> <i class="fas fa-star" style="color: gold;"></i>
+        </div>
+        <div class="detail-row">
+            <strong>Текст отзыва:</strong>
+            <div class="review-text" th:text="${review.text}"></div>
+        </div>
+        <div class="detail-row">
+            <strong>Дата создания:</strong>
+            <span th:text="${#temporals.format(review.createdAt, 'dd.MM.yyyy HH:mm')}"></span>
+        </div>
+        <div class="detail-row">
+            <strong>Статус:</strong>
+            <span th:class="'status-badge ' + (${review.hidden} ? 'revoked' : 'active')"
+                  th:text="${review.hidden} ? 'Скрыт' : 'Видим'"></span>
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <form th:action="@{/admin/reviews/{id}/delete(id=${review.id})}" method="post" style="display: inline;"
+              onsubmit="return confirm('Удалить отзыв?');">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="btn-danger">
+                <i class="fas fa-trash"></i> Удалить
+            </button>
+        </form>
+        <form th:if="!${review.hidden}" th:action="@{/admin/reviews/{id}/hide(id=${review.id})}" method="post" style="display: inline;"
+              onsubmit="return confirm('Скрыть отзыв?');">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="btn-secondary">
+                <i class="fas fa-eye-slash"></i> Скрыть
+            </button>
+        </form>
+        <form th:if="${review.hidden}" th:action="@{/admin/reviews/{id}/show(id=${review.id})}" method="post" style="display: inline;"
+              onsubmit="return confirm('Показать отзыв?');">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="btn-primary">
+                <i class="fas fa-eye"></i> Показать
+            </button>
+        </form>
+    </div>
+</div>

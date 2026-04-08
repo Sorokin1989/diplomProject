@@ -1,0 +1,120 @@
+<div th:fragment="admin-reviews-content" class="categories-card">
+    <div class="brand">
+        <h1>Школа красоты</h1>
+        <p>учебный центр индустрии красоты</p>
+    </div>
+
+    <div class="form-header">
+        <div th:if="${param.error}" class="message-box error">
+            <i class="fas fa-circle-exclamation"></i>
+            <span th:text="${param.error}">Ошибка</span>
+        </div>
+        <div th:if="${param.success}" class="message-box success">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${param.success}">Успешно</span>
+        </div>
+        <h2>Управление отзывами</h2>
+        <p>Просмотр, редактирование, удаление и модерация отзывов</p>
+    </div>
+
+    <!-- Единая панель: кнопка "Назад" + форма фильтров -->
+    <div class="admin-filters-toolbar" style="display: flex; align-items: flex-end; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
+        <!-- Кнопка "Назад" -->
+        <a th:href="@{/admin}" class="btn-secondary">
+            <i class="fas fa-arrow-left"></i> Назад
+        </a>
+
+        <!-- Форма фильтров -->
+        <form method="get" th:action="@{/admin/reviews}" class="filters-form" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; margin: 0;">
+            <div class="filter-group">
+                <label for="courseId">ID курса</label>
+                <input type="number" id="courseId" name="courseId" class="form-control"
+                       th:value="${param.courseId}" placeholder="ID курса" min="1">
+            </div>
+            <div class="filter-group">
+                <label for="userId">ID пользователя</label>
+                <input type="number" id="userId" name="userId" class="form-control"
+                       th:value="${param.userId}" placeholder="ID пользователя" min="1">
+            </div>
+            <div class="filter-group">
+                <label for="minRating">Мин. рейтинг</label>
+                <select id="minRating" name="minRating" class="form-select">
+                    <option value="">Все</option>
+                    <option value="1" th:selected="${param.minRating == '1'}">1 и выше</option>
+                    <option value="2" th:selected="${param.minRating == '2'}">2 и выше</option>
+                    <option value="3" th:selected="${param.minRating == '3'}">3 и выше</option>
+                    <option value="4" th:selected="${param.minRating == '4'}">4 и выше</option>
+                    <option value="5" th:selected="${param.minRating == '5'}">5 и выше</option>
+                </select>
+            </div>
+            <div class="filter-actions" style="display: flex; gap: 0.5rem;">
+                <button type="submit" class="btn-primary">Применить</button>
+                <a th:href="@{/admin/reviews}" class="btn-secondary">Сбросить</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Таблица отзывов (без изменений) -->
+    <div class="orders-table-container">
+        <table class="orders-table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Пользователь</th>
+                <th>Курс</th>
+                <th>Текст отзыва</th>
+                <th>Рейтинг</th>
+                <th>Дата</th>
+                <th>Статус</th>
+                <th>Действия</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="review : ${reviews}">
+                <td th:text="${review.id}">1</td>
+                <td><span th:text="${review.user.username}"></span> (ID: <span th:text="${review.user.id}"></span>)</td>
+                <td><span th:text="${review.course.title}"></span> (ID: <span th:text="${review.course.id}"></span>)</td>
+                <td th:text="${review.text}">Отличный курс!</td>
+                <td th:text="${review.rating}">5</td>
+                <td th:text="${#temporals.format(review.createdAt, 'dd.MM.yyyy HH:mm')}">01.04.2026 12:00</td>
+                <td>
+                    <span th:class="'status-badge ' + (${review.hidden} ? 'revoked' : 'active')"
+                          th:text="${review.hidden} ? 'Скрыт' : 'Видим'"></span>
+                </td>
+                <td class="actions-cell">
+                    <a th:href="@{/admin/reviews/{id}(id=${review.id})}" class="view-btn-small" title="Просмотреть">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                    <a th:href="@{/admin/reviews/{id}/edit(id=${review.id})}" class="edit-btn-small" title="Редактировать">
+                        <i class="fas fa-pen"></i>
+                    </a>
+                    <form th:action="@{/admin/reviews/{id}/delete(id=${review.id})}" method="post" style="display: inline;"
+                          onsubmit="return confirm('Удалить отзыв?');">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="revoke-btn-small" title="Удалить">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                    <form th:if="!${review.hidden}" th:action="@{/admin/reviews/{id}/hide(id=${review.id})}" method="post" style="display: inline;"
+                          onsubmit="return confirm('Скрыть отзыв?');">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="revoke-btn-small" title="Скрыть">
+                            <i class="fas fa-eye-slash"></i>
+                        </button>
+                    </form>
+                    <form th:if="${review.hidden}" th:action="@{/admin/reviews/{id}/show(id=${review.id})}" method="post" style="display: inline;"
+                          onsubmit="return confirm('Показать отзыв?');">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="view-btn-small" title="Показать">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(reviews)}">
+                <td colspan="8" class="empty-message">Отзывы не найдены</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

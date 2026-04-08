@@ -1,10 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<div th:fragment="payment-content" class="payment-container">
+    <div class="page-header">
+        <h1>Оплата заказа № <span th:text="${orderId}"></span></h1>
+        <p>Подтверждение платежа</p>
+    </div>
 
-</body>
-</html>
+    <div class="payment-card">
+        <div class="payment-details">
+            <p><strong>Сумма:</strong> <span th:text="${payment.totalSum} + ' ₽'"></span></p>
+            <p><strong>Способ оплаты:</strong> <span th:text="${payment.paymentMethod}"></span></p>
+            <p><strong>Статус платежа:</strong>
+                <span class="payment-status" th:classappend="'status-' + ${payment.paymentStatus}"
+                      th:text="${payment.paymentStatus}"></span>
+            </p>
+        </div>
+
+        <div class="payment-actions">
+            <form th:action="@{/payment/confirm/{id}(id=${payment.id})}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn-primary">Подтвердить оплату</button>
+            </form>
+            <form th:action="@{/payment/cancel/{id}(id=${payment.id})}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn-danger">Отменить оплату</button>
+            </form>
+            <a th:href="@{/orders/{id}(id=${orderId})}" class="btn-secondary">Вернуться к заказу</a>
+        </div>
+    </div>
+</div>

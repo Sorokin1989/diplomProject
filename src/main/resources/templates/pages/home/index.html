@@ -1,21 +1,20 @@
 <div th:fragment="index-content" class="home-container" xmlns:th="http://www.thymeleaf.org">
-    <!-- Hero секция -->
+    <!-- Hero секция (без изменений) -->
     <div class="hero-section">
         <div class="hero-content">
             <h1>Стань профессионалом<br>в индустрии красоты</h1>
             <p>Обучение по самым востребованным направлениям с гарантией трудоустройства</p>
             <div class="hero-buttons">
-                <a th:href="@{/catalog}" class="btn-primary">Смотреть курсы</a>
+                <a th:href="@{/courses}" class="btn-primary">Смотреть курсы</a>
                 <a th:href="@{/contacts}" class="btn-secondary">Связаться с нами</a>
             </div>
         </div>
         <div class="hero-image">
-            <!-- Можно вставить картинку или оставить фон -->
             <i class="fas fa-spa"></i>
         </div>
     </div>
 
-    <!-- Преимущества -->
+    <!-- Преимущества (без изменений) -->
     <div class="features-section">
         <h2>Почему выбирают нас</h2>
         <div class="features-grid">
@@ -42,31 +41,25 @@
         </div>
     </div>
 
-    <!-- Популярные курсы (пример) -->
+    <!-- Популярные направления (исправлено) -->
     <div class="courses-section">
         <h2>Популярные направления</h2>
         <div class="courses-grid">
-            <div class="course-card">
-                <i class="fas fa-cut"></i>
-                <h3>Парикмахерское искусство</h3>
-                <p>Стрижки, окрашивание, укладки</p>
-                <a th:href="@{/courses/1}" class="btn-course">Подробнее</a>
-            </div>
-            <div class="course-card">
-                <i class="fas fa-hand-sparkles"></i>
-                <h3>Маникюр и педикюр</h3>
-                <p>Современные техники нейл-дизайна</p>
-                <a th:href="@{/courses/2}" class="btn-course">Подробнее</a>
-            </div>
-            <div class="course-card">
-                <i class="fas fa-face-smile"></i>
-                <h3>Визаж и брови</h3>
-                <p>Макияж, ламинирование, коррекция</p>
-                <a th:href="@{/courses/3}" class="btn-course">Подробнее</a>
+            <div th:each="cat : ${categories}" class="course-card">
+                <!-- Если есть imageUrl – показываем картинку, иначе – иконку-заглушку -->
+                <img th:if="${cat.imageUrl != null}"
+                     th:src="@{${cat.imageUrl}}"
+                     alt="категория"
+                     class="category-image">
+                <i th:unless="${cat.imageUrl != null}" class="fas fa-graduation-cap"></i>
+
+                <h3 th:text="${cat.title}">Название категории</h3>
+                <p th:text="${cat.description}">Описание</p>
+                <a th:href="@{/courses(categoryId=${cat.id})}" class="btn-course">Подробнее</a>
             </div>
         </div>
         <div class="all-courses-link">
-            <a th:href="@{/catalog}" class="btn-outline">Все курсы →</a>
+            <a th:href="@{/courses}" class="btn-outline">Все курсы →</a>
         </div>
     </div>
 </div>

@@ -38,37 +38,45 @@
             </div>
         </div>
 
+
+
+        <!-- Поле для загрузки новых изображений (можно несколько) -->
         <div class="input-group">
-            <label>Изображение категории</label>
-
-            <!-- Блок с текущим изображением (только при редактировании и если есть картинка) -->
-            <div th:if="${category.id != null and category.imageUrl != null}" class="current-image-wrapper">
-                <div class="current-image">
-                    <img th:src="${category.imageUrl}" alt="current image">
-                    <button type="button" class="delete-image-btn"
-                            th:data-url="@{/admin/categories/{id}/delete-image(id=${category.id})}">
-                        <i class="fas fa-times-circle"></i>
-                    </button>
-                </div>
-                <p class="image-hint">Текущее изображение. Нажмите ✕ чтобы удалить.</p>
+            <label for="newImages">Добавить новые изображения</label>
+            <div class="input-field">
+                <i class="fas fa-image"></i>
+                <input type="file" id="newImages" name="newImages" accept="image/*" multiple>
             </div>
-
-            <!-- Поле выбора файла (скрыто, если есть картинка и это редактирование) -->
-            <div th:classappend="${category.id != null and category.imageUrl != null} ? 'hidden' : ''">
-                <div class="input-field">
-                    <i class="fas fa-image"></i>
-                    <input type="file" id="imageFile" name="imageFile" accept="image/*">
-                </div>
-                <small style="color: #6b5b7e; margin-top: 0.25rem; display: block;">
-                    <i class="fas fa-info-circle"></i> Загрузите изображение (необязательно)
-                </small>
-            </div>
+            <small class="image-hint">Вы можете выбрать несколько файлов (jpg, png, gif).</small>
         </div>
 
         <button type="submit" class="save-btn">
             <i class="fas fa-save"></i> Сохранить категорию
         </button>
     </form>
+
+    <!-- Блок существующих изображений (только при редактировании) -->
+    <div th:if="${category.id != null and not #lists.isEmpty(category.images)}" class="input-group">
+        <label>Изображения категории</label>
+        <div class="existing-images" style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.5rem;">
+            <div th:each="img : ${category.images}" class="image-item" style="position: relative; width: 100px;">
+                <img th:src="${img.filePath}" style="width: 100%; height: 100px; object-fit: cover; border-radius: 8px;">
+                <span th:if="${img.main}" style="position: absolute; top: 0; right: 0; background: gold; color: black; font-size: 10px; padding: 2px 5px; border-radius: 4px;">Главное</span>
+                <div class="image-actions" style="margin-top: 5px; display: flex; gap: 5px; justify-content: center;">
+                    <form th:action="@{/admin/categories/{id}/images/{imageId}/delete(id=${category.id}, imageId=${img.id})}" method="post" style="display: inline;">
+                        <button type="submit" class="delete-btn-small" onclick="return confirm('Удалить изображение?')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                    <form th:if="!${img.main}" th:action="@{/admin/categories/{id}/images/{imageId}/main(id=${category.id}, imageId=${img.id})}" method="post" style="display: inline;">
+                        <button type="submit" class="edit-btn-small" title="Сделать главным">
+                            <i class="fas fa-star"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <hr>
     <div class="home-link">

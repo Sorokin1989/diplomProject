@@ -1,0 +1,58 @@
+<div th:fragment="contacts-content" class="contacts-container">
+    <div th:if="${param.success != null}" class="alert alert-success">
+        Спасибо! Ваше сообщение отправлено. Мы свяжемся с вами в ближайшее время.
+    </div>
+    <h1>Связаться с нами</h1>
+    <div class="contacts-wrapper">
+        <!-- Контактная информация -->
+        <div class="contact-info-block">
+            <div class="contact-item">
+                <i class="fas fa-phone-alt"></i>
+                <div>
+                    <h3>Телефон</h3>
+                    <p>+7 (123) 456-78-90</p>
+                </div>
+            </div>
+            <div class="contact-item">
+                <i class="fas fa-envelope"></i>
+                <div>
+                    <h3>Email</h3>
+                    <p>info@beauty-school.ru</p>
+                </div>
+            </div>
+            <div class="contact-item">
+                <i class="fas fa-map-marker-alt"></i>
+                <div>
+                    <h3>Адрес</h3>
+                    <p>г. Москва, ул. Красоты, д. 1, офис 205</p>
+                </div>
+            </div>
+            <div class="contact-item">
+                <i class="fas fa-clock"></i>
+                <div>
+                    <h3>Режим работы</h3>
+                    <p>Пн-Пт: 10:00 – 20:00<br>Сб: 11:00 – 18:00<br>Вс: выходной</p>
+                </div>
+            </div>
+            <div class="social-links">
+                <a href="#" aria-label="Telegram"><i class="fab fa-telegram-plane"></i></a>
+                <a href="#" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="VK"><i class="fab fa-vk"></i></a>
+            </div>
+        </div>
+
+        <!-- Форма обратной связи -->
+        <div class="contact-form-block">
+            <h2>Напишите нам</h2>
+            <form th:action="@{/send-message}" method="post" class="contact-form">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <input type="text" name="name" placeholder="Ваше имя" required>
+                <input type="email" name="email" placeholder="Email" required>
+                <input type="text" name="phone" placeholder="Телефон (необязательно)">
+                <textarea name="message" rows="5" placeholder="Ваше сообщение" required></textarea>
+                <button type="submit" class="btn-primary">Отправить сообщение</button>
+            </form>
+        </div>
+    </div>
+</div>

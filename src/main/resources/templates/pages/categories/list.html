@@ -1,93 +1,93 @@
-<div th:fragment="categories-content" class="categories-card" xmlns:th="http://www.thymeleaf.org">
-    <div class="brand">
-        <h1>Школа красоты</h1>
-        <p>учебный центр индустрии красоты</p>
-    </div>
+<!--<div th:fragment="categories-content" class="categories-card" xmlns:th="http://www.thymeleaf.org">-->
+<!--    <div class="brand">-->
+<!--        <h1>Школа красоты</h1>-->
+<!--        <p>учебный центр индустрии красоты</p>-->
+<!--    </div>-->
 
-    <div class="form-header">
-        <h2>Направления обучения</h2>
-        <p>Выберите свою специализацию</p>
-    </div>
+<!--    <div class="form-header">-->
+<!--        <h2>Направления обучения</h2>-->
+<!--        <p>Выберите свою специализацию</p>-->
+<!--    </div>-->
 
-    <div class="categories-grid">
-        <!-- Маникюр -->
-        <div class="category-card">
-            <div class="category-icon">
-                <i class="fas fa-hand-sparkles"></i>
-            </div>
-            <div class="category-info">
-                <h3>Маникюр</h3>
-                <p>Обучение маникюру, педикюру, дизайну ногтей. Выдаём 4 именных сертификата, поддержка преподавателя.</p>
-                <div class="category-meta">
-                    <span class="courses-count"><i class="fas fa-graduation-cap"></i> 3 курса</span>
-                    <a th:href="@{/courses(category='nails')}" class="category-link">Подробнее <i class="fas fa-arrow-right"></i></a>
-                </div>
-            </div>
-        </div>
+<!--    <div class="categories-grid">-->
+<!--        &lt;!&ndash; Маникюр &ndash;&gt;-->
+<!--        <div class="category-card">-->
+<!--            <div class="category-icon">-->
+<!--                <i class="fas fa-hand-sparkles"></i>-->
+<!--            </div>-->
+<!--            <div class="category-info">-->
+<!--                <h3>Маникюр</h3>-->
+<!--                <p>Обучение маникюру, педикюру, дизайну ногтей. Выдаём 4 именных сертификата, поддержка преподавателя.</p>-->
+<!--                <div class="category-meta">-->
+<!--                    <span class="courses-count"><i class="fas fa-graduation-cap"></i> 3 курса</span>-->
+<!--                    <a th:href="@{/courses(category='nails')}" class="category-link">Подробнее <i class="fas fa-arrow-right"></i></a>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
 
-        <!-- Ресницы -->
-        <div class="category-card">
-            <div class="category-icon">
-                <i class="fas fa-eye"></i>
-            </div>
-            <div class="category-info">
-                <h3>Ресницы</h3>
-                <p>Наращивание, ламинирование, амминопованне (уход). Именной сертификат, чат с преподавателем, подарки.</p>
-                <div class="category-meta">
-                    <span class="courses-count"><i class="fas fa-graduation-cap"></i> 2 курса</span>
-                    <a th:href="@{/courses(category='lashes')}" class="category-link">Подробнее <i class="fas fa-arrow-right"></i></a>
-                </div>
-            </div>
-        </div>
+<!--        &lt;!&ndash; Ресницы &ndash;&gt;-->
+<!--        <div class="category-card">-->
+<!--            <div class="category-icon">-->
+<!--                <i class="fas fa-eye"></i>-->
+<!--            </div>-->
+<!--            <div class="category-info">-->
+<!--                <h3>Ресницы</h3>-->
+<!--                <p>Наращивание, ламинирование, амминопованне (уход). Именной сертификат, чат с преподавателем, подарки.</p>-->
+<!--                <div class="category-meta">-->
+<!--                    <span class="courses-count"><i class="fas fa-graduation-cap"></i> 2 курса</span>-->
+<!--                    <a th:href="@{/courses(category='lashes')}" class="category-link">Подробнее <i class="fas fa-arrow-right"></i></a>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
 
-        <!-- Волосы -->
-        <div class="category-card">
-            <div class="category-icon">
-                <i class="fas fa-cut"></i>
-            </div>
-            <div class="category-info">
-                <h3>Волосы</h3>
-                <p>Кератин, ботокс, нанопластика, причёски (свадебные и вечерние). Именные сертификаты, чат с преподавателем.</p>
-                <div class="category-meta">
-                    <span class="courses-count"><i class="fas fa-graduation-cap"></i> 4 курса</span>
-                    <a th:href="@{/courses(category='hair')}" class="category-link">Подробнее <i class="fas fa-arrow-right"></i></a>
-                </div>
-            </div>
-        </div>
+<!--        &lt;!&ndash; Волосы &ndash;&gt;-->
+<!--        <div class="category-card">-->
+<!--            <div class="category-icon">-->
+<!--                <i class="fas fa-cut"></i>-->
+<!--            </div>-->
+<!--            <div class="category-info">-->
+<!--                <h3>Волосы</h3>-->
+<!--                <p>Кератин, ботокс, нанопластика, причёски (свадебные и вечерние). Именные сертификаты, чат с преподавателем.</p>-->
+<!--                <div class="category-meta">-->
+<!--                    <span class="courses-count"><i class="fas fa-graduation-cap"></i> 4 курса</span>-->
+<!--                    <a th:href="@{/courses(category='hair')}" class="category-link">Подробнее <i class="fas fa-arrow-right"></i></a>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
 
-        <!-- Брови -->
-        <div class="category-card">
-            <div class="category-icon">
-                <i class="fas fa-brush"></i>
-            </div>
-            <div class="category-info">
-                <h3>Архитектура бровей</h3>
-                <p>Обучение коррекции, окрашиванию, моделированию бровей. Сертификат и поддержка преподавателя.</p>
-                <div class="category-meta">
-                    <span class="courses-count"><i class="fas fa-graduation-cap"></i> 1 курс</span>
-                    <a th:href="@{/courses(category='brows')}" class="category-link">Подробнее <i class="fas fa-arrow-right"></i></a>
-                </div>
-            </div>
-        </div>
+<!--        &lt;!&ndash; Брови &ndash;&gt;-->
+<!--        <div class="category-card">-->
+<!--            <div class="category-icon">-->
+<!--                <i class="fas fa-brush"></i>-->
+<!--            </div>-->
+<!--            <div class="category-info">-->
+<!--                <h3>Архитектура бровей</h3>-->
+<!--                <p>Обучение коррекции, окрашиванию, моделированию бровей. Сертификат и поддержка преподавателя.</p>-->
+<!--                <div class="category-meta">-->
+<!--                    <span class="courses-count"><i class="fas fa-graduation-cap"></i> 1 курс</span>-->
+<!--                    <a th:href="@{/courses(category='brows')}" class="category-link">Подробнее <i class="fas fa-arrow-right"></i></a>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
 
-        <!-- Шугаринг -->
-        <div class="category-card">
-            <div class="category-icon">
-                <i class="fas fa-wine-bottle"></i>
-            </div>
-            <div class="category-info">
-                <h3>Шугаринг</h3>
-                <p>Обучение сахарной депиляции. Именной сертификат, поддержка преподавателя, удобный онлайн-формат.</p>
-                <div class="category-meta">
-                    <span class="courses-count"><i class="fas fa-graduation-cap"></i> 1 курс</span>
-                    <a th:href="@{/courses(category='sugaring')}" class="category-link">Подробнее <i class="fas fa-arrow-right"></i></a>
-                </div>
-            </div>
-        </div>
-    </div>
+<!--        &lt;!&ndash; Шугаринг &ndash;&gt;-->
+<!--        <div class="category-card">-->
+<!--            <div class="category-icon">-->
+<!--                <i class="fas fa-wine-bottle"></i>-->
+<!--            </div>-->
+<!--            <div class="category-info">-->
+<!--                <h3>Шугаринг</h3>-->
+<!--                <p>Обучение сахарной депиляции. Именной сертификат, поддержка преподавателя, удобный онлайн-формат.</p>-->
+<!--                <div class="category-meta">-->
+<!--                    <span class="courses-count"><i class="fas fa-graduation-cap"></i> 1 курс</span>-->
+<!--                    <a th:href="@{/courses(category='sugaring')}" class="category-link">Подробнее <i class="fas fa-arrow-right"></i></a>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
 
-    <hr>
-    <div class="home-link">
-        <a th:href="@{/}">На главную</a>
-    </div>
-</div>
+<!--    <hr>-->
+<!--    <div class="home-link">-->
+<!--        <a th:href="@{/}">На главную</a>-->
+<!--    </div>-->
+<!--</div>-->

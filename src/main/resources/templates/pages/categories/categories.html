@@ -1,62 +1,30 @@
-<div th:fragment="categories-content" class="categories-card" xmlns:th="http://www.thymeleaf.org"
-     xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<div th:fragment="categories-content" class="categories-card">
     <div class="brand">
-        <h1>Школа красоты</h1>
-        <p>учебный центр индустрии красоты</p>
+        <h1>Категории курсов</h1>
+        <p>Выберите направление для обучения</p>
     </div>
-
     <div class="form-header">
-        <h2>Направления обучения</h2>
-        <p>Выберите свою специализацию</p>
+        <h2>Наши направления</h2>
+        <p>Широкий выбор программ для любого уровня подготовки</p>
     </div>
-
-    <!-- Кнопка добавления (только для админов) -->
-    <div sec:authorize="hasRole('ADMIN')" style="text-align: right; margin-bottom: 1rem;">
-        <a th:href="@{/categories/new}" class="btn-primary" style="display: inline-block; padding: 0.5rem 1rem;">
-            <i class="fas fa-plus"></i> Добавить категорию
-        </a>
-    </div>
-
     <div class="categories-grid">
-        <div th:each="category : ${categories}" class="category-card">
-            <div class="category-icon">
-                <i th:if="${category.icon != null}" th:class="${category.icon}"></i>
-                <i th:unless="${category.icon != null}" class="fas fa-folder"></i>
-            </div>
-            <div class="category-info">
-                <h3 th:text="${category.name}">Название</h3>
-                <p th:text="${category.description != null ? category.description : 'Описание категории'}">
-                    Описание
-                </p>
-                <div class="category-meta">
-                    <span class="courses-count">
-                        <i class="fas fa-graduation-cap"></i>
-                        <span th:text="${category.courseCount != null ? category.courseCount : 0}">0</span> курсов
-                    </span>
-                    <a th:href="@{/courses(categoryId=${category.id})}" class="category-link">
-                        Подробнее <i class="fas fa-arrow-right"></i>
-                    </a>
+        <a th:href="@{/courses(categoryId=${category.id})}" class="category-link" th:each="category : ${categories}">
+            <div class="category-card">
+                <div class="category-icon-user">
+                    <img th:if="${category.imageUrl != null}"
+                         th:src="${category.imageUrl}"
+                         alt="Category image">
+                    <i th:unless="${category.imageUrl != null}" class="fas fa-folder"></i>
                 </div>
-
-                <!-- Кнопки для админов -->
-                <div sec:authorize="hasRole('ADMIN')" class="admin-actions">
-                    <a th:href="@{/categories/edit/{id}(id=${category.id})}" class="edit-btn-small">
-                        <i class="fas fa-edit"></i> Редактировать
-                    </a>
-                    <form th:action="@{/categories/delete/{id}(id=${category.id})}" method="post"
-                          style="display: inline;"
-                          onsubmit="return confirm('Удалить категорию? Все курсы в ней будут перемещены в общую категорию.');">
-                        <button type="submit" class="delete-btn-small">
-                            <i class="fas fa-trash-alt"></i> Удалить
-                        </button>
-                    </form>
+                <div class="category-info">
+                    <h3 th:text="${category.title}">Название</h3>
+                    <p th:text="${category.description != null ? category.description : 'Описание категории'}">Описание</p>
                 </div>
             </div>
+        </a>
+        <div th:if="${categories == null or categories.isEmpty()}" class="empty-categories">
+            <i class="fas fa-folder-open"></i>
+            <p>Категории не найдены</p>
         </div>
-    </div>
-
-    <hr>
-    <div class="home-link">
-        <a th:href="@{/}">На главную</a>
     </div>
 </div>

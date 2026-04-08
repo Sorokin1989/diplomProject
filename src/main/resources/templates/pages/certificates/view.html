@@ -1,0 +1,40 @@
+<div th:fragment="certificate-view-content" class="certificate-detail-container">
+    <div class="certificate-header">
+        <h1 th:text="${certificate.courseTitle}">Название курса</h1>
+        <p>Сертификат об успешном завершении</p>
+    </div>
+
+    <div class="certificate-detail-card">
+        <div class="certificate-number">
+            <strong>Номер сертификата:</strong>
+            <span th:text="${certificate.certificateId}">CERT-123456</span>
+        </div>
+        <div class="certificate-user">
+            <strong>Выдан:</strong>
+            <span th:text="${certificate.username}">Имя пользователя</span>
+        </div>
+        <div class="certificate-date">
+            <strong>Дата выдачи:</strong>
+            <span th:text="${#temporals.format(certificate.createdAt, 'dd.MM.yyyy HH:mm')}">01.01.2024 12:00</span>
+        </div>
+        <div th:if="${certificate.revoked}" class="certificate-revoked">
+            <strong>Статус:</strong>
+            <span class="revoked-text">Отозван</span>
+            <div th:if="${certificate.revokedDate}">
+                <strong>Дата отзыва:</strong>
+                <span th:text="${#temporals.format(certificate.revokedDate, 'dd.MM.yyyy HH:mm')}"></span>
+            </div>
+        </div>
+        <div th:unless="${certificate.revoked}" class="certificate-valid">
+            <strong>Статус:</strong>
+            <span class="valid-text">Действителен</span>
+        </div>
+    </div>
+
+    <div class="certificate-actions">
+        <a th:href="@{/certificates}" class="btn-secondary">← Вернуться к списку</a>
+        <a th:href="@{${certificate.certificateUrl}}" class="btn-primary" target="_blank" th:if="${certificate.certificateUrl != null}">
+            <i class="fas fa-download"></i> Скачать сертификат
+        </a>
+    </div>
+</div>

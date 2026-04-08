@@ -1,10 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<div th:fragment="reviews-list-content" class="reviews-section">
+    <h3>Отзывы
+        <span th:if="${averageRating != null}">
+            (<span th:text="${averageRating}">0</span>/5)
+        </span>
+    </h3>
 
-</body>
-</html>
+    <!-- Нет отзывов -->
+    <div th:if="${reviews.isEmpty()}" class="empty-reviews">
+        <p>😊 Пока нет отзывов. Будьте первым!</p>
+    </div>
+
+    <!-- Список отзывов -->
+    <div th:unless="${reviews.isEmpty()}" class="reviews-list">
+        <div th:each="review : ${reviews}" class="review-card">
+            <div class="review-header">
+                <span class="review-author" th:text="${review.username}">Пользователь</span>
+                <div class="review-rating">
+                    <span th:each="i : ${#numbers.sequence(1, review.rating)}">★</span>
+                    <span th:each="i : ${#numbers.sequence(review.rating + 1, 5)}">☆</span>
+                </div>
+                <span class="review-date" th:text="${#temporals.format(review.createdAt, 'dd.MM.yyyy')}"></span>
+            </div>
+            <p class="review-text" th:text="${review.text}">Текст отзыва</p>
+            <!-- Статус модерации (если нужен) -->
+            <div th:if="${review.moderationStatus == 'PENDING'}" class="moderation-pending">
+                ⏳ На модерации
+            </div>
+            <div th:if="${review.moderationStatus == 'REJECTED'}" class="moderation-rejected">
+                ⚠️ Отзыв отклонён
+            </div>
+        </div>
+    </div>
+</div>

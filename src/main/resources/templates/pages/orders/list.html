@@ -1,10 +1,41 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<div th:fragment="orders-list-content" class="orders-container">
+    <div class="page-header">
+        <h1 th:text="${isAdmin} ? 'Управление заказами' : 'Мои заказы'">Заказы</h1>
+        <p th:if="${isAdmin}">Список всех заказов клиентов</p>
+        <p th:unless="${isAdmin}">История ваших покупок</p>
+    </div>
 
-</body>
-</html>
+    <div th:if="${orders == null or orders.isEmpty()}" class="empty-state">
+        <i class="fas fa-shopping-bag"></i>
+        <p>У вас пока нет заказов</p>
+        <a th:href="@{/courses}" class="btn-primary">Перейти к курсам</a>
+    </div>
+
+    <div th:unless="${orders == null or orders.isEmpty()}" class="orders-list">
+        <div th:each="order : ${orders}" class="order-card">
+            <div class="order-header">
+                <div class="order-number">
+                    <strong>Заказ №</strong> <span th:text="${order.id}"></span>
+                </div>
+                <div class="order-date">
+                    <i class="far fa-calendar-alt"></i>
+                    <span th:text="${#temporals.format(order.createdAt, 'dd.MM.yyyy HH:mm')}"></span>
+                </div>
+                <div class="order-status" th:classappend="'status-' + ${order.orderStatus}">
+                    <span th:text="${order.orderStatus}"></span>
+                </div>
+            </div>
+            <div class="order-info">
+                <div class="order-total">
+                    <strong>Сумма:</strong> <span th:text="${order.totalSum} + ' ₽'"></span>
+                </div>
+                <div th:if="${order.promoCode}" class="order-promo">
+                    <strong>Промокод:</strong> <span th:text="${order.promoCode}"></span>
+                </div>
+            </div>
+            <div class="order-actions">
+                <a th:href="@{/orders/{id}(id=${order.id})}" class="btn-view-order">Подробнее →</a>
+            </div>
+        </div>
+    </div>
+</div>

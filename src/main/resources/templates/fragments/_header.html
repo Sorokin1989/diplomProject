@@ -17,6 +17,14 @@
             <ul class="nav-list">
                 <li><a th:href="@{/}" class="nav-link">Главная</a></li>
 
+                <li sec:authorize="isAuthenticated()">
+                    <a th:href="@{/certificates}" class="nav-link">Мои сертификаты</a>
+                </li>
+
+                <li sec:authorize="isAuthenticated()">
+                    <a th:href="@{/my-courses}" class="nav-link">Мои курсы</a>
+                </li>
+
                 <li sec:authorize="!hasRole('ADMIN')">
                     <a th:href="@{/categories}" class="nav-link">Категории</a>
                 </li>

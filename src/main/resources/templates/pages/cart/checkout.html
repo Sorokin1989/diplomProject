@@ -1,211 +1,46 @@
-<div th:fragment="checkout-content" class="checkout-container" lang="ru" xmlns:th="http://www.thymeleaf.org">
-    <div class="checkout-card">
-        <div class="brand">
-            <h1>Школа красоты</h1>
-            <p>учебный центр индустрии красоты</p>
-        </div>
+<!--<div th:fragment="checkout-content" class="checkout-container">-->
+<!--    <div class="page-header">-->
+<!--        <h1>Оформление заказа</h1>-->
+<!--        <p>Подтверждение покупки</p>-->
+<!--    </div>-->
 
-        <div class="form-header">
-            <h2>Оформление заказа</h2>
-            <p>Заполните данные для получения заказа</p>
-        </div>
+<!--    <div th:if="${cartItems == null or cartItems.isEmpty()}" class="empty-cart">-->
+<!--        <i class="fas fa-shopping-cart"></i>-->
+<!--        <p>Корзина пуста</p>-->
+<!--        <a th:href="@{/courses}" class="btn-primary">Перейти к курсам</a>-->
+<!--    </div>-->
 
-        <!-- Сообщение об ошибке -->
-        <div th:if="${error}" class="message-box error">
-            <i class="fas fa-circle-exclamation"></i>
-            <span th:text="${error}">Ошибка</span>
-        </div>
+<!--    <div th:unless="${cartItems == null or cartItems.isEmpty()}" class="checkout-content">-->
+<!--        <div class="cart-items">-->
+<!--            <div class="cart-item" th:each="item : ${cartItems}">-->
+<!--                <div class="item-details">-->
+<!--                    <h3 th:text="${item.courseTitle}"></h3>-->
+<!--                    <div class="item-price" th:text="${item.price} + ' ₽'"></div>-->
+<!--                    <div class="item-quantity">Количество: <span th:text="${item.quantity}"></span></div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
 
-        <!-- Сообщение об успехе -->
-        <div th:if="${successMessage}" class="message-box success">
-            <i class="fas fa-check-circle"></i>
-            <span th:text="${successMessage}"></span>
-        </div>
+<!--        <div class="cart-summary">-->
+<!--            <div class="summary-row">-->
+<!--                <span>Итого:</span>-->
+<!--                <span th:text="${totalPrice} + ' ₽'"></span>-->
+<!--            </div>-->
 
-        <form th:action="@{/checkout/process}" method="post">
-            <div class="checkout-grid">
-                <!-- Левая колонка: контактные данные и способы доставки/оплаты -->
-                <div class="form-section">
-                    <h2>Контактные данные</h2>
+<!--            <form th:action="@{/orders/apply-promocode}" method="post" class="promocode-form">-->
+<!--                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>-->
+<!--                <div class="promocode-input">-->
+<!--                    <input type="text" name="promocode" placeholder="Промокод">-->
+<!--                    <button type="submit" class="btn-secondary">Применить</button>-->
+<!--                </div>-->
+<!--                <div th:if="${promocodeError}" class="error-message" th:text="${promocodeError}"></div>-->
+<!--                <div th:if="${promocodeApplied}" class="success-message">-->
+<!--                    Скидка применена! Итого: <strong th:text="${discountedTotal} + ' ₽'"></strong>-->
+<!--                </div>-->
+<!--            </form>-->
 
-                    <div class="input-group">
-                        <label for="fullName">Полное имя *</label>
-                        <div class="input-field">
-                            <i class="fas fa-user"></i>
-                            <input type="text" id="fullName" name="fullName"
-                                   th:value="${user != null ? user.fullName : ''}"
-                                   placeholder="Введите имя и фамилию" required>
-                        </div>
-                    </div>
-
-                    <div class="input-group">
-                        <label for="email">Email *</label>
-                        <div class="input-field">
-                            <i class="fas fa-envelope"></i>
-                            <input type="email" id="email" name="email"
-                                   th:value="${user != null ? user.email : ''}"
-                                   placeholder="example@mail.com" required>
-                        </div>
-                    </div>
-
-                    <div class="input-group">
-                        <label for="phone">Телефон *</label>
-                        <div class="input-field">
-                            <i class="fas fa-phone-alt"></i>
-                            <input type="tel" id="phone" name="phone"
-                                   th:value="${user != null ? user.phone : ''}"
-                                   placeholder="+7 (___) ___-__-__" required>
-                        </div>
-                    </div>
-
-                    <div class="input-group">
-                        <label for="address">Адрес доставки *</label>
-                        <div class="input-field">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <textarea id="address" name="address" rows="3"
-                                      placeholder="Улица, дом, квартира"
-                                      required th:text="${user != null ? user.address : ''}"></textarea>
-                        </div>
-                    </div>
-
-                    <div class="row-2cols">
-                        <div class="input-group">
-                            <label for="city">Город</label>
-                            <div class="input-field">
-                                <i class="fas fa-city"></i>
-                                <input type="text" id="city" name="city"
-                                       th:value="${user != null ? user.city : ''}"
-                                       placeholder="Город">
-                            </div>
-                        </div>
-                        <div class="input-group">
-                            <label for="postalCode">Почтовый индекс</label>
-                            <div class="input-field">
-                                <i class="fas fa-mail-bulk"></i>
-                                <input type="text" id="postalCode" name="postalCode"
-                                       th:value="${user != null ? user.postalCode : ''}"
-                                       placeholder="Индекс">
-                            </div>
-                        </div>
-                    </div>
-
-                    <h2 style="margin-top: 1.5rem;">Способ доставки</h2>
-                    <div class="input-group">
-                        <label for="deliveryMethod">Выберите доставку</label>
-                        <div class="input-field">
-                            <i class="fas fa-truck"></i>
-                            <select id="deliveryMethod" name="deliveryMethodId" required>
-                                <option value="" disabled selected>-- Выберите способ доставки --</option>
-                                <option th:each="method : ${deliveryMethods}"
-                                        th:value="${method.id}"
-                                        th:text="${method.name + ' — ' + #numbers.formatDecimal(method.price, 0, 2, 'COMMA', ' ') + ' ₽'}">
-                                </option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <h2>Способ оплаты</h2>
-                    <div class="input-group">
-                        <label for="paymentMethod">Выберите оплату</label>
-                        <div class="input-field">
-                            <i class="fas fa-credit-card"></i>
-                            <select id="paymentMethod" name="paymentMethodId" required>
-                                <option value="" disabled selected>-- Выберите способ оплаты --</option>
-                                <option th:each="method : ${paymentMethods}"
-                                        th:value="${method.id}"
-                                        th:text="${method.name}">
-                                </option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Правая колонка: список товаров и итог -->
-                <div class="order-section">
-                    <h2>Ваш заказ</h2>
-
-                    <div class="order-items">
-                        <div th:each="item : ${cartItems}" class="order-item">
-                            <div class="item-image">
-                                <i th:if="${item.imageIcon != null}" th:class="${item.imageIcon}"></i>
-                                <i th:unless="${item.imageIcon != null}" class="fas fa-gem"></i>
-                            </div>
-                            <div class="item-details">
-                                <h3 th:text="${item.name}">Название курса</h3>
-                                <div class="item-meta">
-                                    <span class="item-quantity">Количество: <span th:text="${item.quantity}">1</span></span>
-                                    <span class="item-price">
-                                        <span th:text="${#numbers.formatDecimal(item.price, 0, 2, 'COMMA', ' ')}">0</span> ₽
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="item-total">
-                                <span th:text="${#numbers.formatDecimal(item.price * item.quantity, 0, 2, 'COMMA', ' ')} + ' ₽'">
-                                    1 000 ₽
-                                </span>
-                            </div>
-                        </div>
-                        <div th:if="${cartItems == null or cartItems.isEmpty()}" class="empty-cart-message">
-                            <i class="fas fa-shopping-cart"></i>
-                            <p>Ваша корзина пуста</p>
-                            <a th:href="@{/courses}" class="btn-secondary">Перейти к курсам</a>
-                        </div>
-                    </div>
-
-                    <div class="order-total">
-                        <div class="total-row">
-                            <span>Подытог</span>
-                            <span th:id="subtotal" th:text="${#numbers.formatDecimal(subtotal, 0, 2, 'COMMA', ' ')} + ' ₽'">0 ₽</span>
-                        </div>
-                        <div class="total-row">
-                            <span>Доставка</span>
-                            <span th:id="deliveryCost">0 ₽</span>
-                        </div>
-                        <div class="total-row grand-total">
-                            <span>Итого</span>
-                            <span th:id="total" th:text="${#numbers.formatDecimal(subtotal, 0, 2, 'COMMA', ' ')} + ' ₽'">0 ₽</span>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="checkout-btn" th:disabled="${cartItems == null or cartItems.isEmpty()}">
-                        <i class="fas fa-check-circle"></i> Подтвердить заказ
-                    </button>
-                </div>
-            </div>
-        </form>
-
-        <hr>
-        <div class="home-link">
-            <a th:href="@{/cart}">Вернуться в корзину</a> |
-            <a th:href="@{/}">На главную</a>
-        </div>
-    </div>
-</div>
-
-<script th:inline="javascript">
-    // Динамическое обновление стоимости доставки и итога
-    (function() {
-        const subtotalVal = /*[[${subtotal}]]*/ 0;
-        const deliverySelect = document.getElementById('deliveryMethod');
-        const deliveryCostSpan = document.getElementById('deliveryCost');
-        const totalSpan = document.getElementById('total');
-
-        // Маппинг ID метода доставки -> стоимость (передаётся из модели)
-        const deliveryPrices = /*[[${deliveryMethodsMap}]]*/ {};
-
-        function updateTotal() {
-            if (!deliverySelect || !deliveryCostSpan || !totalSpan) return;
-            const selectedOption = deliverySelect.options[deliverySelect.selectedIndex];
-            const methodId = selectedOption ? selectedOption.value : '';
-            let deliveryCost = deliveryPrices[methodId] || 0;
-            deliveryCostSpan.textContent = deliveryCost.toLocaleString('ru-RU') + ' ₽';
-            const total = subtotalVal + deliveryCost;
-            totalSpan.textContent = total.toLocaleString('ru-RU') + ' ₽';
-        }
-
-        if (deliverySelect) {
-            deliverySelect.addEventListener('change', updateTotal);
-            updateTotal();
-        }
-    })();
-</script>
+<!--            <a th:href="@{/orders/create}" class="btn-primary checkout-btn">Оформить заказ</a>-->
+<!--            <a th:href="@{/cart}" class="btn-secondary">Вернуться в корзину</a>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->

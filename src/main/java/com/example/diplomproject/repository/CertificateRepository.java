@@ -6,9 +6,11 @@ import com.example.diplomproject.entity.Course;
 import com.example.diplomproject.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CertificateRepository extends JpaRepository<Certificate, Long> {
@@ -25,4 +27,10 @@ public interface CertificateRepository extends JpaRepository<Certificate, Long> 
     List<Certificate> findByCourseAndRevokedFalse(Course course);
 
     void deleteByCourseAndRevokedTrue(Course course);
+
+    @Query("SELECT c FROM Certificate c JOIN FETCH c.user JOIN FETCH c.course WHERE c.user = :user")
+    List<Certificate> findByUserWithDetails(@Param("user") User user);
+
+    @Query("SELECT c FROM Certificate c JOIN FETCH c.user JOIN FETCH c.course WHERE c.id = :id")
+    Optional<Certificate> findByIdWithDetails(@Param("id") Long id);
 }

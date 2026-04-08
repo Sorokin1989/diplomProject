@@ -4,6 +4,8 @@ import com.example.diplomproject.entity.Course;
 import com.example.diplomproject.entity.CourseAccess;
 import com.example.diplomproject.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
@@ -19,4 +21,8 @@ public interface CourseAccessRepository extends JpaRepository<CourseAccess, Long
 
 
     Optional<CourseAccess> findByUserAndCourse(User user, Course course);
+
+    // Новый метод с загрузкой изображений
+    @Query("SELECT ca.course FROM CourseAccess ca JOIN FETCH ca.course.images WHERE ca.user = :user")
+    List<Course> findCoursesByUserWithImages(@Param("user") User user);
 }

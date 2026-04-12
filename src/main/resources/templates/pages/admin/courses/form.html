@@ -21,13 +21,19 @@
           method="post" th:object="${course}" enctype="multipart/form-data">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
-        <input type="hidden" th:field="*{author}" />
-
         <div class="input-group">
             <label for="title">Название курса *</label>
             <div class="input-field">
                 <i class="fas fa-book"></i>
                 <input type="text" id="title" th:field="*{title}" placeholder="Например: Маникюр для начинающих" required>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="title">Автор *</label>
+            <div class="input-field">
+                <i class="fas fa-book"></i>
+                <input type="text" id="author" th:field="*{author}" placeholder="Например: Васильева А.Н." required>
             </div>
         </div>
 
@@ -77,7 +83,12 @@
             <i class="fas fa-save"></i> Сохранить курс
         </button>
     </form>
-
+    <!-- ДОБАВИТЬ ЭТОТ БЛОК (только для редактирования) -->
+    <div th:if="${course.id != null}" style="margin-top: 1rem; text-align: center;">
+        <a th:href="@{/admin/courses/{id}/materials(id=${course.id})}" class="btn-secondary">
+            <i class="fas fa-file-archive"></i> Управление материалами курса
+        </a>
+    </div>
     <!-- Блок существующих изображений (только при редактировании) -->
     <div th:if="${course.id != null and not #lists.isEmpty(course.images)}" class="input-group">
         <label>Изображения курса</label>

@@ -4,8 +4,10 @@ import com.example.diplomproject.dto.RegistrationDto;
 import com.example.diplomproject.dto.UserDto;
 import com.example.diplomproject.entity.User;
 import com.example.diplomproject.enums.Role;
+import com.example.diplomproject.mapper.UserMapper;
 import com.example.diplomproject.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -26,13 +28,16 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserDetailsService userDetailsService;
+    private final UserMapper userMapper;
 
+    @Autowired
     public UserService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
-                       UserDetailsService userDetailsService) {
+                       UserDetailsService userDetailsService, UserMapper userMapper) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.userDetailsService = userDetailsService;
+        this.userMapper = userMapper;
     }
 
     // === GETTERS ===
@@ -227,5 +232,14 @@ public class UserService {
 
     public boolean existsByEmail(String email) {
         return userRepository.findByEmail(email).isPresent();
+    }
+
+    public UserDto getUserDtoById(Long id) {
+        User user = getUserById(id);
+        return userMapper.toUserDto(user);
+    }
+    public UserDto getUserDtoByUsername(String username) {
+        User user = findByUsername(username);
+        return userMapper.toUserDto(user);
     }
 }

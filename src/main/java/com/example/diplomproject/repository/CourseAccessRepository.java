@@ -25,4 +25,6 @@ public interface CourseAccessRepository extends JpaRepository<CourseAccess, Long
     // Новый метод с загрузкой изображений
     @Query("SELECT ca.course FROM CourseAccess ca JOIN FETCH ca.course.images WHERE ca.user = :user")
     List<Course> findCoursesByUserWithImages(@Param("user") User user);
+
+    boolean existsByUserAndCourseId(User user, Long id);
 }

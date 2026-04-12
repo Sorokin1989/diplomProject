@@ -1,7 +1,9 @@
 package com.example.diplomproject.service;
 
+import com.example.diplomproject.dto.CourseDto;
 import com.example.diplomproject.entity.Course;
 import com.example.diplomproject.entity.CourseAccess;
+import com.example.diplomproject.entity.Order;
 import com.example.diplomproject.entity.User;
 import com.example.diplomproject.repository.CourseAccessRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +30,7 @@ public class CourseAccessService {
      */
 
     @Transactional
-    public void grantAccessToCourse(User user, Course course) {
+    public void grantAccessToCourse(User user, Course course, Order order) {
         if (user == null || course == null) {
             throw new IllegalArgumentException("Пользователь или Курс не может быть null");
         }
@@ -38,6 +40,7 @@ public class CourseAccessService {
         CourseAccess courseAccess = new CourseAccess();
         courseAccess.setUser(user);
         courseAccess.setCourse(course);
+        courseAccess.setOrder(order);
         courseAccess.setGrantedAt(LocalDateTime.now());
         courseAccessRepository.save(courseAccess);
 
@@ -54,6 +57,12 @@ public class CourseAccessService {
         return courseAccessRepository.existsByUserAndCourse(user, course);
     }
 
+    public boolean hasAccessToUserForDto(User user, CourseDto courseDto) {
+        if (user == null || courseDto == null || courseDto.getId() == null) {
+            return false;
+        }
+        return courseAccessRepository.existsByUserAndCourseId(user, courseDto.getId());
+    }
     /**
      * Получение всех курсов, к которым есть доступ у пользователя
      */

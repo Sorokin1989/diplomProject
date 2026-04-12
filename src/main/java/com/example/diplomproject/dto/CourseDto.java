@@ -30,4 +30,5 @@ public class CourseDto {
     private LocalDateTime createdAt;
     private List<ReviewDto> reviewDtos;
     private Integer reviewCount;
+    private String materialsPath;
 }

@@ -162,4 +162,13 @@ public class CertificateService {
     public void deleteRevokedCertificatesForCourse(Course course) {
         certificateRepository.deleteByCourseAndRevokedTrue(course);
     }
+
+    public Certificate findByUserAndCourse(Long userId, Long courseId) {
+        return certificateRepository.findByUserIdAndCourseId(userId, courseId).orElse(null);
+    }
+
+    @Transactional
+    public Certificate save(Certificate certificate) {
+        return certificateRepository.save(certificate);
+    }
 }

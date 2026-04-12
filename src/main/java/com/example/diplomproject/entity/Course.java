@@ -44,7 +44,8 @@ public class Course {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
     }
-
+    @Column
+    private String materialsPath; // путь к ZIP-архиву с материалами курса
     @Column
     private Integer reviewCount = 0;
 

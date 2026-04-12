@@ -32,7 +32,7 @@ public class Certificate {
     @Column(nullable = false, unique = true)
     private String certificateId;
 
-    @Column(nullable = false)
+    @Column
     private String certificateUrl;
 
     @PrePersist
@@ -42,6 +42,6 @@ public class Certificate {
     @Column(name = "revoked")
     private boolean revoked = false;
 
-    @Column(name = "revoked_date",nullable=false)
+    @Column(name = "revoked_date")
     private LocalDateTime revokedDate;
 }

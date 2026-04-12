@@ -2,6 +2,7 @@ package com.example.diplomproject.service;
 
 import com.example.diplomproject.dto.CartDto;
 import com.example.diplomproject.dto.CartItemDto;
+import com.example.diplomproject.dto.CourseDto;
 import com.example.diplomproject.entity.Cart;
 import com.example.diplomproject.entity.CartItem;
 import com.example.diplomproject.entity.Course;
@@ -25,17 +26,20 @@ public class CartService {
     private final CartItemService cartItemService;
     private final CartMapper cartMapper;
     private final CartItemMapper cartItemMapper;
+    private final CourseService courseService;
 
     @Autowired
     public CartService(CartRepository cartRepository, CartItemService cartItemService,
-                       CartMapper cartMapper, CartItemMapper cartItemMapper) {
+                       CartMapper cartMapper, CartItemMapper cartItemMapper,
+                       CourseService courseService) {
         this.cartRepository = cartRepository;
         this.cartItemService = cartItemService;
         this.cartMapper = cartMapper;
         this.cartItemMapper = cartItemMapper;
+        this.courseService = courseService;
     }
 
-    // ==================== Методы для работы с сущностями (для админки) ====================
+    // ==================== Методы для работы с сущностями ====================
 
     @Transactional
     public Cart getOrCreateCart(User user) {
@@ -47,9 +51,16 @@ public class CartService {
     }
 
     @Transactional
-    public CartItem addCourseToCart(User user, Course course, int quantity) {
+    public CartItem addCourseToCart(User user, Course course) {
         Cart cart = getOrCreateCart(user);
-        return cartItemService.addCourseToCart(cart, course, quantity);
+        return cartItemService.addCourseToCart(cart, course);
+    }
+
+    // Новый метод для DTO
+    @Transactional
+    public void addCourseToCart(User user, CourseDto courseDto) {
+        Course course = courseService.getCourseEntityById(courseDto.getId());
+        addCourseToCart(user, course);
     }
 
     @Transactional
@@ -60,16 +71,6 @@ public class CartService {
             throw new IllegalArgumentException("Этот элемент не принадлежит вашей корзине");
         }
         cartItemService.removeCartItem(cartItemId);
-    }
-
-    @Transactional
-    public CartItem updateQuantity(User user, Long cartItemId, int quantity) {
-        Cart cart = getOrCreateCart(user);
-        CartItem cartItem = cartItemService.getCartItemById(cartItemId);
-        if (!cartItem.getCart().equals(cart)) {
-            throw new IllegalArgumentException("Этот элемент не принадлежит вашей корзине");
-        }
-        return cartItemService.updateQuantity(cartItemId, quantity);
     }
 
     public List<CartItem> getAllItems(User user) {
@@ -87,7 +88,7 @@ public class CartService {
     public BigDecimal getTotalPrice(User user) {
         return getAllItems(user).stream()
                 .filter(item -> item.getCourse() != null && item.getCourse().getPrice() != null)
-                .map(item -> item.getCourse().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .map(item -> item.getCourse().getPrice())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
@@ -125,11 +126,18 @@ public class CartService {
                 .orElse(Collections.emptyList());
     }
 
-    // Метод переименован, чтобы не конфликтовать с сущностной версией getTotalPrice
     @Transactional(readOnly = true)
     public BigDecimal getTotalPriceDto(User user) {
         return getAllItemsDto(user).stream()
-                .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .map(CartItemDto::getPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public int getCartItemCount(User user) {
+        Cart cart = cartRepository.findByUser(user).orElse(null);
+        if (cart == null) {
+            return 0;
+        }
+        return cart.getCartItems() != null ? cart.getCartItems().size() : 0;
     }
 }

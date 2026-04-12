@@ -1,7 +1,9 @@
 package com.example.diplomproject.service;
 
+import com.example.diplomproject.dto.CategoryDto;
 import com.example.diplomproject.entity.Category;
 import com.example.diplomproject.entity.CategoryImage;
+import com.example.diplomproject.mapper.CategoryMapper;
 import com.example.diplomproject.repository.CategoryImageRepository;
 import com.example.diplomproject.repository.CategoryRepository;
 import jakarta.persistence.EntityManager;
@@ -13,10 +15,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
-
+import java.util.stream.Collectors;
 
 @Service
 public class CategoryService {
@@ -29,15 +32,20 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryImageRepository categoryImageRepository;
     private final FileStorageService fileStorageService;
+    private final CategoryMapper categoryMapper; // добавлен маппер
 
     @Autowired
     public CategoryService(CategoryRepository categoryRepository,
                            CategoryImageRepository categoryImageRepository,
-                           FileStorageService fileStorageService) {
+                           FileStorageService fileStorageService,
+                           CategoryMapper categoryMapper) {
         this.categoryRepository = categoryRepository;
         this.categoryImageRepository = categoryImageRepository;
         this.fileStorageService = fileStorageService;
+        this.categoryMapper = categoryMapper;
     }
+
+    // ==================== Административные / внутренние методы (работа с сущностями) ====================
 
     public List<Category> getAllCategories() {
         return categoryRepository.findAll();
@@ -46,7 +54,6 @@ public class CategoryService {
     public Category getCategoryById(Long id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Категория не найдена"));
-        // Принудительно загружаем изображения, чтобы избежать LazyInitializationException
         Hibernate.initialize(category.getImages());
         return category;
     }
@@ -77,7 +84,6 @@ public class CategoryService {
         }
         existingCategory.setTitle(updatedCategory.getTitle());
         existingCategory.setDescription(updatedCategory.getDescription());
-        // Старое поле imageUrl не используется – изображения управляются отдельно
         return categoryRepository.save(existingCategory);
     }
 
@@ -89,7 +95,7 @@ public class CategoryService {
                 .toList();
 
         categoryRepository.delete(category);
-        categoryRepository.flush();  // принудительный сброс, чтобы поймать исключение
+        categoryRepository.flush();
 
         for (String path : imagePaths) {
             try {
@@ -100,13 +106,12 @@ public class CategoryService {
         }
     }
 
-    // ========== Управление изображениями ==========
+    // ========== Управление изображениями (админка) ==========
 
     @Transactional
     public void addImagesToCategory(Long categoryId, MultipartFile[] files) {
         if (files == null || files.length == 0) return;
         Category category = getCategoryById(categoryId);
-        // Коллекция уже инициализирована в getCategoryById, но на всякий случай:
         Hibernate.initialize(category.getImages());
         boolean hadImages = !category.getImages().isEmpty();
         int nextOrder = category.getImages().size();
@@ -164,5 +169,20 @@ public class CategoryService {
         category.getImages().forEach(img -> img.setMain(false));
         newMain.setMain(true);
         categoryImageRepository.saveAll(category.getImages());
+    }
+
+    // ==================== Пользовательские DTO-методы ====================
+
+    @Transactional(readOnly = true)
+    public List<CategoryDto> getAllCategoriesDto() {
+        return categoryRepository.findAll().stream()
+                .map(categoryMapper::toCategoryDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public CategoryDto getCategoryDtoById(Long id) {
+        Category category = getCategoryById(id);
+        return categoryMapper.toCategoryDTO(category);
     }
 }

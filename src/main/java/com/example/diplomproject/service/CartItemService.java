@@ -22,29 +22,27 @@ public class CartItemService {
     }
 
     /**
-     * Добавление курса в корзину
+     * Добавление курса в корзину (только один экземпляр курса)
      */
     @Transactional
-    public CartItem addCourseToCart(Cart cart, Course course, int quantity) {
-        if (quantity <= 0) {
-            throw new IllegalArgumentException("Количество должно быть больше 0");
+    public CartItem addCourseToCart(Cart cart, Course course) {
+        if (cart == null || course == null) {
+            throw new IllegalArgumentException("Cart и Course не могут быть null");
         }
 
         // Проверяем, есть ли уже такой курс в корзине
         CartItem existingItem = cartItemRepository.findByCartAndCourse(cart, course);
         if (existingItem != null) {
-            // Если есть — увеличиваем количество
-            existingItem.setQuantity(existingItem.getQuantity() + quantity);
-            return cartItemRepository.save(existingItem);
-        } else {
-            // Если нет — создаём новый элемент
-            CartItem newItem = new CartItem();
-            newItem.setCart(cart);
-            newItem.setCourse(course);
-            newItem.setPrice(course.getPrice());
-            newItem.setQuantity(quantity);
-            return cartItemRepository.save(newItem);
+            // Если уже есть — не добавляем повторно (или можно выбросить исключение)
+            throw new IllegalStateException("Курс уже добавлен в корзину");
         }
+
+        CartItem newItem = new CartItem();
+        newItem.setCart(cart);
+        newItem.setCourse(course);
+        newItem.setPrice(course.getPrice());
+
+        return cartItemRepository.save(newItem);
     }
 
     /**
@@ -59,28 +57,9 @@ public class CartItemService {
     }
 
     /**
-     * Обновление количества курсов в элементе корзины.
-     * Если quantity <= 0, элемент удаляется.
-     * @return CartItem если количество > 0, иначе null (элемент удалён)
-     */
-    @Transactional
-    public CartItem updateQuantity(Long cartItemId, int quantity) {
-        CartItem item = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new EntityNotFoundException("Элемент корзины не найден с id: " + cartItemId));
-
-        if (quantity <= 0) {
-            // Удаляем элемент, если количество равно нулю или отрицательное
-            cartItemRepository.delete(item);
-            return null;
-        }
-
-        item.setQuantity(quantity);
-        return cartItemRepository.save(item);
-    }
-
-    /**
      * Получение всех элементов корзины
      */
+    @Transactional(readOnly = true)
     public List<CartItem> getCartItemsByCart(Cart cart) {
         return cartItemRepository.findByCart(cart);
     }
@@ -96,6 +75,7 @@ public class CartItemService {
     /**
      * Получение элемента корзины по ID
      */
+    @Transactional(readOnly = true)
     public CartItem getCartItemById(Long cartItemId) {
         return cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new EntityNotFoundException("Элемент корзины не найден с id: " + cartItemId));
@@ -104,6 +84,7 @@ public class CartItemService {
     /**
      * Проверка, находится ли курс в корзине
      */
+    @Transactional(readOnly = true)
     public boolean isCourseInCart(Cart cart, Course course) {
         return cartItemRepository.findByCartAndCourse(cart, course) != null;
     }

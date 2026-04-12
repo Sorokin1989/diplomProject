@@ -1,7 +1,10 @@
 <div th:fragment="user-courses-content" class="courses-container">
+    <!-- Блок для flash-сообщений -->
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
     <div class="courses-header">
         <h2>Наши курсы</h2>
-        <!-- Убираем вывод категории, если её нет в модели -->
         <p th:if="${category != null}" th:text="'Категория: ' + ${category.title}"></p>
         <p th:unless="${category != null}">Выберите курс для обучения</p>
     </div>
@@ -26,7 +29,6 @@
                 <div class="course-price" th:text="${course.price != null ? course.price + ' ₽' : 'Цена не указана'}">0 ₽</div>
                 <form th:action="@{/cart/add/{id}(id=${course.id})}" method="post">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                    <input type="hidden" name="quantity" value="1">
                     <button type="submit" class="btn-add-to-cart">
                         <i class="fas fa-shopping-cart"></i> В корзину
                     </button>

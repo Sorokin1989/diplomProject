@@ -5,6 +5,19 @@
         <p th:unless="${isAdmin}">История ваших покупок</p>
     </div>
 
+    <div class="admin-actions" style="margin-bottom: 1rem; text-align: right;">
+        <!-- Кнопка скрыть все мои заказы -->
+        <form th:action="@{/orders/hide-mine}" method="post" style="display: inline-block;" onsubmit="return confirm('Скрыть все ваши заказы? Они не будут удалены, но перестанут отображаться.')">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="btn-secondary">Скрыть мои заказы</button>
+        </form>
+        <!-- Кнопка показать скрытые заказы -->
+        <form th:action="@{/orders/unhide-mine}" method="post" style="display: inline-block; margin-left: 0.5rem;">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="btn-secondary">Показать скрытые заказы</button>
+        </form>
+    </div>
+
     <div th:if="${orders == null or orders.isEmpty()}" class="empty-state">
         <i class="fas fa-shopping-bag"></i>
         <p>У вас пока нет заказов</p>

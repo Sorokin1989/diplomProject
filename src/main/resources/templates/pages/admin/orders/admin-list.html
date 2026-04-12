@@ -29,7 +29,7 @@
             <tr>
                 <th>ID</th>
                 <th>Клиент</th>
-                <th>Курс</th>
+                <th>Курс(ы)</th>
                 <th>Сумма</th>
                 <th>Дата заказа</th>
                 <th>Статус</th>
@@ -40,14 +40,27 @@
             <tr th:each="order : ${orders}">
                 <td th:text="${order.id}">1</td>
                 <td th:text="${order.user.username}">Иван Иванов</td>
-                <td th:text="${order.course.title}">Курс по маникюру</td>
-                <td th:text="${order.totalPrice} + ' ₽'">5000 ₽</td>
-                <td th:text="${#temporals.format(order.orderDate, 'dd.MM.yyyy HH:mm')}">01.01.2025 12:00</td>
+
+                <!-- ИСПРАВЛЕНО: отображаем все курсы через order.orderItems -->
                 <td>
-                        <span th:class="'status-badge ' + ${order.status.name().toLowerCase()}" th:text="${order.status.displayName}">
-                            Новый
-                        </span>
+                    <span th:each="item, iterStat : ${order.orderItems}">
+                        <span th:text="${item.course.title}"></span><span th:unless="${iterStat.last}">, </span>
+                    </span>
                 </td>
+
+                <!-- ИСПРАВЛЕНО: поле totalSum (вместо totalPrice) -->
+                <td th:text="${order.totalSum} + ' ₽'">5000 ₽</td>
+
+                <!-- ИСПРАВЛЕНО: поле createdAt (вместо orderDate) -->
+                <td th:text="${#temporals.format(order.createdAt, 'dd.MM.yyyy HH:mm')}">01.01.2025 12:00</td>
+
+                <!-- ИСПРАВЛЕНО: поле orderStatus (вместо status) -->
+                <td>
+                    <span th:class="'status-badge ' + ${order.orderStatus.name().toLowerCase()}" th:text="${order.orderStatus.displayName}">
+                        Новый
+                    </span>
+                </td>
+
                 <td>
                     <form th:action="@{/admin/orders/{id}/status(id=${order.id})}" method="post" class="status-form">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
@@ -55,7 +68,7 @@
                             <option th:each="status : ${statuses}"
                                     th:value="${status}"
                                     th:text="${status.displayName}"
-                                    th:selected="${order.status == status}">
+                                    th:selected="${order.orderStatus == status}">
                             </option>
                         </select>
                     </form>

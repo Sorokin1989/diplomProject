@@ -25,17 +25,6 @@
                     <div class="item-price" th:text="${item.price != null ? item.price + ' ₽' : 'Цена не указана'}">0 ₽</div>
                 </div>
                 <div class="item-actions">
-                    <div class="quantity-control">
-                        <button class="quantity-btn" th:data-id="${item.id}"
-                                onclick="updateQuantity(this.getAttribute('data-id'), parseInt(this.parentElement.querySelector('.quantity').innerText) - 1)">
-                            -
-                        </button>
-                        <span class="quantity" th:text="${item.quantity}">1</span>
-                        <button class="quantity-btn" th:data-id="${item.id}"
-                                onclick="updateQuantity(this.getAttribute('data-id'), parseInt(this.parentElement.querySelector('.quantity').innerText) + 1)">
-                            +
-                        </button>
-                    </div>
                     <button class="remove-btn" th:data-id="${item.id}"
                             onclick="removeItem(this.getAttribute('data-id'))">
                         <i class="fas fa-trash-alt"></i> Удалить
@@ -46,10 +35,7 @@
 
         <div class="cart-summary">
             <h3>Итого</h3>
-            <div class="summary-row">
-                <span>Количество товаров:</span>
-                <span th:text="${#aggregates.sum(cartItems.![quantity])}">0</span>
-            </div>
+            <!-- Строка "Количество товаров:" удалена, так как количество не используется -->
             <div class="summary-row total">
                 <span>Сумма:</span>
                 <span th:text="${totalPrice != null ? totalPrice + ' ₽' : '0 ₽'}">0 ₽</span>

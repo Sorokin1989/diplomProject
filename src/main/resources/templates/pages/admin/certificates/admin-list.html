@@ -47,13 +47,26 @@
                 <td th:text="${cert.certificateId}">CERT-12345</td>
                 <td th:text="${#temporals.format(cert.createdAt, 'dd.MM.yyyy HH:mm')}">01.01.2025 12:00</td>
                 <td>
-                        <span th:class="'status-badge ' + (${cert.revoked} ? 'revoked' : 'active')"
-                              th:text="${cert.revoked} ? 'Отозван' : 'Активен'"></span>
+                    <span th:class="'status-badge ' + (${cert.revoked} ? 'revoked' : 'active')"
+                          th:text="${cert.revoked} ? 'Отозван' : 'Активен'"></span>
                 </td>
                 <td class="actions-cell">
+                    <!-- Кнопка просмотра -->
                     <a th:href="@{/admin/certificates/{id}(id=${cert.id})}" class="view-btn-small" title="Просмотреть">
                         <i class="fas fa-eye"></i>
                     </a>
+
+                    <!-- Кнопка активации (показывается только для отозванных сертификатов) -->
+                    <form th:if="${cert.revoked}" th:action="@{/admin/certificates/{id}/activate(id=${cert.id})}" method="post"
+                          style="display: inline;"
+                          onsubmit="return confirm('Активировать сертификат?');">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="edit-btn-small" title="Активировать">
+                            <i class="fas fa-check-circle"></i>
+                        </button>
+                    </form>
+
+                    <!-- Кнопка отзыва (показывается только для активных сертификатов) -->
                     <form th:if="!${cert.revoked}" th:action="@{/admin/certificates/{id}/revoke(id=${cert.id})}" method="post"
                           style="display: inline;"
                           onsubmit="return confirm('Отозвать сертификат?');">

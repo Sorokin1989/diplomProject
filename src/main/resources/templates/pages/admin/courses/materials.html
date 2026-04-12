@@ -1,0 +1,23 @@
+<div th:fragment="materials-form" class="materials-container">
+    <h2>Материалы курса: <span th:text="${course.title}"></span></h2>
+
+    <div th:if="${course.materialsPath}" class="alert alert-info">
+        <span>📁 Текущий файл: <strong th:text="${course.materialsPath}"></strong></span>
+        <form th:action="@{/admin/courses/{id}/materials/delete(id=${course.id})}" method="post" style="display: inline;">
+            <button type="submit" class="btn-danger" onclick="return confirm('Удалить материалы?')">Удалить</button>
+        </form>
+    </div>
+
+    <div th:unless="${course.materialsPath}" class="alert alert-warning" style="background: #fff5e6; border-left-color: #f0ad4e;">
+        ⚠️ Материалы не загружены
+    </div>
+
+    <form th:action="@{/admin/courses/{id}/materials(id=${course.id})}" method="post" enctype="multipart/form-data" class="materials-form">
+        <input type="file" name="file" accept=".zip" required>
+        <button type="submit" class="btn-primary">📦 Загрузить ZIP-архив</button>
+    </form>
+
+    <div style="margin-top: 2rem; text-align: center;">
+        <a th:href="@{/admin/courses}" class="btn-secondary">← Вернуться к списку курсов</a>
+    </div>
+</div>

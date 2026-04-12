@@ -17,43 +17,39 @@
             <ul class="nav-list">
                 <li><a th:href="@{/}" class="nav-link">Главная</a></li>
 
-                <li sec:authorize="isAuthenticated()">
-                    <a th:href="@{/certificates}" class="nav-link">Мои сертификаты</a>
+                <!-- Каталог (можно сгруппировать) -->
+                <li><a th:href="@{/categories}" class="nav-link">Категории</a></li>
+
+                <!-- Моё (выпадающее) -->
+                <li class="dropdown" sec:authorize="isAuthenticated()">
+                    <span class="nav-link dropdown-toggle">Кабинет</span>
+                    <div class="dropdown-menu">
+                        <a th:href="@{/profile}">Профиль</a>
+                        <a th:href="@{/certificates}">Сертификаты</a>
+                        <a th:href="@{/my-courses}">Курсы</a>
+                        <a th:href="@{/orders}">Заказы</a>
+                    </div>
                 </li>
 
-                <li sec:authorize="isAuthenticated()">
-                    <a th:href="@{/my-courses}" class="nav-link">Мои курсы</a>
-                </li>
-
-                <li sec:authorize="!hasRole('ADMIN')">
-                    <a th:href="@{/categories}" class="nav-link">Категории</a>
-                </li>
-
-                <!-- Блок для анонимного пользователя -->
-                <li sec:authorize="isAnonymous()">
-                    <a th:href="@{/register}" class="nav-link">Регистрация</a>
-                </li>
-                <li sec:authorize="isAnonymous()">
-                    <a th:href="@{/login}" class="nav-link">Вход</a>
-                </li>
-
-                <!-- Блок для аутентифицированного пользователя -->
-                <li sec:authorize="isAuthenticated()">
-                    <a th:href="@{/profile}" class="nav-link">Мой профиль</a>
-                </li>
-
-                <!-- Админская панель: управление категориями -->
-                <li sec:authorize="hasRole('ADMIN')">
-                    <a th:href="@{/admin}" class="nav-link">Админка</a>
-                </li>
-
+                <!-- Профиль / Выход (выпадающее) -->
                 <li sec:authorize="isAuthenticated()">
                     <form th:action="@{/logout}" method="post" style="display: inline;">
                         <button type="submit" class="nav-link logout-btn">Выйти</button>
                     </form>
                 </li>
 
+
+                <!-- Админка -->
+                <li sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{/admin}" class="nav-link">Админка</a>
+                </li>
+
+                <!-- Корзина (всегда видна) -->
                 <li><a th:href="@{/cart}" class="nav-link"><i class="fas fa-shopping-cart"></i> Корзина</a></li>
+
+                <!-- Вход / Регистрация для анонимов -->
+                <li sec:authorize="isAnonymous()"><a th:href="@{/login}" class="nav-link">Вход</a></li>
+                <li sec:authorize="isAnonymous()"><a th:href="@{/register}" class="nav-link">Регистрация</a></li>
             </ul>
         </nav>
     </div>

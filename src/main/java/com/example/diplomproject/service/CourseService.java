@@ -1,11 +1,14 @@
 package com.example.diplomproject.service;
 
+import com.example.diplomproject.dto.CourseDto;
 import com.example.diplomproject.entity.Category;
 import com.example.diplomproject.entity.Course;
 import com.example.diplomproject.entity.CourseImage;
+import com.example.diplomproject.mapper.CourseMapper;
 import com.example.diplomproject.repository.CourseImageRepository;
 import com.example.diplomproject.repository.CourseRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import org.hibernate.Hibernate;
 import org.slf4j.Logger;
@@ -17,6 +20,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,6 +32,7 @@ import java.util.stream.Collectors;
 public class CourseService {
     @PersistenceContext
     private EntityManager entityManager;
+    private final CourseMapper courseMapper;
 
     private static final Logger log = LoggerFactory.getLogger(CourseService.class);
 
@@ -33,48 +41,91 @@ public class CourseService {
     private final FileStorageService fileStorageService;
 
     @Autowired
-    public CourseService(CourseRepository courseRepository,
+    public CourseService(CourseMapper courseMapper, CourseRepository courseRepository,
                          CourseImageRepository courseImageRepository,
                          FileStorageService fileStorageService) {
+        this.courseMapper = courseMapper;
         this.courseRepository = courseRepository;
         this.courseImageRepository = courseImageRepository;
         this.fileStorageService = fileStorageService;
     }
 
-    // ========== Публичные методы для пользовательской части (с JOIN FETCH) ==========
+    // ==================== ПОЛЬЗОВАТЕЛЬСКАЯ ЧАСТЬ (возвращаем DTO) ====================
 
-    public List<Course> getAllCourses() {
-        return courseRepository.findAllWithImages().stream()
-                .distinct()
+    /**
+     * Возвращает список всех доступных курсов в виде DTO.
+     * Курсы с битыми ссылками на категории автоматически исключаются.
+     */
+    public List<CourseDto> getAllCourses() {
+        List<Course> courses = courseRepository.findAll();
+        return courses.stream()
+                .filter(this::isCategoryExists)
+                .map(courseMapper::toCourseDto)
                 .collect(Collectors.toList());
     }
 
-    public Course getCourseById(Long id) {
+    /**
+     * Возвращает курс по ID в виде DTO.
+     * Если категория битая, курс всё равно возвращается, но без информации о категории.
+     */
+    public CourseDto getCourseDtoById(Long id) {
+        Course course = courseRepository.findByIdWithImages(id)
+                .orElseThrow(() -> new IllegalArgumentException("Курс не найден"));
+        // Проверяем категорию, если битая – логируем, но курс возвращаем
+        if (!isCategoryExists(course)) {
+            log.warn("Курс {} имеет несуществующую категорию", id);
+        }
+        return courseMapper.toCourseDto(course);
+    }
+
+    /**
+     * Возвращает список курсов по ID категории в виде DTO.
+     */
+    public List<CourseDto> getCourseDtosByCategoryId(Long categoryId) {
+        if (categoryId == null) {
+            return Collections.emptyList();
+        }
+        List<Course> courses = courseRepository.findByCategoryIdWithImages(categoryId);
+        return courses.stream()
+                .filter(this::isCategoryExists)
+                .map(courseMapper::toCourseDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Поиск курсов по названию (частичное совпадение, без учёта регистра).
+     */
+    public List<CourseDto> searchCourseDtosByTitle(String title) {
+        if (title == null || title.trim().isEmpty()) {
+            return getAllCourses();
+        }
+        List<Course> courses = courseRepository.findByTitleContainingIgnoreCaseWithImages(title.trim());
+        return courses.stream()
+                .filter(this::isCategoryExists)
+                .map(courseMapper::toCourseDto)
+                .collect(Collectors.toList());
+    }
+
+    // ==================== АДМИНСКАЯ ЧАСТЬ (возвращаем Entity) ====================
+
+    /**
+     * Для внутреннего использования и админки – возвращает сущность Course.
+     * Не использовать в пользовательских контроллерах во избежание LazyInitializationException.
+     */
+    public Course getCourseEntityById(Long id) {
         return courseRepository.findByIdWithImages(id)
                 .orElseThrow(() -> new IllegalArgumentException("Курс не найден"));
     }
 
-    public List<Course> getCoursesByCategoryId(Long categoryId) {
-        if (categoryId == null) {
-            return Collections.emptyList();
-        }
-        return courseRepository.findByCategoryIdWithImages(categoryId).stream()
-                .distinct()
-                .collect(Collectors.toList());
+    /**
+     * Список курсов для админки (сущности).
+     * Не использовать в публичных шаблонах – только для редактирования.
+     */
+    public List<Course> getAllCoursesForAdmin() {
+        return courseRepository.findAll();
     }
 
-    public List<Course> searchCoursesByTitle(String title) {
-        if (title == null || title.trim().isEmpty()) {
-            return getAllCourses();
-        }
-        return courseRepository.findByTitleContainingIgnoreCaseWithImages(title.trim()).stream()
-                .distinct()
-                .collect(Collectors.toList());
-    }
-
-    // ========== Методы для админки и внутреннего использования ==========
-
-    public List<Course> getByCategory(Category category) {
+    public List<Course> getCoursesByCategoryForAdmin(Category category) {
         if (category == null) {
             throw new IllegalArgumentException("Категория отсутствует");
         }
@@ -89,7 +140,7 @@ public class CourseService {
 
     @Transactional
     public Course updateCourse(Course updatedCourse, Long id) {
-        Course existingCourse = getCourseById(id);
+        Course existingCourse = getCourseEntityById(id);
 
         if (updatedCourse.getTitle() != null && !updatedCourse.getTitle().trim().isEmpty()) {
             existingCourse.setTitle(updatedCourse.getTitle());
@@ -108,8 +159,7 @@ public class CourseService {
 
     @Transactional
     public void deleteCourseById(Long id) {
-        Course course = courseRepository.findByIdWithImages(id)
-                .orElseThrow(() -> new IllegalArgumentException("Курс не найден"));
+        Course course = getCourseEntityById(id);
         List<String> imagePaths = course.getImages().stream()
                 .map(CourseImage::getFilePath)
                 .toList();
@@ -127,12 +177,12 @@ public class CourseService {
         }
     }
 
-    // ========== Управление изображениями ==========
+    // ==================== Управление изображениями (админка) ====================
 
     @Transactional
     public void addImagesToCourse(Long courseId, MultipartFile[] files) {
         if (files == null || files.length == 0) return;
-        Course course = getCourseById(courseId);
+        Course course = getCourseEntityById(courseId);
         Hibernate.initialize(course.getImages());
         boolean hadImages = !course.getImages().isEmpty();
         int nextOrder = course.getImages().size();
@@ -192,6 +242,18 @@ public class CourseService {
         courseImageRepository.saveAll(course.getImages());
     }
 
+    // ==================== Вспомогательные методы ====================
+
+    private boolean isCategoryExists(Course course) {
+        try {
+            course.getCategory().getId();
+            return true;
+        } catch (EntityNotFoundException e) {
+            log.warn("Курс {} имеет несуществующую категорию, пропускаем", course.getId());
+            return false;
+        }
+    }
+
     private void validateCourse(Course course) {
         if (course == null || course.getTitle() == null || course.getTitle().trim().isEmpty()) {
             throw new IllegalArgumentException("Название курса не может быть пустым");
@@ -201,6 +263,79 @@ public class CourseService {
         }
         if (course.getCategory() == null || course.getCategory().getId() == null) {
             throw new IllegalArgumentException("Выберите категорию");
+        }
+    }
+
+    @Transactional
+    public void uploadCourseMaterials(Long courseId, MultipartFile file) {
+
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("Файл не выбран");
+        }
+
+        String filename = file.getOriginalFilename();
+        if (filename == null || !filename.toLowerCase().endsWith(".zip")) {
+            throw new IllegalArgumentException("Допустимы только ZIP-архивы");
+        }
+        // 1. Находим курс
+        Course course = getCourseEntityById(courseId);
+
+        // 2. Сохраняем новый файл на диск
+        String newFilePath = saveMaterialsFile(file, courseId);
+
+        // 3. Запоминаем старый путь (если был)
+        String oldFilePath = course.getMaterialsPath();
+
+        // 4. Обновляем путь в БД
+        course.setMaterialsPath(newFilePath);
+        courseRepository.save(course);
+
+        // 5. Удаляем старый файл после успешного обновления БД
+        if (oldFilePath != null && !oldFilePath.isEmpty()) {
+            try {
+                Path oldPath = Paths.get(oldFilePath).normalize();
+                Files.deleteIfExists(oldPath);
+                log.info("Старый файл материалов удалён: {}", oldFilePath);
+            } catch (IOException e) {
+                log.warn("Не удалось удалить старый файл: {}", oldFilePath, e);
+                // Не прерываем выполнение, так как новый файл уже загружен
+            }
+        }
+    }
+
+    // Вспомогательный метод – сохранение файла на диск
+    private String saveMaterialsFile(MultipartFile file, Long courseId) {
+        try {
+            String uploadDir = "uploads/materials/";
+            Path uploadPath = Paths.get(uploadDir);
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+            String fileName = String.format("course_%d_%d.zip", courseId, System.currentTimeMillis());
+            Path filePath = uploadPath.resolve(fileName);
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            return uploadDir + fileName; // относительный путь для БД
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка сохранения файла материалов", e);
+        }
+    }
+
+    @Transactional
+    public void deleteCourseMaterials(Long courseId) {
+        Course course = getCourseEntityById(courseId);
+        String materialsPath = course.getMaterialsPath();
+        if (materialsPath != null && !materialsPath.isEmpty()) {
+            try {
+                Path filePath = Paths.get(materialsPath).normalize();
+                Files.deleteIfExists(filePath);
+                log.info("Файл материалов удалён: {}", materialsPath);
+            } catch (IOException e) {
+                log.warn("Не удалось удалить файл материалов: {}", materialsPath, e);
+            }
+            course.setMaterialsPath(null);
+            courseRepository.save(course);
+        } else {
+            throw new IllegalArgumentException("Материалы не найдены");
         }
     }
 }

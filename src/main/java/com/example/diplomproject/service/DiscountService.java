@@ -1,10 +1,13 @@
 package com.example.diplomproject.service;
 
+import com.example.diplomproject.dto.DiscountDto;
 import com.example.diplomproject.entity.Discount;
 import com.example.diplomproject.enums.DiscountType;
+import com.example.diplomproject.mapper.DiscountMapper;
 import com.example.diplomproject.repository.DiscountRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,13 +16,21 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
+
+import static java.util.Arrays.stream;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class DiscountService {
 
+    @Autowired
     private final DiscountRepository discountRepository;
+
+    @Autowired
+    private final DiscountMapper discountMapper;
+
 
     public List<Discount> getAllDiscounts() {
         return discountRepository.findAll();
@@ -157,5 +168,13 @@ public class DiscountService {
         Discount discount = getDiscountById(id);
         discountRepository.delete(discount);
         log.info("Удалена скидка id={}", id);
+    }
+
+    public List<DiscountDto> getAllActiveDiscountsDto() {
+        LocalDateTime now = LocalDateTime.now();
+        return discountRepository.findActiveAtDate(now)
+                .stream()
+                .map(discountMapper::toDiscountDto)
+                .collect(Collectors.toList());
     }
 }

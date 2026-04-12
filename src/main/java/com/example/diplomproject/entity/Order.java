@@ -38,6 +38,9 @@ public class Order {
     @Column(precision = 10, scale = 2)
     private BigDecimal totalSum = BigDecimal.ZERO;
 
+    @Column(name = "hidden", nullable = false)
+    private boolean hidden = false;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus orderStatus = OrderStatus.PENDING;
@@ -89,7 +92,7 @@ public class Order {
      */
     public void recalculateTotalSum() {
         BigDecimal itemsTotal = orderItems.stream()
-                .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .map(OrderItem::getPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         this.totalSum = itemsTotal.subtract(discountAmount != null ? discountAmount : BigDecimal.ZERO);
         if (this.totalSum.compareTo(BigDecimal.ZERO) < 0) {

@@ -17,6 +17,7 @@ public class CourseMapper {
         courseDto.setDescription(course.getDescription());
         courseDto.setPrice(course.getPrice());
         courseDto.setAuthor(course.getAuthor());
+        courseDto.setMaterialsPath(course.getMaterialsPath());
 
         if (course.getCategory() != null) {
             courseDto.setCategoryId(course.getCategory().getId());

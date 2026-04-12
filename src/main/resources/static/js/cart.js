@@ -13,31 +13,6 @@ function getCsrfToken() {
     return null;
 }
 
-// Обновление количества товара
-function updateQuantity(itemId, newQuantity) {
-    if (newQuantity < 1) return;
-
-    const csrf = getCsrfToken();
-    const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
-    if (csrf) {
-        headers[csrf.header] = csrf.token;
-    }
-
-    fetch('/cart/update/' + itemId, {
-        method: 'POST',
-        headers: headers,
-        body: 'quantity=' + newQuantity
-    })
-        .then(response => {
-            if (response.ok) {
-                location.reload();
-            } else {
-                alert('Ошибка обновления количества');
-            }
-        })
-        .catch(() => alert('Ошибка сети. Попробуйте позже.'));
-}
-
 // Удаление позиции из корзины
 function removeItem(itemId) {
     if (!confirm('Удалить этот курс из корзины?')) return;
@@ -86,7 +61,6 @@ function clearCart() {
         .catch(() => alert('Ошибка сети. Попробуйте позже.'));
 }
 
-// Оформление заказа
 function checkout() {
-    window.location.href = '/orders/checkout';
+    window.location.href = '/orders/checkout';   // было '/checkout'
 }

@@ -22,6 +22,7 @@ public class OrderItemService {
     /**
      * Получение всех элементов заказа
      */
+    @Transactional(readOnly = true)
     public List<OrderItem> getAllOrderItems() {
         return orderItemRepository.findAll();
     }
@@ -29,6 +30,7 @@ public class OrderItemService {
     /**
      * Получение элемента заказа по ID
      */
+    @Transactional(readOnly = true)
     public OrderItem getOrderItemById(Long id) {
         return orderItemRepository.findById(id).
                 orElseThrow(()-> new NoSuchElementException("Такого заказа нет"));
@@ -43,9 +45,11 @@ public class OrderItemService {
         if (orderItem == null) {
             throw new IllegalArgumentException("Элемент заказа не может быть null");
         }
-        if (orderItem.getQuantity() == null || orderItem.getQuantity() <= 0) {
-            throw new IllegalArgumentException("Количество должно быть больше нуля");
+
+        if (orderItem.getOrder() == null || orderItem.getCourse() == null) {
+            throw new IllegalArgumentException("Order и Course должны быть установлены");
         }
+
         if (orderItem.getPrice() == null || orderItem.getPrice().compareTo(java.math.BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Цена не может быть отрицательной");
         }
@@ -59,9 +63,6 @@ public class OrderItemService {
     public OrderItem updateOrderItem(Long id, OrderItem updatedOrderItem) {
         OrderItem existingOrderItem = getOrderItemById(id);
 
-        if (updatedOrderItem.getQuantity() != null && updatedOrderItem.getQuantity() > 0) {
-            existingOrderItem.setQuantity(updatedOrderItem.getQuantity());
-        }
         if (updatedOrderItem.getPrice() != null && updatedOrderItem.getPrice().compareTo(java.math.BigDecimal.ZERO) >= 0) {
             existingOrderItem.setPrice(updatedOrderItem.getPrice());
         }

@@ -1,37 +1,56 @@
 package com.example.diplomproject.service;
 
-import com.example.diplomproject.entity.Course;
-import com.example.diplomproject.entity.Order;
-import com.example.diplomproject.entity.OrderItem;
-import com.example.diplomproject.entity.User;
+import com.example.diplomproject.dto.OrderDto;
+import com.example.diplomproject.entity.*;
 import com.example.diplomproject.enums.OrderStatus;
+import com.example.diplomproject.mapper.OrderMapper;
 import com.example.diplomproject.repository.OrderRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     private final OrderRepository orderRepository;
     private final OrderItemService orderItemService;
     private final CourseAccessService courseAccessService;
     private final CertificateService certificateService;
+    private final CourseService courseService;
+    private final UserService userService;
+    private final OrderMapper orderMapper;
+    private final PromocodeService promocodeService;
 
     @Autowired
     public OrderService(OrderRepository orderRepository,
                         OrderItemService orderItemService,
                         CourseAccessService courseAccessService,
-                        CertificateService certificateService) {
+                        CertificateService certificateService,
+                        CourseService courseService,
+                        UserService userService,
+                        OrderMapper orderMapper, PromocodeService promocodeService) {
         this.orderRepository = orderRepository;
         this.orderItemService = orderItemService;
         this.courseAccessService = courseAccessService;
         this.certificateService = certificateService;
+        this.courseService = courseService;
+        this.userService = userService;
+        this.orderMapper = orderMapper;
+        this.promocodeService = promocodeService;
     }
+
+    // ==================== Административные / внутренние методы (работа с сущностями) ====================
 
     @Transactional(readOnly = true)
     public List<Order> getAllOrders() {
@@ -58,23 +77,15 @@ public class OrderService {
         order.setOrderStatus(OrderStatus.PENDING);
 
         BigDecimal totalSum = orderItems.stream()
-                .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .map(OrderItem::getPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         order.setTotalSum(totalSum);
 
-        // Сохраняем заказ (createdAt установится автоматически через @CreationTimestamp)
         Order savedOrder = orderRepository.save(order);
 
-        // Привязываем элементы к заказу и сохраняем их
         for (OrderItem item : orderItems) {
             item.setOrder(savedOrder);
             orderItemService.createOrderItem(item);
-
-            // Предоставляем доступ к курсу
-            courseAccessService.grantAccessToCourse(user, item.getCourse());
-
-            // Выдаём сертификат за покупку (раскомментируйте, если нужен)
-            // certificateService.generateCertificateForPurchase(user, item.getCourse());
         }
 
         return savedOrder;
@@ -84,7 +95,10 @@ public class OrderService {
     public Order updateOrderStatus(Long orderId, OrderStatus status) {
         Order order = getOrderById(orderId);
         order.setOrderStatus(status);
-        return orderRepository.save(order);
+        Order saved = orderRepository.save(order);
+        entityManager.flush();   // принудительно синхронизировать с БД
+        entityManager.clear();   // очистить кэш первого уровня
+        return saved;
     }
 
     @Transactional(readOnly = true)
@@ -109,5 +123,118 @@ public class OrderService {
     @Transactional
     public Order updateOrder(Order order) {
         return orderRepository.save(order);
+    }
+
+    @Transactional
+    public void hideAllOrdersByUser(User user) {
+        List<Order> orders = orderRepository.findByUser(user);
+        for (Order order : orders) {
+            order.setHidden(true);
+        }
+        orderRepository.saveAll(orders);
+    }
+
+    @Transactional
+    public void unhideAllOrdersByUser(User user) {
+        List<Order> orders = orderRepository.findByUser(user);
+        for (Order order : orders) {
+            order.setHidden(false);
+        }
+        orderRepository.saveAll(orders);
+    }
+
+    // ==================== Пользовательские методы (работа с ID / DTO) ====================
+
+    @Transactional(readOnly = true)
+    public Order getOrderByIdWithItems(Long id) {
+        return orderRepository.findByIdWithItems(id)
+                .orElseThrow(() -> new NoSuchElementException("Заказ не найден"));
+    }
+
+    @Transactional
+    public Order createOrderFromCourseIds(Long userId, List<Long> courseIds) {
+        if (userId == null) {
+            throw new IllegalArgumentException("ID пользователя не может быть null");
+        }
+        if (courseIds == null || courseIds.isEmpty()) {
+            throw new IllegalArgumentException("Заказ должен содержать хотя бы один курс");
+        }
+
+        User user = userService.getUserById(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("Пользователь не найден");
+        }
+
+        List<OrderItem> orderItems = new ArrayList<>();
+        for (Long courseId : courseIds) {
+            Course course = courseService.getCourseEntityById(courseId);
+            if (course == null) {
+                throw new IllegalArgumentException("Курс с id=" + courseId + " не найден");
+            }
+            OrderItem orderItem = new OrderItem();
+            orderItem.setCourse(course);
+            orderItem.setPrice(course.getPrice());
+            orderItem.setCourseTitle(course.getTitle());
+            orderItems.add(orderItem);
+        }
+
+        return createOrder(user, orderItems);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean hasUserPurchasedCourse(Long userId, Long courseId) {
+        User user = userService.getUserById(userId);
+        Course course = courseService.getCourseEntityById(courseId);
+        return courseAccessService.hasAccessToUser(user, course);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Order> getOrdersByUserId(Long userId) {
+        User user = userService.getUserById(userId);
+        return getOrdersByUser(user);
+    }
+
+    // ==================== DTO-методы для пользовательской части ====================
+
+    @Transactional(readOnly = true)
+    public OrderDto getOrderDtoById(Long id) {
+        Order order = getOrderByIdWithItems(id);  // ← исправлено
+        return orderMapper.toOrderDTO(order);
+    }
+
+    @Transactional
+    public OrderDto createOrderFromCourseIdsAndReturnDto(Long userId, List<Long> courseIds,
+                                                         Promocode promocode, BigDecimal discountedTotal) {
+        Order order = createOrderFromCourseIds(userId, courseIds);
+        if (discountedTotal != null) {
+            order.setTotalSum(discountedTotal);
+        }
+        if (promocode != null) {
+            order.setPromoCode(promocode);
+        }
+        orderRepository.flush();
+        entityManager.clear();
+        Order orderWithItems = getOrderByIdWithItems(order.getId());
+        return orderMapper.toOrderDTO(orderWithItems);
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrderDto> getOrderDtosByUser(User user) {
+        return getOrdersByUser(user).stream()
+                .map(orderMapper::toOrderDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrderDto> getAllOrderDtos() {
+        return getAllOrders().stream()
+                .map(orderMapper::toOrderDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void deleteOrdersByUser(User user) {
+        List<Order> orders = getOrdersByUser(user);
+        orderRepository.deleteAll(orders);
     }
 }

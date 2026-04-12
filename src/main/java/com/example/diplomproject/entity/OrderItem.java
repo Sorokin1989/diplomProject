@@ -27,10 +27,6 @@ public class OrderItem {
     @Column(precision = 10, scale = 2, nullable = false)
     private BigDecimal price;
 
-    @ManyToOne(fetch=FetchType.LAZY,optional = false)
-    @JoinColumn(nullable=false,name="cart_id")
-    private Cart cart;
-
-    @Column(nullable = false, name ="quantity")
-    private Integer quantity;
+    @Column(nullable=false)
+    private String courseTitle;
 }

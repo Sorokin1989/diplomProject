@@ -14,17 +14,11 @@ public class OrderItemMapper {
 
         OrderItemDto dto = new OrderItemDto();
         dto.setId(orderItem.getId());
-        dto.setQuantity(orderItem.getQuantity());
         dto.setPrice(orderItem.getPrice());
-
-        // Вычисляем общую сумму (цена × количество)
-        if (orderItem.getPrice() != null && orderItem.getQuantity() != null) {
-            dto.setTotal(orderItem.getPrice().multiply(BigDecimal.valueOf(orderItem.getQuantity())));
-        }
 
         if (orderItem.getCourse() != null) {
             dto.setCourseId(orderItem.getCourse().getId());
-            dto.setCourseTitle(orderItem.getCourse().getTitle());
+            dto.setCourseTitle(orderItem.getCourseTitle());
         } else {
             dto.setCourseTitle("Курс удален");
         }
@@ -36,7 +30,6 @@ public class OrderItemMapper {
 
         OrderItem item = new OrderItem();
         item.setId(dto.getId());
-        item.setQuantity(dto.getQuantity());
         item.setPrice(dto.getPrice());
         // Примечание: course и другие связи должны устанавливаться отдельно в сервисе
         return item;

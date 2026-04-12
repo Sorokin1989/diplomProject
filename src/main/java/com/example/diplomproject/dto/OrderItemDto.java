@@ -10,7 +10,5 @@ public class OrderItemDto {
     private Long id;
     private Long courseId;
     private String courseTitle;
-    private Integer quantity;
     private BigDecimal price;
-    private BigDecimal total;
 }

@@ -31,9 +31,6 @@ public class CartItem {
     @Column(name = "added_at", nullable = false)
     private LocalDateTime addedAt;
 
-    @Column(name="quantity",nullable=false)
-    private int quantity;
-
     @PrePersist
     protected void onCreate() {
         addedAt = LocalDateTime.now();

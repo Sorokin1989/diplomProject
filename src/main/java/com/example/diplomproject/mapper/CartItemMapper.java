@@ -24,8 +24,11 @@ public class CartItemMapper {
         }
         cartItemDto.setPrice(cartItem.getPrice() != null ? cartItem.getPrice() : BigDecimal.ZERO);
         cartItemDto.setAddedAt(cartItem.getAddedAt() != null ? cartItem.getAddedAt() : LocalDateTime.now());
-        cartItemDto.setQuantity(cartItem.getQuantity());
-        cartItemDto.setImageUrl(cartItem.getCourse().getMainImageUrl());
+        if (cartItem.getCourse() != null) {
+            cartItemDto.setImageUrl(cartItem.getCourse().getMainImageUrl());
+        } else {
+            cartItemDto.setImageUrl(null); // или установить заглушку
+        }
 
         return cartItemDto;
     }
@@ -39,7 +42,6 @@ public class CartItemMapper {
         cartItem.setId(cartItemDto.getId());
         cartItem.setPrice(cartItemDto.getPrice());
         cartItem.setAddedAt(cartItemDto.getAddedAt());
-        cartItem.setQuantity(cartItemDto.getQuantity());
 
         return cartItem;
 

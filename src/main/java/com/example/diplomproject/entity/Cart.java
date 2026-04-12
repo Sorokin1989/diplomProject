@@ -16,41 +16,34 @@ import java.util.List;
 public class Cart {
 
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(optional=false,fetch = FetchType.LAZY)
-    @JoinColumn(name="user_id",unique=true,nullable=false)
+    @OneToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", unique = true, nullable = false)
     private User user;
 
     @Column(unique = true)
     private String sessionId;
 
-    @Column(name ="created_at",nullable =false)
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at",nullable = false)
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
     @ToString.Exclude
-    @OneToMany(mappedBy = "cart",
-            fetch = FetchType.LAZY,
-            cascade=CascadeType.ALL,
-            orphanRemoval =true)
-    private List<OrderItem> orderItems=new ArrayList<>();
+    @OneToMany(mappedBy = "cart", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CartItem> cartItems = new ArrayList<>();
 
     @PrePersist
-    protected void onCreate(){
-        createdAt=LocalDateTime.now();
-        updatedAt=this.createdAt;
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = this.createdAt;
     }
+
     @PreUpdate
-    protected  void onUpdate() {
-        updatedAt=LocalDateTime.now();
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
-
-
-    @ToString.Exclude
-    @OneToMany(mappedBy = "cart",fetch = FetchType.LAZY,cascade=CascadeType.ALL,orphanRemoval=true)
-    private List<CartItem>cartItems=new ArrayList();
 }

@@ -1,5 +1,6 @@
 package com.example.diplomproject.controller;
 
+import com.example.diplomproject.dto.CourseDto;
 import com.example.diplomproject.entity.Category;
 import com.example.diplomproject.entity.Certificate;
 import com.example.diplomproject.entity.Course;
@@ -16,9 +17,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -52,7 +55,7 @@ public class AdminCourseController {
         if (categoryId != null) {
             Category category = categoryService.getCategoryById(categoryId);
             if (category != null) {
-                courses = courseService.getByCategory(category);
+                courses = courseService.getCoursesByCategoryForAdmin(category);
                 model.addAttribute("selectedCategory", category);
                 log.debug("Filtered by category: {}", category.getTitle());
             } else {
@@ -60,7 +63,7 @@ public class AdminCourseController {
                 log.warn("Category not found: id={}", categoryId);
             }
         } else {
-            courses = courseService.getAllCourses();
+            courses = courseService.getAllCoursesForAdmin();
             log.debug("All courses count: {}", courses.size());
         }
         model.addAttribute("courses", courses);
@@ -122,7 +125,7 @@ public class AdminCourseController {
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Long id, Model model) {
         log.info("GET /admin/courses/edit/{}", id);
-        Course course = courseService.getCourseById(id);
+        Course course = courseService.getCourseEntityById(id);
         model.addAttribute("course", course);
         model.addAttribute("categories", categoryService.getAllCategories());
         model.addAttribute("title", "Редактирование курса");
@@ -138,7 +141,7 @@ public class AdminCourseController {
                                RedirectAttributes redirectAttributes) {
         log.info("POST /admin/courses/{} - update, title='{}', categoryId={}", id, course.getTitle(), categoryId);
         try {
-            Course existing = courseService.getCourseById(id);
+            Course existing = courseService.getCourseEntityById(id);
             if (existing == null) {
                 log.error("Course id={} not found for update", id);
                 redirectAttributes.addAttribute("error", "Курс не найден");
@@ -179,7 +182,7 @@ public class AdminCourseController {
     public String deleteCourse(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         log.info("POST /admin/courses/delete/{}", id);
         try {
-            Course course = courseService.getCourseById(id);
+            Course course = courseService.getCourseEntityById(id);
             if (course == null) {
                 log.warn("Course id={} not found for deletion", id);
                 redirectAttributes.addAttribute("error", "Курс не найден");
@@ -197,24 +200,24 @@ public class AdminCourseController {
             certificateService.deleteRevokedCertificatesForCourse(course);
 
             // Сохраняем пути к изображениям до удаления курса (если нужно)
-            List<String> imagePaths = course.getImages().stream()
-                    .map(img -> img.getFilePath())
-                    .collect(Collectors.toList());
+//            List<String> imagePaths = course.getImages().stream()
+//                    .map(img -> img.getFilePath())
+//                    .collect(Collectors.toList());
 
             // Сначала удаляем курс из БД
             courseService.deleteCourseById(id);
             log.info("Course id={} ('{}') deleted", id, course.getTitle());
 
             // Только после успешного удаления из БД удаляем физические файлы
-            for (String filePath : imagePaths) {
-                try {
-                    Path fullPath = Paths.get(System.getProperty("user.dir"), filePath);
-                    Files.deleteIfExists(fullPath);
-                    log.debug("Deleted image file: {}", fullPath);
-                } catch (Exception e) {
-                    log.warn("Failed to delete image file: {} - {}", filePath, e.getMessage());
-                }
-            }
+//            for (String filePath : imagePaths) {
+//                try {
+//                    Path fullPath = Paths.get(System.getProperty("user.dir"), filePath);
+//                    Files.deleteIfExists(fullPath);
+//                    log.debug("Deleted image file: {}", fullPath);
+//                } catch (Exception e) {
+//                    log.warn("Failed to delete image file: {} - {}", filePath, e.getMessage());
+//                }
+//            }
 
             redirectAttributes.addAttribute("success", "Курс \"" + course.getTitle() + "\" успешно удалён");
 
@@ -234,7 +237,7 @@ public class AdminCourseController {
                                RedirectAttributes redirectAttributes) {
         log.info("POST /admin/courses/{}/images/{}/main", id, imageId);
         try {
-            Course course = courseService.getCourseById(id);
+            Course course = courseService.getCourseEntityById(id);
             if (course == null) {
                 log.warn("Course id={} not found for setting main image", id);
                 redirectAttributes.addAttribute("error", "Курс не найден");
@@ -256,5 +259,41 @@ public class AdminCourseController {
             redirectAttributes.addAttribute("error", "Не удалось установить главное изображение: " + e.getMessage());
         }
         return "redirect:/admin/courses/edit/" + id;
+    }
+
+
+    @GetMapping("/{id}/materials")
+    public String showMaterialsForm(@PathVariable Long id, Model model) {
+        CourseDto courseDto = courseService.getCourseDtoById(id);
+        model.addAttribute("course", courseDto);
+        model.addAttribute("title", "Материалы курса");
+        model.addAttribute("content", "pages/admin/courses/materials :: materials-form");
+        return "layouts/main";
+    }
+
+    @PostMapping("/{id}/materials")
+    public String uploadMaterials(@PathVariable Long id,
+                                  @RequestParam("file") MultipartFile file,
+                                  RedirectAttributes redirectAttributes) {
+        try {
+            courseService.uploadCourseMaterials(id, file);
+            redirectAttributes.addFlashAttribute("success", "Материалы успешно загружены");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Ошибка загрузки: " + e.getMessage());
+        }
+        // Исправленный редирект
+        return "redirect:/admin/courses/" + id + "/materials";
+    }
+
+    @PostMapping("/{id}/materials/delete")
+    public String deleteMaterials(@PathVariable Long id,
+                                  RedirectAttributes redirectAttributes) {
+        try {
+            courseService.deleteCourseMaterials(id);
+            redirectAttributes.addFlashAttribute("success", "Материалы удалены");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Ошибка удаления: " + e.getMessage());
+        }
+        return "redirect:/admin/courses/" + id + "/materials";
     }
 }

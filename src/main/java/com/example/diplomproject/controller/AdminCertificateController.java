@@ -24,7 +24,6 @@ public class AdminCertificateController {
     private final UserService userService;
     private final CourseService courseService;
 
-    // Список всех сертификатов
     @GetMapping
     public String listCertificates(Model model) {
         model.addAttribute("certificates", certificateService.getAllCertificates());
@@ -33,17 +32,16 @@ public class AdminCertificateController {
         return "layouts/main";
     }
 
-    // Форма создания сертификата
     @GetMapping("/new")
     public String showCreateForm(Model model) {
         model.addAttribute("users", userService.getAllUsers());
-        model.addAttribute("courses", courseService.getAllCourses());
+        // Для админки используем метод, возвращающий сущности
+        model.addAttribute("courses", courseService.getAllCoursesForAdmin());
         model.addAttribute("title", "Создание сертификата");
         model.addAttribute("content", "pages/admin/certificates/form :: admin-certificate-form");
         return "layouts/main";
     }
 
-    // Обработка создания с загрузкой файла
     @PostMapping("/new")
     public String createCertificate(@RequestParam("userId") Long userId,
                                     @RequestParam("courseId") Long courseId,
@@ -52,7 +50,7 @@ public class AdminCertificateController {
         try {
             certificateService.createManualCertificateWithFile(
                     userService.getUserById(userId),
-                    courseService.getCourseById(courseId),
+                    courseService.getCourseEntityById(courseId), // изменено
                     file
             );
             redirectAttributes.addAttribute("success", "Сертификат успешно создан и загружен");
@@ -63,7 +61,6 @@ public class AdminCertificateController {
         return "redirect:/admin/certificates";
     }
 
-    // Детальный просмотр сертификата
     @GetMapping("/{id}")
     public String viewCertificate(@PathVariable Long id, Model model) {
         Certificate certificate = certificateService.getCertificateById(id);
@@ -73,7 +70,6 @@ public class AdminCertificateController {
         return "layouts/main";
     }
 
-    // Отзыв сертификата
     @PostMapping("/{id}/revoke")
     public String revokeCertificate(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
@@ -82,6 +78,19 @@ public class AdminCertificateController {
         } catch (Exception e) {
             log.error("Ошибка отзыва сертификата {}", id, e);
             redirectAttributes.addAttribute("error", "Ошибка отзыва: " + e.getMessage());
+        }
+        return "redirect:/admin/certificates";
+    }
+    @PostMapping("/{id}/activate")
+    public String activateCertificate(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        Certificate certificate = certificateService.getCertificateById(id);
+        if (certificate.isRevoked()) {
+            certificate.setRevoked(false);
+            certificate.setRevokedDate(null);
+            certificateService.save(certificate);
+            redirectAttributes.addFlashAttribute("success", "Сертификат активирован");
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Сертификат уже активен");
         }
         return "redirect:/admin/certificates";
     }

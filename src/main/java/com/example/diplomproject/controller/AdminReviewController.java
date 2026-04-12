@@ -54,7 +54,7 @@ public class AdminReviewController {
     @GetMapping("/{reviewId}")
     public String viewReview(@PathVariable Long reviewId, Model model) {
         try {
-            Review review = reviewService.getReviewById(reviewId);
+            Review review = reviewService.getReviewEntityById(reviewId);
             model.addAttribute("review", review);
             model.addAttribute("content", "pages/admin/reviews/view :: admin-review-view-content");
             return "layouts/main";
@@ -66,7 +66,7 @@ public class AdminReviewController {
     @GetMapping("/{reviewId}/edit")
     public String editReviewForm(@PathVariable Long reviewId, Model model) {
         try {
-            Review review = reviewService.getReviewById(reviewId);
+            Review review = reviewService.getReviewEntityById(reviewId);
             model.addAttribute("review", review);
             model.addAttribute("content", "pages/admin/reviews/form :: admin-review-form-content");
             return "layouts/main";

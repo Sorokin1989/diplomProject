@@ -80,7 +80,7 @@ public class AdminPromocodeController {
     public String deletePromocode(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             promocodeService.deletePromocode(id);
-            redirectAttributes.addAttribute("success", "Промокод удалён");
+            redirectAttributes.addAttribute("success", "Промокод деактивирован");
         } catch (Exception e) {
             log.error("Ошибка удаления промокода {}", id, e);
             redirectAttributes.addAttribute("error", "Ошибка удаления: " + e.getMessage());

@@ -175,6 +175,7 @@ header, footer {
     transition: all 0.2s;
 }
 
+
 .input-field:focus-within {
     border-color: #aa7fdf;
     box-shadow: 0 0 0 3px rgba(170, 127, 223, 0.2);
@@ -197,6 +198,12 @@ header, footer {
     font-size: 1rem;
     outline: none;
     font-family: 'Inter', sans-serif;
+}
+
+.input-field input,
+.input-field select{
+    padding-left: 35px;   /* чтобы освободить место для иконки */
+    box-sizing: border-box; /* чтобы ширина считалась с отступами */
 }
 
 .input-field textarea {
@@ -715,7 +722,7 @@ ul.nav-list {
 .features-grid .course-card,
 .courses-grid .course-card {
     flex: 0 0 auto;
-    width: 280px;   /* подберите нужную ширину */
+    width: 400px;   /* подберите нужную ширину */
 }
 
 .feature-card {
@@ -752,19 +759,19 @@ ul.nav-list {
     color: #5c5668;
 }
 
-.course-card {
-    background: white;
-    border-radius: 1.5rem;
-    padding: 2rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    transition: transform 0.2s;
-    border: 1px solid #f0e6eb;
-}
+/*.course-card {*/
+/*    background: white;*/
+/*    border-radius: 1.5rem;*/
+/*    padding: 2rem;*/
+/*    box-shadow: 0 4px 12px rgba(0,0,0,0.05);*/
+/*    transition: transform 0.2s;*/
+/*    border: 1px solid #f0e6eb;*/
+/*}*/
 
-.course-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-}
+/*.course-card:hover {*/
+/*    transform: translateY(-5px);*/
+/*    box-shadow: 0 10px 25px rgba(0,0,0,0.1);*/
+/*}*/
 
 .course-card i {
     font-size: 2.5rem;
@@ -795,6 +802,7 @@ ul.nav-list {
     text-decoration: none;
     font-size: 0.9rem;
     transition: all 0.2s;
+    margin-top: auto;
 }
 
 .btn-course:hover {
@@ -931,18 +939,6 @@ ul.nav-list {
     align-items: flex-end;
     gap: 0.5rem;
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 .remove-btn {
     background: none;
@@ -1122,8 +1118,8 @@ ul.nav-list {
 
 /* Контейнер иконки категории для пользователя */
 .category-icon-user {
-    width: 800px;
-    height: 500px;
+    width: 100%;
+    height: 350px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1173,7 +1169,8 @@ ul.nav-list {
     font-size: 1.3rem;
     font-weight: 600;
     color: #2d2f36;
-    margin-bottom: 0.5rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
 }
 
 .category-info p {
@@ -1572,11 +1569,6 @@ ul.nav-list {
     text-decoration: underline;
 }
 
-/* Скрытый элемент */
-.hidden {
-    display: none;
-}
-
 /* Блок текущего изображения (админка категорий) */
 .current-image-wrapper {
     margin-bottom: 1rem;
@@ -1650,8 +1642,6 @@ ul.nav-list {
     height: 100%;
 }
 
-
-
 /* Эффект при наведении на всю карточку */
 .category-link:hover .category-card {
     transform: translateY(-6px);
@@ -1677,26 +1667,26 @@ ul.nav-list {
 }
 
 /* Изображение курса */
-.course-image {
-    width: 100%;
-    height: 180px;
-    overflow: hidden;
-    border-radius: 1.5rem;
-    background: #f0eef8;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+/*.course-image {*/
+/*    width: 100%;*/
+/*    height: 180px;*/
+/*    overflow: hidden;*/
+/*    border-radius: 1.5rem;*/
+/*    background: #f0eef8;*/
+/*    display: flex;*/
+/*    align-items: center;*/
+/*    justify-content: center;*/
+/*}*/
 .course-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
 }
-.course-image i {
-    font-size: 3rem;
-    color: #aa7fdf;
-}
+/*.course-image i {*/
+/*    font-size: 3rem;*/
+/*    color: #aa7fdf;*/
+/*}*/
 
 /* Остальные стили (course-info, course-meta, course-actions) у вас уже есть */
 .course-actions {
@@ -1860,15 +1850,6 @@ ul.nav-list {
     margin: 0.5rem auto 0;
 }
 
-
-
-
-
-
-
-
-
-
 /* ===== СЕТКА КУРСОВ (flex-центрирование) ===== */
 .courses-grid {
     display: flex;
@@ -1880,7 +1861,7 @@ ul.nav-list {
 
 /* ===== КАРТОЧКА КУРСА ===== */
 .course-card {
-    width: 280px;           /* задайте нужную ширину */
+    width: 400px;
     flex-shrink: 0;         /* чтобы не сжималась */
     background: white;
     border-radius: 1.5rem;
@@ -1900,7 +1881,7 @@ ul.nav-list {
 /* Изображение курса */
 .course-image {
     width: 100%;
-    height: 160px;
+    height: 250px;
     overflow: hidden;
     border-radius: 1rem;
     background: #f0eef8;
@@ -1911,11 +1892,11 @@ ul.nav-list {
     flex-shrink: 0;        /* чтобы изображение не сжималось */
 }
 
-.course-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
+/*.course-image img {*/
+/*    width: 100%;*/
+/*    height: 100%;*/
+/*    object-fit: cover;*/
+/*}*/
 
 .course-image i {
     font-size: 3rem;
@@ -1979,76 +1960,104 @@ ul.nav-list {
 
 .contacts-container h1 {
     text-align: center;
+    color: #5e3a8c;
     margin-bottom: 2rem;
-    color: #2d2f36;
+    font-size: 2.2rem;
 }
 
+/*.contacts-wrapper {*/
+/*    display: grid;*/
+/*    grid-template-columns: 1fr 1fr;*/
+/*    gap: 3rem;*/
+/*}*/
+
 .contacts-wrapper {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-wrap: wrap;
     gap: 3rem;
+    justify-content: space-between;
+    align-items: flex-start;
 }
 
 /* Блок с контактной информацией */
 .contact-info-block {
-    background: #f9f9fc;
-    padding: 1.5rem;
-    border-radius: 1.5rem;
+    flex: 1;
+    min-width: 260px;
+    background: #faf5ff;
+    border-radius: 24px;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    box-shadow: 0 8px 20px rgba(170, 127, 223, 0.1);
+    transition: transform 0.2s;
 }
 
 .contact-item {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
+    justify-content: center;
     gap: 1rem;
-    margin-bottom: 1.5rem;
+    margin: 1.5rem 0;
+    padding: 0.8rem;
+    background: white;
+    border-radius: 60px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
 }
 
 .contact-item i {
-    font-size: 1.8rem;
-    color: #8461c2;
-    width: 2rem;
+    font-size: 28px;
+    color: #aa7fdf;
 }
 
 .contact-item h3 {
-    margin: 0 0 0.25rem 0;
-    font-size: 1.1rem;
-    color: #2d2f36;
+    margin: 0;
+    font-size: 1rem;
+    color: #5e3a8c;
 }
 
 .contact-item p {
     margin: 0;
-    color: #5c5668;
+    color: #7a5ca6;
+    font-weight: 500;
 }
 
+/* Социальные ссылки */
 .social-links {
+    margin-top: 1.5rem;
     display: flex;
+    justify-content: center;
     gap: 1rem;
-    margin-top: 2rem;
 }
 
 .social-links a {
-    background: #8461c2;
-    color: white;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.2s;
-    text-decoration: none;
+    width: 54px;
+    height: 54px;
+    background: #f8f2ff;
+    border-radius: 50%;
+    color: #aa7fdf;
+    font-size: 36px;
+    transition: all 0.2s;
+    text-decoration: none;   /* убирает подчёркивание текста */
+    border-bottom: none;     /* на случай, если линия от border */
+    outline: none;           /* убирает обводку при клике (опционально) */
 }
 
 .social-links a:hover {
     background: #aa7fdf;
+    color: white;
+    transform: scale(1.05);
 }
 
-/* Форма */
+/* Правый блок — форма */
 .contact-form-block {
+    flex: 1.5;
+    min-width: 320px;
     background: white;
-    padding: 1.5rem;
-    border-radius: 1.5rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow: 0 8px 25px rgba(170, 127, 223, 0.08);
 }
 
 .contact-form {
@@ -2059,18 +2068,22 @@ ul.nav-list {
 
 .contact-form input,
 .contact-form textarea {
-    padding: 0.8rem 1rem;
-    border: 1px solid #e0dde8;
-    border-radius: 1rem;
+    padding: 12px 16px;
+    border: 1px solid #e9d9f5;
+    border-radius: 30px;
     font-family: inherit;
     font-size: 1rem;
-    transition: border 0.2s;
+    transition: 0.2s;
+    background: #fefcff;
 }
+
+
 
 .contact-form input:focus,
 .contact-form textarea:focus {
     outline: none;
-    border-color: #8461c2;
+    border-color: #aa7fdf;
+    box-shadow: 0 0 0 3px rgba(170, 127, 223, 0.2);
 }
 
 .btn-primary {
@@ -2110,8 +2123,9 @@ ul.nav-list {
 }
 
 .contact-form-block h2 {
+    color: #5e3a8c;
+    margin-bottom: 1.5rem;
     text-align: center;
-    margin-bottom: 1.5rem; /* или нужный вам отступ, например 24px */
 }
 
 
@@ -2679,18 +2693,18 @@ ul.nav-list {
 }
 
 /* Блок отзывов */
-.reviews-section {
-    margin-top: 2rem;
-    border-top: 2px solid #e9e2e7;
-    padding-top: 1.8rem;
-}
+/*.reviews-section {*/
+/*    margin-top: 2rem;*/
+/*    border-top: 2px solid #e9e2e7;*/
+/*    padding-top: 1.8rem;*/
+/*}*/
 
-.reviews-section h3 {
-    font-size: 1.6rem;
-    font-weight: 600;
-    color: #2d2f36;
-    margin-bottom: 1.2rem;
-}
+/*.reviews-section h3 {*/
+/*    font-size: 1.6rem;*/
+/*    font-weight: 600;*/
+/*    color: #2d2f36;*/
+/*    margin-bottom: 1.2rem;*/
+/*}*/
 
 .review-card {
     background: #fefefe;
@@ -3408,4 +3422,397 @@ ul.nav-list {
     background-color: #4caf50;
     border-radius: 3px;
     transition: width 0.2s ease;
+}
+/* Звёздный рейтинг */
+.rating-stars {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    gap: 0.3rem;
+}
+.rating-stars input {
+    display: none;
+}
+.rating-stars label {
+    font-size: 1.8rem;
+    color: #ddd;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.rating-stars label:hover,
+.rating-stars label:hover ~ label {
+    color: #ffc107;
+}
+.rating-stars input:checked ~ label {
+    color: #ffc107;
+}
+.required-star {
+    color: #e74c3c;
+    font-size: 1rem;
+    margin-left: 3px;
+}
+.input-field {
+    position: relative;
+}
+.input-field i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #aaa;
+    z-index: 1;
+}
+.input-field textarea {
+    padding-left: 2.5rem;
+}
+.form-actions {
+    margin-top: 2rem;
+    border-top: 1px solid #eee;
+    padding-top: 1.5rem;
+}
+
+/* ========== БЛОК ОТЗЫВОВ – ШКОЛА КРАСОТЫ ========== */
+
+/* Контейнер секции отзывов */
+.reviews-section {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid #f5e6e0;
+}
+
+/* Шапка: заголовок + кнопка */
+.reviews-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.8rem;
+}
+
+.reviews-section h3 {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #6b4c44;
+    margin: 0;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.6rem;
+}
+
+.reviews-section h3 span {
+    font-size: 0.9rem;
+    font-weight: normal;
+    background: #fef3ef;
+    color: #c2856b;
+    padding: 0.2rem 0.7rem;
+    border-radius: 30px;
+}
+
+/* Кнопка "Написать отзыв" */
+.btn-primary.btn-sm {
+    background: #e7c2b5;
+    color: #6b4c44;
+    border: none;
+    padding: 0.5rem 1.2rem;
+    border-radius: 40px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+.btn-primary.btn-sm:hover {
+    background: #dbb09e;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+.btn-primary.btn-sm i {
+    font-size: 0.8rem;
+}
+
+/* Состояние "нет отзывов" */
+.empty-reviews {
+    text-align: center;
+    background: #fffbf9;
+    border-radius: 24px;
+    padding: 2rem 1.5rem;
+    border: 1px dashed #eedbd2;
+    margin-top: 1rem;
+}
+
+.empty-reviews p {
+    font-size: 1rem;
+    color: #bda59b;
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.empty-reviews p::before {
+    content: "🌸";
+    font-size: 1.3rem;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 640px) {
+    .reviews-header {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+    .btn-primary.btn-sm {
+        justify-content: center;
+    }
+}
+
+/* Статусы модерации */
+.status-badge.pending {
+    background-color: #ffc107;
+    color: #856404;
+}
+.status-badge.approved {
+    background-color: #28a745;
+    color: white;
+}
+.status-badge.rejected {
+    background-color: #dc3545;
+    color: white;
+}
+.status-badge.hidden {
+    background-color: #6c757d;
+    color: white;
+}
+.status-badge.visible {
+    background-color: #17a2b8;
+    color: white;
+}
+
+/* Кнопки действий */
+.approve-btn-small, .reject-btn-small, .hide-btn-small, .show-btn-small {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+.approve-btn-small { color: #28a745; }
+.approve-btn-small:hover { background-color: #28a745; color: white; }
+.reject-btn-small { color: #dc3545; }
+.reject-btn-small:hover { background-color: #dc3545; color: white; }
+.hide-btn-small { color: #6c757d; }
+.hide-btn-small:hover { background-color: #6c757d; color: white; }
+.show-btn-small { color: #17a2b8; }
+.show-btn-small:hover { background-color: #17a2b8; color: white; }
+
+/* === Стили для страницы контактов (ваша сиреневая стилистика) === */
+
+/*.contacts-container {*/
+/*    max-width: 1200px;*/
+/*    margin: 0 auto;*/
+/*    padding: 2rem 1.5rem;*/
+/*}*/
+
+/*.contacts-container h1 {*/
+/*    text-align: center;*/
+/*    color: #5e3a8c;*/
+/*    margin-bottom: 2rem;*/
+/*    font-size: 2.2rem;*/
+/*}*/
+
+/*.contacts-wrapper {*/
+/*    display: flex;*/
+/*    flex-wrap: wrap;*/
+/*    gap: 3rem;*/
+/*    justify-content: space-between;*/
+/*    align-items: flex-start;*/
+/*}*/
+
+/* Левый блок */
+/*.contact-info-block {*/
+/*    flex: 1;*/
+/*    min-width: 260px;*/
+/*    background: #faf5ff;*/
+/*    border-radius: 24px;*/
+/*    padding: 2rem 1.5rem;*/
+/*    text-align: center;*/
+/*    box-shadow: 0 8px 20px rgba(170, 127, 223, 0.1);*/
+/*    transition: transform 0.2s;*/
+/*}*/
+
+.contact-info-block:hover {
+    transform: translateY(-4px);
+}
+
+/* Иконка spa — ваш стиль */
+.contact-hero-icon {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.contact-hero-icon i {
+    font-size: 80px;
+    color: #aa7fdf;
+    background: #f8f2ff ;
+    border-radius: 50%;
+    padding: 20px;
+    box-shadow: 0 10px 20px rgba(170, 127, 223, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.contact-hero-icon i:hover {
+    transform: scale(1.02);
+}
+
+/* Контактный email */
+/*.contact-item {*/
+/*    display: flex;*/
+/*    align-items: center;*/
+/*    justify-content: center;*/
+/*    gap: 1rem;*/
+/*    margin: 1.5rem 0;*/
+/*    padding: 0.8rem;*/
+/*    background: white;*/
+/*    border-radius: 60px;*/
+/*    box-shadow: 0 2px 8px rgba(0,0,0,0.03);*/
+/*}*/
+
+/*.contact-item i {*/
+/*    font-size: 28px;*/
+/*    color: #aa7fdf;*/
+/*}*/
+
+/*.contact-item h3 {*/
+/*    margin: 0;*/
+/*    font-size: 1rem;*/
+/*    color: #5e3a8c;*/
+/*}*/
+
+/*.contact-item p {*/
+/*    margin: 0;*/
+/*    color: #7a5ca6;*/
+/*    font-weight: 500;*/
+/*}*/
+
+/* Социальные ссылки */
+/*.social-links {*/
+/*    margin-top: 1.5rem;*/
+/*    display: flex;*/
+/*    justify-content: center;*/
+/*    gap: 1rem;*/
+/*}*/
+
+/*.social-links a {*/
+/*    display: inline-flex;*/
+/*    align-items: center;*/
+/*    justify-content: center;*/
+/*    width: 54px;*/
+/*    height: 54px;*/
+/*    background: #f8f2ff;*/
+/*    border-radius: 50%;*/
+/*    color: #aa7fdf;*/
+/*    font-size: 32px;*/
+/*    transition: all 0.2s;*/
+/*}*/
+
+/*.social-links a:hover {*/
+/*    background: #aa7fdf;*/
+/*    color: white;*/
+/*    transform: scale(1.05);*/
+/*}*/
+
+/*!* Правый блок — форма *!*/
+/*.contact-form-block {*/
+/*    flex: 1.5;*/
+/*    min-width: 320px;*/
+/*    background: white;*/
+/*    border-radius: 24px;*/
+/*    padding: 2rem;*/
+/*    box-shadow: 0 8px 25px rgba(170, 127, 223, 0.08);*/
+/*}*/
+
+/*.contact-form-block h2 {*/
+/*    color: #5e3a8c;*/
+/*    margin-bottom: 1.5rem;*/
+/*    text-align: center;*/
+/*}*/
+
+/*.contact-form {*/
+/*    display: flex;*/
+/*    flex-direction: column;*/
+/*    gap: 1rem;*/
+/*}*/
+
+/*.contact-form input,*/
+/*.contact-form textarea {*/
+/*    padding: 12px 16px;*/
+/*    border: 1px solid #e9d9f5;*/
+/*    border-radius: 30px;*/
+/*    font-family: inherit;*/
+/*    font-size: 1rem;*/
+/*    transition: 0.2s;*/
+/*    background: #fefcff;*/
+/*}*/
+
+/*.contact-form input:focus,*/
+/*.contact-form textarea:focus {*/
+/*    outline: none;*/
+/*    border-color: #aa7fdf;*/
+/*    box-shadow: 0 0 0 3px rgba(170, 127, 223, 0.2);*/
+/*}*/
+
+.contact-form textarea {
+    border-radius: 20px;
+    resize: vertical;
+}
+
+/* Кнопка — в стиле вашей главной */
+.contact-form .btn-primary {
+    background: #aa7fdf;
+    color: white;
+    border: none;
+    padding: 14px 20px;
+    border-radius: 40px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 0.5rem;
+    display: flex;
+    justify-content: center;
+}
+
+.contact-form .btn-primary:hover {
+    background: #8b5ec7;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(170, 127, 223, 0.4);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .contacts-wrapper {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    .contact-info-block, .contact-form-block {
+        width: 100%;
+    }
+}
+
+/* Изображение категории на главной странице */
+.category-image {
+    width: 100%;
+    height: 250px;          /* задайте нужную высоту */
+    object-fit: cover;      /* обрезает картинку до одинакового размера */
+    border-radius: 1rem;
+    background: #f0eef8;
+    margin-bottom: 1rem;
 }

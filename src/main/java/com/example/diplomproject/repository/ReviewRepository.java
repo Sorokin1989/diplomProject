@@ -1,11 +1,14 @@
 package com.example.diplomproject.repository;
 
+import com.example.diplomproject.dto.ReviewDto;
 import com.example.diplomproject.entity.Course;
 import com.example.diplomproject.entity.Review;
 import com.example.diplomproject.entity.User;
+import com.example.diplomproject.enums.ModerationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,4 +28,16 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Review> findByCourseIdOrderByCreatedAtDesc(Long courseId);
     List<Review> findByUserIdOrderByCreatedAtDesc(Long userId);
     List<Review> findByRatingGreaterThanEqualOrderByCreatedAtDesc(Integer minRating);
+
+
+    List<Review> findByCourseOrderByCreatedAtDesc(Course course);
+
+    List<Review> findByCourseAndModerationStatusAndHiddenFalse(Course course, ModerationStatus status);
+
+    int countByCourseAndModerationStatusAndHiddenFalse(Course course, ModerationStatus status);
+
+    boolean existsByUserAndCourseAndModerationStatusIn(User user, Course course, List<ModerationStatus> statuses);
+
+    List<Review> findByModerationStatus(ModerationStatus status);
+
 }

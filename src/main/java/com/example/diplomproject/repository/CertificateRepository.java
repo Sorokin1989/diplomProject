@@ -34,4 +34,6 @@ public interface CertificateRepository extends JpaRepository<Certificate, Long> 
     Optional<Certificate> findByIdWithDetails(@Param("id") Long id);
 
     Optional<Certificate> findByUserIdAndCourseId(Long userId, Long courseId);
+
+    List<Certificate> findByCourseAndRevokedTrue(Course course);
 }

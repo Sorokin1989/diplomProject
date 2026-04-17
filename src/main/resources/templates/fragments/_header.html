@@ -21,7 +21,7 @@
                 <li><a th:href="@{/categories}" class="nav-link">Категории</a></li>
 
                 <!-- Моё (выпадающее) -->
-                <li class="dropdown" sec:authorize="isAuthenticated()">
+                <li class="dropdown" sec:authorize="isAuthenticated() and !hasRole('ADMIN')">
                     <span class="nav-link dropdown-toggle">Кабинет</span>
                     <div class="dropdown-menu">
                         <a th:href="@{/profile}">Профиль</a>
@@ -29,6 +29,10 @@
                         <a th:href="@{/my-courses}">Курсы</a>
                         <a th:href="@{/orders}">Заказы</a>
                     </div>
+                </li>
+
+                <li sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{/profile}" class="nav-link">Профиль</a>
                 </li>
 
                 <!-- Профиль / Выход (выпадающее) -->
@@ -45,7 +49,7 @@
                 </li>
 
                 <!-- Корзина (всегда видна) -->
-                <li><a th:href="@{/cart}" class="nav-link"><i class="fas fa-shopping-cart"></i> Корзина</a></li>
+                <li sec:authorize="!hasRole('ADMIN')"><a th:href="@{/cart}" class="nav-link"><i class="fas fa-shopping-cart"></i> Корзина</a></li>
 
                 <!-- Вход / Регистрация для анонимов -->
                 <li sec:authorize="isAnonymous()"><a th:href="@{/login}" class="nav-link">Вход</a></li>

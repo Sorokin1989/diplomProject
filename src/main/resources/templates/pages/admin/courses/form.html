@@ -5,13 +5,13 @@
     </div>
 
     <div class="form-header">
-        <div th:if="${param.error}" class="message-box error">
+        <div th:if="${error}" class="message-box error">
             <i class="fas fa-circle-exclamation"></i>
-            <span th:text="${param.error}">Ошибка</span>
+            <span th:text="${error}">Ошибка</span>
         </div>
-        <div th:if="${param.success}" class="message-box success">
+        <div th:if="${success}" class="message-box success">
             <i class="fas fa-check-circle"></i>
-            <span th:text="${param.success}">Успешно</span>
+            <span th:text="${success}">Успешно</span>
         </div>
         <h2 th:text="${course.id != null ? 'Редактирование курса' : 'Создание курса'}">Форма курса</h2>
         <p>Заполните данные курса</p>

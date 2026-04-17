@@ -1,18 +1,20 @@
 <div th:fragment="contacts-content" class="contacts-container">
-    <div th:if="${param.success != null}" class="alert alert-success">
+    <div th:if="${success != null}" class="alert alert-success alert-permanent">
         Спасибо! Ваше сообщение отправлено. Мы свяжемся с вами в ближайшее время.
+    </div>
+    <!-- Сообщение об ошибке -->
+    <div th:if="${error}" class="alert alert-danger alert-permanent">
+        <span th:text="${error}">Произошла ошибка при отправке.</span>
     </div>
     <h1>Связаться с нами</h1>
     <div class="contacts-wrapper">
-        <!-- Контактная информация -->
+        <!-- Левый блок: контактная информация -->
         <div class="contact-info-block">
-            <div class="contact-item">
-                <i class="fas fa-phone-alt"></i>
-                <div>
-                    <h3>Телефон</h3>
-                    <p>+7 (123) 456-78-90</p>
-                </div>
+            <!-- Рисунок как на главной странице (иконка spa) -->
+            <div class="contact-hero-icon">
+                <i class="fas fa-spa"></i>
             </div>
+
             <div class="contact-item">
                 <i class="fas fa-envelope"></i>
                 <div>
@@ -20,29 +22,13 @@
                     <p>info@beauty-school.ru</p>
                 </div>
             </div>
-            <div class="contact-item">
-                <i class="fas fa-map-marker-alt"></i>
-                <div>
-                    <h3>Адрес</h3>
-                    <p>г. Москва, ул. Красоты, д. 1, офис 205</p>
-                </div>
-            </div>
-            <div class="contact-item">
-                <i class="fas fa-clock"></i>
-                <div>
-                    <h3>Режим работы</h3>
-                    <p>Пн-Пт: 10:00 – 20:00<br>Сб: 11:00 – 18:00<br>Вс: выходной</p>
-                </div>
-            </div>
+
             <div class="social-links">
-                <a href="#" aria-label="Telegram"><i class="fab fa-telegram-plane"></i></a>
-                <a href="#" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
-                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
                 <a href="#" aria-label="VK"><i class="fab fa-vk"></i></a>
             </div>
         </div>
 
-        <!-- Форма обратной связи -->
+        <!-- Правый блок: форма обратной связи -->
         <div class="contact-form-block">
             <h2>Напишите нам</h2>
             <form th:action="@{/send-message}" method="post" class="contact-form">

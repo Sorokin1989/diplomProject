@@ -75,6 +75,16 @@
                             <i class="fas fa-ban"></i>
                         </button>
                     </form>
+
+                    <!-- Кнопка удаления -->
+                    <form th:action="@{/admin/certificates/{id}/delete(id=${cert.id})}" method="post"
+                          style="display: inline;"
+                          onsubmit="return confirm('Удалить сертификат? Это действие необратимо.');">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="delete-btn-small" title="Удалить">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </form>
                 </td>
             </tr>
             <tr th:if="${certificates == null or certificates.isEmpty()}">

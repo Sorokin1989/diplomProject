@@ -46,9 +46,8 @@
         <div th:if="${certificate.certificateUrl}">
             <div class="detail-row">
                 <strong>Файл:</strong>
-                <a th:href="${certificate.certificateUrl}" target="_blank" class="download-link">
-                    <i class="fas fa-download"></i> Скачать сертификат
-                </a>
+                <a th:href="@{'/uploads/certificates/' + ${certificate.certificateUrl}}" download>
+                    <i class="fas fa-download"></i> Скачать сертификат</a>
             </div>
         </div>
     </div>

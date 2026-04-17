@@ -14,17 +14,15 @@
             <span th:text="${param.success}">Успешно</span>
         </div>
         <h2>Управление отзывами</h2>
-        <p>Просмотр, редактирование, удаление и модерация отзывов</p>
+        <p>Просмотр, редактирование, модерация и удаление отзывов</p>
     </div>
 
-    <!-- Единая панель: кнопка "Назад" + форма фильтров -->
+    <!-- Панель фильтров -->
     <div class="admin-filters-toolbar" style="display: flex; align-items: flex-end; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
-        <!-- Кнопка "Назад" -->
         <a th:href="@{/admin}" class="btn-secondary">
             <i class="fas fa-arrow-left"></i> Назад
         </a>
 
-        <!-- Форма фильтров -->
         <form method="get" th:action="@{/admin/reviews}" class="filters-form" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; margin: 0;">
             <div class="filter-group">
                 <label for="courseId">ID курса</label>
@@ -47,6 +45,15 @@
                     <option value="5" th:selected="${param.minRating == '5'}">5 и выше</option>
                 </select>
             </div>
+            <div class="filter-group">
+                <label for="modStatus">Статус модерации</label>
+                <select id="modStatus" name="modStatus" class="form-select">
+                    <option value="">Все</option>
+                    <option value="PENDING" th:selected="${param.modStatus == 'PENDING'}">На модерации</option>
+                    <option value="APPROVED" th:selected="${param.modStatus == 'APPROVED'}">Одобрен</option>
+                    <option value="REJECTED" th:selected="${param.modStatus == 'REJECTED'}">Отклонён</option>
+                </select>
+            </div>
             <div class="filter-actions" style="display: flex; gap: 0.5rem;">
                 <button type="submit" class="btn-primary">Применить</button>
                 <a th:href="@{/admin/reviews}" class="btn-secondary">Сбросить</a>
@@ -54,7 +61,7 @@
         </form>
     </div>
 
-    <!-- Таблица отзывов (без изменений) -->
+    <!-- Таблица отзывов -->
     <div class="orders-table-container">
         <table class="orders-table">
             <thead>
@@ -65,7 +72,8 @@
                 <th>Текст отзыва</th>
                 <th>Рейтинг</th>
                 <th>Дата</th>
-                <th>Статус</th>
+                <th>Статус модерации</th>
+                <th>Видимость</th>
                 <th>Действия</th>
             </tr>
             </thead>
@@ -77,42 +85,89 @@
                 <td th:text="${review.text}">Отличный курс!</td>
                 <td th:text="${review.rating}">5</td>
                 <td th:text="${#temporals.format(review.createdAt, 'dd.MM.yyyy HH:mm')}">01.04.2026 12:00</td>
+
+                <!-- Статус модерации -->
                 <td>
-                    <span th:class="'status-badge ' + (${review.hidden} ? 'revoked' : 'active')"
-                          th:text="${review.hidden} ? 'Скрыт' : 'Видим'"></span>
+                    <span th:class="'status-badge ' +
+                        (${review.moderationStatus.name() == 'PENDING'} ? 'pending' :
+                         (${review.moderationStatus.name() == 'APPROVED'} ? 'approved' : 'rejected'))"
+                          th:text="${review.moderationStatus.name() == 'PENDING'} ? 'На модерации' :
+                                 (${review.moderationStatus.name() == 'APPROVED'} ? 'Одобрен' : 'Отклонён')">
+                    </span>
                 </td>
-                <td class="actions-cell">
+
+                <!-- Видимость (скрыт/видим) -->
+                <td>
+                    <span th:if="${review.hidden}" class="status-badge hidden">Скрыт</span>
+                    <span th:unless="${review.hidden}" class="status-badge visible">Видим</span>
+                </td>
+
+
+                <!-- Действия -->
+                <td class="actions-cell" style="display: flex; flex-wrap: wrap; gap: 0.3rem;">
+                    <!-- Просмотр -->
                     <a th:href="@{/admin/reviews/{id}(id=${review.id})}" class="view-btn-small" title="Просмотреть">
                         <i class="fas fa-eye"></i>
                     </a>
+                    <!-- Редактирование -->
                     <a th:href="@{/admin/reviews/{id}/edit(id=${review.id})}" class="edit-btn-small" title="Редактировать">
                         <i class="fas fa-pen"></i>
                     </a>
-                    <form th:action="@{/admin/reviews/{id}/delete(id=${review.id})}" method="post" style="display: inline;"
-                          onsubmit="return confirm('Удалить отзыв?');">
+
+
+                    <!-- Одобрить (устанавливает статус APPROVED) -->
+                    <form th:action="@{/admin/reviews/{id}/moderate(id=${review.id})}" method="post" style="display: inline;"
+                          onsubmit="return confirm('Изменить статус на «Одобрен»?');">
+                        <input type="hidden" name="status" value="APPROVED"/>
+                        <input type="hidden" name="redirect" th:value="${currentUrl}"/>
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                        <button type="submit" class="revoke-btn-small" title="Удалить">
-                            <i class="fas fa-trash"></i>
+                        <button type="submit" class="approve-btn-small" title="Одобрить">
+                            <i class="fas fa-check-circle"></i>
                         </button>
                     </form>
+
+                    <!-- Отклонить (устанавливает статус REJECTED) -->
+                    <form th:action="@{/admin/reviews/{id}/moderate(id=${review.id})}" method="post" style="display: inline;"
+                          onsubmit="return confirm('Изменить статус на «Отклонён»?');">
+                        <input type="hidden" name="status" value="REJECTED"/>
+                        <input type="hidden" name="redirect" th:value="${currentUrl}"/>
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="reject-btn-small" title="Отклонить">
+                            <i class="fas fa-times-circle"></i>
+                        </button>
+                    </form>
+
+                    <!-- Скрыть / Показать (управление полем hidden) -->
                     <form th:if="!${review.hidden}" th:action="@{/admin/reviews/{id}/hide(id=${review.id})}" method="post" style="display: inline;"
                           onsubmit="return confirm('Скрыть отзыв?');">
+                        <input type="hidden" name="redirect" th:value="${currentUrl}"/>
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                        <button type="submit" class="revoke-btn-small" title="Скрыть">
+                        <button type="submit" class="hide-btn-small" title="Скрыть">
                             <i class="fas fa-eye-slash"></i>
                         </button>
                     </form>
                     <form th:if="${review.hidden}" th:action="@{/admin/reviews/{id}/show(id=${review.id})}" method="post" style="display: inline;"
                           onsubmit="return confirm('Показать отзыв?');">
+                        <input type="hidden" name="redirect" th:value="${currentUrl}"/>
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                        <button type="submit" class="view-btn-small" title="Показать">
+                        <button type="submit" class="show-btn-small" title="Показать">
                             <i class="fas fa-eye"></i>
+                        </button>
+                    </form>
+
+                    <!-- Удаление -->
+                    <form th:action="@{/admin/reviews/{id}/delete(id=${review.id})}" method="post" style="display: inline;"
+                          onsubmit="return confirm('Удалить отзыв навсегда?');">
+                        <input type="hidden" name="redirect" th:value="${currentUrl}"/>
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="delete-btn-small" title="Удалить">
+                            <i class="fas fa-trash"></i>
                         </button>
                     </form>
                 </td>
             </tr>
             <tr th:if="${#lists.isEmpty(reviews)}">
-                <td colspan="8" class="empty-message">Отзывы не найдены</td>
+                <td colspan="9" class="empty-message">Отзывы не найдены</td>
             </tr>
             </tbody>
         </table>

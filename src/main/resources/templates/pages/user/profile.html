@@ -11,9 +11,9 @@
         </div>
 
         <!-- Сообщение об успешном обновлении -->
-        <div th:if="${updated}" class="message-box success">
+        <div th:if="${success}" class="message-box success">
             <i class="fas fa-check-circle"></i>
-            <span>Профиль успешно обновлён!</span>
+            <span  th:text="${success}"></span>
         </div>
 
         <div th:object="${user}" class="profile-info">
@@ -42,7 +42,7 @@
             </div>
         </div>
 
-        <div class="profile-actions">
+        <div th:if="${user.role != 'ADMIN'}" class="profile-actions">
             <a th:href="@{/profile/edit}" class="edit-btn">
                 <i class="fas fa-edit"></i> Редактировать профиль
             </a>

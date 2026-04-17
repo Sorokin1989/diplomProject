@@ -5,13 +5,14 @@
     </div>
 
     <div class="form-header">
-        <div th:if="${param.success}" class="message-box success">
+        <!-- Исправлено: flash-атрибуты теперь из модели, а не из параметров URL -->
+        <div th:if="${success}" class="message-box success">
             <i class="fas fa-check-circle"></i>
-            <span th:text="${param.success}">Успешно</span>
+            <span th:text="${success}">Успешно</span>
         </div>
-        <div th:if="${param.error}" class="message-box error">
+        <div th:if="${error}" class="message-box error">
             <i class="fas fa-circle-exclamation"></i>
-            <span th:text="${param.error}">Ошибка</span>
+            <span th:text="${error}">Ошибка</span>
         </div>
         <h2>Управление пользователями</h2>
         <p>Просмотр и редактирование профилей</p>
@@ -24,7 +25,7 @@
         </a>
     </div>
 
-    <!-- Таблица пользователей (можно использовать flex-карточки как в категориях, но для таблицы удобнее) -->
+    <!-- Таблица пользователей -->
     <div class="users-table-container" style="overflow-x: auto;">
         <table class="users-table" style="width: 100%; border-collapse: collapse;">
             <thead>

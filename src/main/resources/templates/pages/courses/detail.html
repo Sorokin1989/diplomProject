@@ -1,8 +1,8 @@
 <div th:fragment="detail-content" class="course-detail-container">
     <div class="course-header">
         <h1 th:text="${course.title}">Название курса</h1>
-        <div class="course-rating" th:if="${course.reviewCount != null}">
-            <span>⭐ <span th:text="${course.reviewCount}">0</span> отзывов</span>
+        <div class="course-rating" th:if="${reviewCount != null and reviewCount > 0}">
+            <span>⭐ <span th:text="${reviewCount}">0</span> отзывов</span>
         </div>
     </div>
 

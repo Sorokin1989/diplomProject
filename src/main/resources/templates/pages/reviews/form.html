@@ -1,27 +1,72 @@
-<div th:fragment="review-form-content" class="review-form-container">
-    <div class="page-header">
-        <h1 th:text="${reviewDto.id != null} ? 'Редактирование отзыва' : 'Новый отзыв'">Отзыв</h1>
+<div th:fragment="review-form-content" class="categories-card">
+    <div class="brand">
+        <h1>Школа красоты</h1>
+        <p>учебный центр индустрии красоты</p>
     </div>
+
+    <div class="form-header">
+        <div th:if="${error}" class="message-box error">
+            <i class="fas fa-circle-exclamation"></i>
+            <span th:text="${error}">Ошибка</span>
+        </div>
+        <h2 th:text="${reviewDto.id != null} ? 'Редактирование отзыва' : 'Новый отзыв'">
+            Отзыв
+        </h2>
+        <p th:text="${reviewDto.id != null} ? 'Измените текст или оценку' : 'Поделитесь впечатлениями о курсе'">
+            Поделитесь впечатлениями о курсе
+        </p>
+    </div>
+
+    <div class="admin-actions-bar" style="margin-bottom: 1.5rem;">
+        <a th:href="@{/courses/{id}(id=${course.id})}" class="btn-secondary">
+            <i class="fas fa-arrow-left"></i> Назад к курсу
+        </a>
+    </div>
+
     <form th:action="${reviewDto.id != null}
                      ? @{/courses/{courseId}/reviews/{reviewId}(courseId=${course.id}, reviewId=${reviewDto.id})}
                      : @{/courses/{courseId}/reviews(courseId=${course.id})}"
-          method="post">
+          method="post" class="admin-form">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <!-- Блок рейтинга (звёздочки с радио) -->
         <div class="input-group">
-            <label>Оценка (1-5):</label>
-            <select name="rating" class="input-field" required>
-                <option value="1" th:selected="${reviewRating == 1}">1 ★</option>
-                <option value="2" th:selected="${reviewRating == 2}">2 ★★</option>
-                <option value="3" th:selected="${reviewRating == 3}">3 ★★★</option>
-                <option value="4" th:selected="${reviewRating == 4}">4 ★★★★</option>
-                <option value="5" th:selected="${reviewRating == 5}">5 ★★★★★</option>
-            </select>
+            <label>Ваша оценка <span class="required-star">*</span></label>
+            <div class="rating-stars">
+                <input type="radio" id="star5" name="rating" value="5" th:checked="${reviewRating == 5}" required/>
+                <label for="star5" title="5 – Отлично"><i class="fas fa-star"></i></label>
+
+                <input type="radio" id="star4" name="rating" value="4" th:checked="${reviewRating == 4}" required/>
+                <label for="star4" title="4 – Хорошо"><i class="fas fa-star"></i></label>
+
+                <input type="radio" id="star3" name="rating" value="3" th:checked="${reviewRating == 3}" required/>
+                <label for="star3" title="3 – Нормально"><i class="fas fa-star"></i></label>
+
+                <input type="radio" id="star2" name="rating" value="2" th:checked="${reviewRating == 2}" required/>
+                <label for="star2" title="2 – Плохо"><i class="fas fa-star"></i></label>
+
+                <input type="radio" id="star1" name="rating" value="1" th:checked="${reviewRating == 1}" required/>
+                <label for="star1" title="1 – Ужасно"><i class="fas fa-star"></i></label>
+            </div>
         </div>
+
+        <!-- Текст отзыва -->
         <div class="input-group">
-            <label>Текст отзыва:</label>
-            <textarea name="text" class="input-field" rows="4" required th:text="${reviewText}"></textarea>
+            <label for="review-text">Текст отзыва <span class="required-star">*</span></label>
+            <div class="input-field">
+                <i class="fas fa-comment"></i>
+                <textarea id="review-text" name="text" rows="5" required th:text="${reviewText}"
+                          placeholder="Расскажите, что вам понравилось, а что можно улучшить..."></textarea>
+            </div>
         </div>
-        <button type="submit" class="btn-primary">Сохранить</button>
-        <a th:href="@{/courses/{id}(id=${course.id})}" class="btn-secondary">Отмена</a>
+
+        <div class="form-actions" style="display: flex; gap: 1rem; justify-content: flex-end;">
+            <button type="submit" class="btn-primary">
+                <i class="fas fa-save"></i> Сохранить
+            </button>
+            <a th:href="@{/courses/{id}(id=${course.id})}" class="btn-secondary">
+                <i class="fas fa-times"></i> Отмена
+            </a>
+        </div>
     </form>
 </div>

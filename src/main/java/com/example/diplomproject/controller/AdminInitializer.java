@@ -3,31 +3,49 @@ package com.example.diplomproject.controller;
 import com.example.diplomproject.enums.Role;
 import com.example.diplomproject.repository.UserRepository;
 import com.example.diplomproject.entity.User;
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 public class AdminInitializer implements CommandLineRunner {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    @Value("${app.admin.username:admin}")
+    private String adminUsername;
+
+    @Value("${app.admin.password:admin123}")
+    private String adminPassword;
+
+    @Value("${app.admin.email:admin@example.com}")
+    private String adminEmail;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    public AdminInitializer(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Override
     public void run(String... args) throws Exception {
         // Проверяем, существует ли пользователь с логином admin
-        if (userRepository.findByUsername("admin").isEmpty()) {
+        if (userRepository.findByUsername(adminUsername).isEmpty()) {
             User admin = new User();
-            admin.setUsername("admin");
-            admin.setPassword(passwordEncoder.encode("admin123"));
-            admin.setEmail("admin@example.com");
+            admin.setUsername(adminUsername);
+            admin.setPassword(passwordEncoder.encode(adminPassword));
+            admin.setEmail(adminEmail);
             admin.setRole(Role.ADMIN);
             userRepository.save(admin);
-            System.out.println("Администратор создан: логин admin, пароль admin123");
+            log.info("Администратор создан: логин {}, пароль {}", adminUsername, adminPassword);
+        } else {
+            log.debug("Администратор с логином {} уже существует", adminUsername);
         }
     }
 }

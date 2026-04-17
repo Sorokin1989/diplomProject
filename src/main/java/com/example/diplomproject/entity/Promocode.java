@@ -41,7 +41,7 @@ public class Promocode {
     private LocalDateTime validTo;
 
     @Column(name = "usage_limit", nullable = false)
-    private Integer usageLimit;
+    private Integer usageLimit=0;
 
     @Column(name = "used_count", nullable = false)
     private Integer usedCount=0;

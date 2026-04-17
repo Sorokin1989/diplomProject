@@ -7,7 +7,6 @@ import com.example.diplomproject.mapper.DiscountMapper;
 import com.example.diplomproject.repository.DiscountRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,24 +17,25 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
-import static java.util.Arrays.stream;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class DiscountService {
 
-    @Autowired
     private final DiscountRepository discountRepository;
-
-    @Autowired
     private final DiscountMapper discountMapper;
 
+    public DiscountService(DiscountRepository discountRepository, DiscountMapper discountMapper) {
+        this.discountRepository = discountRepository;
+        this.discountMapper = discountMapper;
+    }
 
+    @Transactional(readOnly = true)
     public List<Discount> getAllDiscounts() {
         return discountRepository.findAll();
     }
 
+    @Transactional(readOnly = true)
     public Discount getDiscountById(Long id) {
         return discountRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Скидка не найдена"));
@@ -112,6 +112,7 @@ public class DiscountService {
     /**
      * Проверка, активна ли скидка на текущий момент.
      */
+    @Transactional(readOnly = true)
     public boolean isDiscountActive(Discount discount) {
         if (discount == null) return false;
         LocalDateTime now = LocalDateTime.now();
@@ -127,20 +128,26 @@ public class DiscountService {
     public Discount updateDiscount(Long id, Discount updatedDiscount) {
         Discount existing = getDiscountById(id);
 
+        // 1. Сначала обновляем тип (если передан) – чтобы валидация значения была корректной
+        if (updatedDiscount.getDiscountType() != null) {
+            existing.setDiscountType(updatedDiscount.getDiscountType());
+        }
+
+        // 2. Потом обновляем значение скидки (с учётом нового типа)
+        if (updatedDiscount.getDiscountValue() != null && updatedDiscount.getDiscountValue().compareTo(BigDecimal.ZERO) >= 0) {
+            DiscountType currentType = existing.getDiscountType();
+            if (currentType == DiscountType.PERCENT && updatedDiscount.getDiscountValue().compareTo(BigDecimal.valueOf(100)) > 0) {
+                throw new IllegalArgumentException("Процент скидки не может превышать 100");
+            }
+            existing.setDiscountValue(updatedDiscount.getDiscountValue());
+        }
+
+        // Обновляем остальные поля
         if (updatedDiscount.getTitle() != null && !updatedDiscount.getTitle().trim().isEmpty()) {
             existing.setTitle(updatedDiscount.getTitle());
         }
         if (updatedDiscount.getDescription() != null) {
             existing.setDescription(updatedDiscount.getDescription());
-        }
-        if (updatedDiscount.getDiscountType() != null) {
-            existing.setDiscountType(updatedDiscount.getDiscountType());
-        }
-        if (updatedDiscount.getDiscountValue() != null && updatedDiscount.getDiscountValue().compareTo(BigDecimal.ZERO) >= 0) {
-            if (existing.getDiscountType() == DiscountType.PERCENT && updatedDiscount.getDiscountValue().compareTo(BigDecimal.valueOf(100)) > 0) {
-                throw new IllegalArgumentException("Процент скидки не может превышать 100");
-            }
-            existing.setDiscountValue(updatedDiscount.getDiscountValue());
         }
         if (updatedDiscount.getMinOrderAmount() != null && updatedDiscount.getMinOrderAmount().compareTo(BigDecimal.ZERO) >= 0) {
             existing.setMinOrderAmount(updatedDiscount.getMinOrderAmount());
@@ -170,6 +177,7 @@ public class DiscountService {
         log.info("Удалена скидка id={}", id);
     }
 
+    @Transactional(readOnly = true)
     public List<DiscountDto> getAllActiveDiscountsDto() {
         LocalDateTime now = LocalDateTime.now();
         return discountRepository.findActiveAtDate(now)

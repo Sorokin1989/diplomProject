@@ -2,18 +2,20 @@ package com.example.diplomproject.mapper;
 
 import com.example.diplomproject.dto.PromocodeDto;
 import com.example.diplomproject.entity.Promocode;
-import com.example.diplomproject.enums.DiscountType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class PromocodeMapper {
 
-    @Autowired
-    private CourseMapper courseMapper;
+    private final CourseMapper courseMapper;
+    private final CategoryMapper categoryMapper;
 
     @Autowired
-    private CategoryMapper categoryMapper;
+    public PromocodeMapper(CourseMapper courseMapper, CategoryMapper categoryMapper) {
+        this.courseMapper = courseMapper;
+        this.categoryMapper = categoryMapper;
+    }
 
     public PromocodeDto toPromoCodeDTO(Promocode promocode) {
 
@@ -45,23 +47,23 @@ public class PromocodeMapper {
 
         return promocodeDto;
     }
-    public Promocode fromPromoCodeDtoToEntity(PromocodeDto promocodeDto){
-        if(promocodeDto==null){
-            return  null;
-        }
-
-        Promocode promocode=new Promocode();
-        promocode.setId(promocodeDto.getId());
-        promocode.setCode(promocodeDto.getCode());
-        promocode.setDiscountType(DiscountType.valueOf(promocodeDto.getDiscountType()));
-        promocode.setValue(promocodeDto.getValue());
-        promocode.setMinOrderAmount(promocodeDto.getMinOrderAmount());
-        promocode.setValidFrom(promocodeDto.getValidFrom());
-        promocode.setValidTo(promocodeDto.getValidTo());
-        promocode.setUsageLimit(promocodeDto.getUsageLimit());
-        promocode.setUsedCount(promocodeDto.getUsedCount());
-        promocode.setActive(promocodeDto.isActive());
-        promocode.setCreatedAt(promocodeDto.getCreatedAt());
-        return promocode;
-    }
+//    public Promocode fromPromoCodeDtoToEntity(PromocodeDto promocodeDto){
+//        if(promocodeDto==null){
+//            return  null;
+//        }
+//
+//        Promocode promocode=new Promocode();
+//        promocode.setId(promocodeDto.getId());
+//        promocode.setCode(promocodeDto.getCode());
+//        promocode.setDiscountType(DiscountType.valueOf(promocodeDto.getDiscountType()));
+//        promocode.setValue(promocodeDto.getValue());
+//        promocode.setMinOrderAmount(promocodeDto.getMinOrderAmount());
+//        promocode.setValidFrom(promocodeDto.getValidFrom());
+//        promocode.setValidTo(promocodeDto.getValidTo());
+//        promocode.setUsageLimit(promocodeDto.getUsageLimit());
+//        promocode.setUsedCount(promocodeDto.getUsedCount());
+//        promocode.setActive(promocodeDto.isActive());
+//        promocode.setCreatedAt(promocodeDto.getCreatedAt());
+//        return promocode;
+//    }
 }

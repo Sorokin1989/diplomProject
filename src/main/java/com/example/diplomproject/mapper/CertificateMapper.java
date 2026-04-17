@@ -36,20 +36,20 @@ public class CertificateMapper {
 
         return certificateDto;
     }
-    public Certificate fromCertificateDtoToEntity(CertificateDto certificateDto){
-
-        if (certificateDto==null)return null;
-
-        Certificate certificate=new Certificate();
-        certificate.setId(certificateDto.getId());
-        certificate.setCreatedAt(certificateDto.getCreatedAt());
-        certificate.setCertificateId(certificateDto.getCertificateId());
-        certificate.setCertificateUrl(certificateDto.getCertificateUrl());
-        certificate.setRevoked(certificateDto.isRevoked());
-        certificate.setRevokedDate(certificateDto.getRevokedDate());
-
-        return certificate;
-
-    }
+//    public Certificate fromCertificateDtoToEntity(CertificateDto certificateDto){
+//
+//        if (certificateDto==null)return null;
+//
+//        Certificate certificate=new Certificate();
+//        certificate.setId(certificateDto.getId());
+//        certificate.setCreatedAt(certificateDto.getCreatedAt());
+//        certificate.setCertificateId(certificateDto.getCertificateId());
+//        certificate.setCertificateUrl(certificateDto.getCertificateUrl());
+//        certificate.setRevoked(certificateDto.isRevoked());
+//        certificate.setRevokedDate(certificateDto.getRevokedDate());
+//
+//        return certificate;
+//
+//    }
 
 }

@@ -56,6 +56,7 @@ public class CourseService {
      * Возвращает список всех доступных курсов в виде DTO.
      * Курсы с битыми ссылками на категории автоматически исключаются.
      */
+    @Transactional(readOnly = true)
     public List<CourseDto> getAllCourses() {
         List<Course> courses = courseRepository.findAll();
         return courses.stream()
@@ -68,6 +69,7 @@ public class CourseService {
      * Возвращает курс по ID в виде DTO.
      * Если категория битая, курс всё равно возвращается, но без информации о категории.
      */
+    @Transactional(readOnly = true)
     public CourseDto getCourseDtoById(Long id) {
         Course course = courseRepository.findByIdWithImages(id)
                 .orElseThrow(() -> new IllegalArgumentException("Курс не найден"));
@@ -81,6 +83,7 @@ public class CourseService {
     /**
      * Возвращает список курсов по ID категории в виде DTO.
      */
+    @Transactional(readOnly = true)
     public List<CourseDto> getCourseDtosByCategoryId(Long categoryId) {
         if (categoryId == null) {
             return Collections.emptyList();
@@ -95,6 +98,7 @@ public class CourseService {
     /**
      * Поиск курсов по названию (частичное совпадение, без учёта регистра).
      */
+    @Transactional(readOnly = true)
     public List<CourseDto> searchCourseDtosByTitle(String title) {
         if (title == null || title.trim().isEmpty()) {
             return getAllCourses();
@@ -112,6 +116,7 @@ public class CourseService {
      * Для внутреннего использования и админки – возвращает сущность Course.
      * Не использовать в пользовательских контроллерах во избежание LazyInitializationException.
      */
+    @Transactional(readOnly = true)
     public Course getCourseEntityById(Long id) {
         return courseRepository.findByIdWithImages(id)
                 .orElseThrow(() -> new IllegalArgumentException("Курс не найден"));
@@ -121,10 +126,12 @@ public class CourseService {
      * Список курсов для админки (сущности).
      * Не использовать в публичных шаблонах – только для редактирования.
      */
+    @Transactional(readOnly = true)
     public List<Course> getAllCoursesForAdmin() {
         return courseRepository.findAll();
     }
 
+    @Transactional(readOnly = true)
     public List<Course> getCoursesByCategoryForAdmin(Category category) {
         if (category == null) {
             throw new IllegalArgumentException("Категория отсутствует");
@@ -210,12 +217,13 @@ public class CourseService {
             CourseImage img = courseImageRepository.findById(imageId)
                     .orElseThrow(() -> new IllegalArgumentException("Изображение не найдено"));
             Course course = img.getCourse();
+
+            Hibernate.initialize(course.getImages());
             boolean wasMain = img.isMain();
 
             fileStorageService.deleteFile(img.getFilePath());
             courseImageRepository.delete(img);
             course.getImages().remove(img);
-            entityManager.flush();
 
             if (wasMain && !course.getImages().isEmpty()) {
                 List<CourseImage> remaining = courseImageRepository.findByCourseIdOrderBySortOrderAsc(course.getId());
@@ -237,6 +245,7 @@ public class CourseService {
         CourseImage newMain = courseImageRepository.findById(imageId)
                 .orElseThrow(() -> new IllegalArgumentException("Изображение не найдено"));
         Course course = newMain.getCourse();
+        Hibernate.initialize(course.getImages());
         course.getImages().forEach(img -> img.setMain(false));
         newMain.setMain(true);
         courseImageRepository.saveAll(course.getImages());

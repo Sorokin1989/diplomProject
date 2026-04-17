@@ -37,20 +37,20 @@ public class CourseMapper {
         return courseDto;
     }
 
-    public Course fromCourseDtoToEntity(CourseDto courseDto) {
-        if (courseDto == null) return null;
-
-        Course course = new Course();
-        course.setId(courseDto.getId());
-        course.setTitle(courseDto.getTitle());
-        course.setDescription(courseDto.getDescription());
-        course.setPrice(courseDto.getPrice());
-        course.setAuthor(courseDto.getAuthor());
-        // Поле imageUrl больше не существует, не устанавливаем
-        // course.setImageUrl(courseDto.getImageUrl());
-        course.setCreatedAt(courseDto.getCreatedAt());
-        course.setReviewCount(courseDto.getReviewCount());
-        // Категория, изображения и другие связи должны устанавливаться отдельно в сервисе
-        return course;
-    }
+//    public Course fromCourseDtoToEntity(CourseDto courseDto) {
+//        if (courseDto == null) return null;
+//
+//        Course course = new Course();
+//        course.setId(courseDto.getId());
+//        course.setTitle(courseDto.getTitle());
+//        course.setDescription(courseDto.getDescription());
+//        course.setPrice(courseDto.getPrice());
+//        course.setAuthor(courseDto.getAuthor());
+//        // Поле imageUrl больше не существует, не устанавливаем
+//        // course.setImageUrl(courseDto.getImageUrl());
+//        course.setCreatedAt(courseDto.getCreatedAt());
+//        course.setReviewCount(courseDto.getReviewCount());
+//        // Категория, изображения и другие связи должны устанавливаться отдельно в сервисе
+//        return course;
+//    }
 }

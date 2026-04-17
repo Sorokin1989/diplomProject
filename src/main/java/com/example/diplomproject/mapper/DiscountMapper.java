@@ -45,25 +45,25 @@ public class DiscountMapper {
         return discountDto;
     }
 
-    public Discount fromDiscountToDToEntity(DiscountDto discountDto) {
-        if (discountDto == null) {
-            return null;
-        }
-
-        Discount discount = new Discount();
-        discount.setId(discountDto.getId());
-        discount.setTitle(discountDto.getTitle());
-        discount.setDescription(discountDto.getDescription());
-        discount.setDiscountType(DiscountType.valueOf(discountDto.getDiscountType()));
-        discount.setDiscountValue(discountDto.getDiscountValue());
-        discount.setStartDate(discountDto.getStartDate());
-        discount.setEndDate((discountDto.getEndDate()));
-        discount.setMinOrderAmount(discountDto.getMinOrderAmount());
-        discount.setActive(discount.isActive());
-        discount.setCreatedAt(discountDto.getCreatedAt());
-
-        return discount;
-
-
-    }
+//    public Discount fromDiscountToDToEntity(DiscountDto discountDto) {
+//        if (discountDto == null) {
+//            return null;
+//        }
+//
+//        Discount discount = new Discount();
+//        discount.setId(discountDto.getId());
+//        discount.setTitle(discountDto.getTitle());
+//        discount.setDescription(discountDto.getDescription());
+//        discount.setDiscountType(DiscountType.valueOf(discountDto.getDiscountType()));
+//        discount.setDiscountValue(discountDto.getDiscountValue());
+//        discount.setStartDate(discountDto.getStartDate());
+//        discount.setEndDate((discountDto.getEndDate()));
+//        discount.setMinOrderAmount(discountDto.getMinOrderAmount());
+//        discount.setActive(discount.isActive());
+//        discount.setCreatedAt(discountDto.getCreatedAt());
+//
+//        return discount;
+//
+//
+//    }
 }

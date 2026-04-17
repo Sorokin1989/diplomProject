@@ -2,17 +2,20 @@ package com.example.diplomproject.mapper;
 
 import com.example.diplomproject.dto.OrderDto;
 import com.example.diplomproject.entity.Order;
-import com.example.diplomproject.enums.OrderStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class OrderMapper {
 
+    private final CourseAccessMapper courseAccessMapper;
+    private final OrderItemMapper orderItemMapper;
+
     @Autowired
-    private CourseAccessMapper courseAccessMapper;
-    @Autowired
-    private OrderItemMapper orderItemMapper;
+    public OrderMapper(CourseAccessMapper courseAccessMapper, OrderItemMapper orderItemMapper) {
+        this.courseAccessMapper = courseAccessMapper;
+        this.orderItemMapper = orderItemMapper;
+    }
 
     public OrderDto toOrderDTO(Order order) {
 
@@ -54,17 +57,17 @@ public class OrderMapper {
         }
         return orderDto;
     }
-    public Order fromOrderDtoToEntity(OrderDto orderDto){
-        if (orderDto==null){
-            return null;
-        }
-        Order order=new Order();
-        order.setId(orderDto.getId());
-        order.setCreatedAt(orderDto.getCreatedAt());
-        order.setUpdatedAt(orderDto.getUpdatedAt());
-        order.setTotalSum(orderDto.getTotalSum());
-        order.setOrderStatus(OrderStatus.valueOf(orderDto.getOrderStatus()));
-
-return order;
-    }
+//    public Order fromOrderDtoToEntity(OrderDto orderDto){
+//        if (orderDto==null){
+//            return null;
+//        }
+//        Order order=new Order();
+//        order.setId(orderDto.getId());
+//        order.setCreatedAt(orderDto.getCreatedAt());
+//        order.setUpdatedAt(orderDto.getUpdatedAt());
+//        order.setTotalSum(orderDto.getTotalSum());
+//        order.setOrderStatus(OrderStatus.valueOf(orderDto.getOrderStatus()));
+//
+//return order;
+//    }
 }

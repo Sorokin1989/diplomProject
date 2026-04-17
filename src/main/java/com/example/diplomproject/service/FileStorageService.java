@@ -29,11 +29,8 @@ public class FileStorageService {
     public List<String> saveCategoryImages(MultipartFile[] files) throws IOException {
         List<String> savedPaths = new ArrayList<>();
         for (MultipartFile file : files) {
-            if (file.isEmpty()) continue;
-            String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            Path target = categoriesRoot.resolve(filename);
-            Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
-            savedPaths.add("/uploads/categories/" + filename);
+            String path = saveCategoryImage(file);
+            if (path != null) savedPaths.add(path);
         }
         return savedPaths;
     }
@@ -41,11 +38,8 @@ public class FileStorageService {
     public List<String> saveCourseImages(MultipartFile[] files) throws IOException {
         List<String> savedPaths = new ArrayList<>();
         for (MultipartFile file : files) {
-            if (file.isEmpty()) continue;
-            String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            Path target = coursesRoot.resolve(filename);
-            Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
-            savedPaths.add("/uploads/courses/" + filename);
+            String path = saveCourseImage(file);
+            if (path != null) savedPaths.add(path);
         }
         return savedPaths;
     }
@@ -70,9 +64,23 @@ public class FileStorageService {
     // ========== Удаление файла ==========
     public void deleteFile(String filePath) throws IOException {
         if (filePath == null || filePath.isEmpty()) return;
-        // Убираем начальный слеш, если он есть
-        String relativePath = filePath.startsWith("/") ? filePath.substring(1) : filePath;
-        Path path = Paths.get(relativePath);
-        Files.deleteIfExists(path);
+
+        Path root = null;
+        if (filePath.startsWith("/uploads/categories/")) {
+            root = categoriesRoot;
+        } else if (filePath.startsWith("/uploads/courses/")) {
+            root = coursesRoot;
+        }
+
+        if (root != null) {
+            String fileName = filePath.substring(filePath.lastIndexOf('/') + 1);
+            Path file = root.resolve(fileName);
+            Files.deleteIfExists(file);
+        } else {
+            // fallback для совместимости (если путь не соответствует ожидаемым префиксам)
+            String relativePath = filePath.startsWith("/") ? filePath.substring(1) : filePath;
+            Path path = Paths.get(relativePath);
+            Files.deleteIfExists(path);
+        }
     }
 }

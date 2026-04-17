@@ -29,11 +29,13 @@ public class CartItemService {
         if (cart == null || course == null) {
             throw new IllegalArgumentException("Cart и Course не могут быть null");
         }
+        if (course.getPrice() == null) {
+            throw new IllegalArgumentException("Цена курса не может быть null");
+        }
 
         // Проверяем, есть ли уже такой курс в корзине
         CartItem existingItem = cartItemRepository.findByCartAndCourse(cart, course);
         if (existingItem != null) {
-            // Если уже есть — не добавляем повторно (или можно выбросить исключение)
             throw new IllegalStateException("Курс уже добавлен в корзину");
         }
 
@@ -50,10 +52,9 @@ public class CartItemService {
      */
     @Transactional
     public void removeCartItem(Long cartItemId) {
-        if (!cartItemRepository.existsById(cartItemId)) {
-            throw new EntityNotFoundException("Элемент корзины не найден с id: " + cartItemId);
-        }
-        cartItemRepository.deleteById(cartItemId);
+        CartItem item = cartItemRepository.findById(cartItemId)
+                .orElseThrow(() -> new EntityNotFoundException("Элемент корзины не найден с id: " + cartItemId));
+        cartItemRepository.delete(item);
     }
 
     /**
@@ -61,6 +62,9 @@ public class CartItemService {
      */
     @Transactional(readOnly = true)
     public List<CartItem> getCartItemsByCart(Cart cart) {
+        if (cart == null) {
+            throw new IllegalArgumentException("Cart не может быть null");
+        }
         return cartItemRepository.findByCart(cart);
     }
 
@@ -69,6 +73,9 @@ public class CartItemService {
      */
     @Transactional
     public void clearCart(Cart cart) {
+        if (cart == null) {
+            throw new IllegalArgumentException("Cart не может быть null");
+        }
         cartItemRepository.deleteByCart(cart);
     }
 
@@ -86,6 +93,9 @@ public class CartItemService {
      */
     @Transactional(readOnly = true)
     public boolean isCourseInCart(Cart cart, Course course) {
+        if (cart == null || course == null) {
+            throw new IllegalArgumentException("Cart и Course не могут быть null");
+        }
         return cartItemRepository.findByCartAndCourse(cart, course) != null;
     }
 }

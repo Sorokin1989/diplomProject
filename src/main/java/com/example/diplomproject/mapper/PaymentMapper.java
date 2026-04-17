@@ -37,25 +37,25 @@ public class PaymentMapper {
         return paymentDto;
     }
 
-    public Payment fromPaymentDtoToEntity(PaymentDto paymentDto) {
-        if (paymentDto == null) {
-            return null;
-        }
-        Payment payment=new Payment();
-
-        payment.setId(paymentDto.getId());
-        payment.setPaymentStatus(PaymentStatus.valueOf(paymentDto.getPaymentStatus()));
-        payment.setPaymentMethod(paymentDto.getPaymentMethod());
-        payment.setTransactionId(paymentDto.getTransactionId());
-        payment.setGatewayTransactionId(paymentDto.getGatewayTransactionId());
-        payment.setPaymentGateway(paymentDto.getPaymentGateway());
-        payment.setCurrency(paymentDto.getCurrency());
-        payment.setFailureMessage(paymentDto.getFailureMessage());
-        payment.setCreatedAt(paymentDto.getCreatedAt());
-        payment.setUpdatedAt(paymentDto.getUpdatedAt());
-
-        return payment;
-
-
-    }
+//    public Payment fromPaymentDtoToEntity(PaymentDto paymentDto) {
+//        if (paymentDto == null) {
+//            return null;
+//        }
+//        Payment payment=new Payment();
+//
+//        payment.setId(paymentDto.getId());
+//        payment.setPaymentStatus(PaymentStatus.valueOf(paymentDto.getPaymentStatus()));
+//        payment.setPaymentMethod(paymentDto.getPaymentMethod());
+//        payment.setTransactionId(paymentDto.getTransactionId());
+//        payment.setGatewayTransactionId(paymentDto.getGatewayTransactionId());
+//        payment.setPaymentGateway(paymentDto.getPaymentGateway());
+//        payment.setCurrency(paymentDto.getCurrency());
+//        payment.setFailureMessage(paymentDto.getFailureMessage());
+//        payment.setCreatedAt(paymentDto.getCreatedAt());
+//        payment.setUpdatedAt(paymentDto.getUpdatedAt());
+//
+//        return payment;
+//
+//
+//    }
 }

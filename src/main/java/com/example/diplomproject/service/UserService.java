@@ -42,11 +42,13 @@ public class UserService {
 
     // === GETTERS ===
 
+    @Transactional(readOnly=true)
     public User getUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Пользователь не найден"));
     }
 
+    @Transactional(readOnly = true)
     public User findByEmail(String email) {
         if (email == null || email.trim().isEmpty()) {
             throw new IllegalArgumentException("Email не может быть пустым");
@@ -55,15 +57,18 @@ public class UserService {
                 .orElseThrow(() -> new NoSuchElementException("Пользователя с таким email нет"));
     }
 
+    @Transactional(readOnly= true)
     public User findByUsername(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new NoSuchElementException("Пользователь не найден"));
     }
 
+    @Transactional(readOnly = true)
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
+    @Transactional(readOnly = true)
     public Page<User> getUsersByPages(Pageable pageable) {
         return userRepository.findAll(pageable);
     }
@@ -188,11 +193,8 @@ public class UserService {
 
         if (updated) {
             User saved = userRepository.save(user);
-            System.out.println("Сохранённый пользователь: id=" + saved.getId() +
-                    ", username=" + saved.getUsername() +
-                    ", email=" + saved.getEmail() +
-                    ", role=" + saved.getRole());
-
+            log.debug("Сохранённый пользователь: id={}, username={}, email={}, role={}",
+                    saved.getId(), saved.getUsername(), saved.getEmail(), saved.getRole());
 
             // Если имя изменилось – обновляем аутентификацию в SecurityContext
             if (!oldUsername.equals(user.getUsername())) {
@@ -212,7 +214,7 @@ public class UserService {
     public void deleteUser(Long id) {
         User user = getUserById(id);
         userRepository.delete(user);
-        System.out.println("Deleting user: " + user.getUsername());
+        log.info("Удалён пользователь: {}", user.getUsername());
     }
 
     // === ВСПОМОГАТЕЛЬНЫЙ МЕТОД ДЛЯ ОБНОВЛЕНИЯ АУТЕНТИФИКАЦИИ ===
@@ -226,18 +228,22 @@ public class UserService {
             SecurityContextHolder.getContext().setAuthentication(newAuth);
         }
     }
+    @Transactional(readOnly = true)
     public boolean existsByUsername(String username) {
         return userRepository.findByUsername(username).isPresent();
     }
 
+    @Transactional(readOnly = true)
     public boolean existsByEmail(String email) {
         return userRepository.findByEmail(email).isPresent();
     }
 
+    @Transactional(readOnly = true)
     public UserDto getUserDtoById(Long id) {
         User user = getUserById(id);
         return userMapper.toUserDto(user);
     }
+    @Transactional(readOnly = true)
     public UserDto getUserDtoByUsername(String username) {
         User user = findByUsername(username);
         return userMapper.toUserDto(user);

@@ -30,6 +30,7 @@ public class PromocodeService {
     /**
      * Создание нового промокода (с параметрами).
      */
+    @Transactional
     public Promocode createPromoCode(String code,
                                      DiscountType discountType,
                                      BigDecimal value,
@@ -102,6 +103,7 @@ public class PromocodeService {
     /**
      * Создание промокода из объекта (удобно для @ModelAttribute).
      */
+    @Transactional
     public Promocode createPromoCode(Promocode promocode) {
         return createPromoCode(
                 promocode.getCode(),
@@ -121,11 +123,13 @@ public class PromocodeService {
     public BigDecimal applyPromocode(BigDecimal price, String code) {
         Promocode promocode = promocodeRepository.findByCode(code)
                 .orElseThrow(() -> new IllegalArgumentException("Промокод не найден"));
-        BigDecimal discountedPrice = calculateDiscount(price, promocode);
-        // Проверяем, была ли применена скидка (если discountedPrice == price, то промокод не сработал)
-        if (discountedPrice.compareTo(price) == 0) {
+
+        // Проверяем, можно ли применить промокод
+        if (!isPromocodeActive(promocode) || price.compareTo(promocode.getMinOrderAmount()) < 0) {
             throw new IllegalArgumentException("Промокод недействителен или не подходит для данной суммы");
         }
+
+        BigDecimal discountedPrice = calculateDiscount(price, promocode);
         // Увеличиваем счётчик ТОЛЬКО при реальном применении
         promocode.setUsedCount(promocode.getUsedCount() + 1);
         promocodeRepository.save(promocode);
@@ -166,10 +170,12 @@ public class PromocodeService {
 //        promocodeRepository.save(promocode);
 //    }
 
+    @Transactional(readOnly = true)
     public List<Promocode> getAllPromocodes() {
         return promocodeRepository.findAll();
     }
 
+    @Transactional(readOnly = true)
     public Promocode getPromocodeById(Long id) {
         return promocodeRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Промокод отсутствует"));
@@ -237,6 +243,7 @@ public class PromocodeService {
         log.info("Промокод id={} деактивирован", id);
     }
 
+    @Transactional(readOnly = true)
     public Promocode findByCode(String code) {
         if (code == null || code.isEmpty()) {
             return null;
@@ -244,6 +251,7 @@ public class PromocodeService {
         return promocodeRepository.findByCode(code).orElse(null);
     }
 
+    @Transactional(readOnly = true)
     public Promocode save(Promocode promocode) {
         return promocodeRepository.save(promocode);
     }

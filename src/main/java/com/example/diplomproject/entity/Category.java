@@ -24,9 +24,6 @@ public class Category {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-//    @Column(name = "image_url")
-//    private String imageUrl;
-
     @ToString.Exclude
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     private List<Course> courses = new ArrayList<>();

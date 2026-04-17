@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 @Service
 public class OrderService {
 
+
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -65,11 +66,18 @@ public class OrderService {
 
     @Transactional
     public Order createOrder(User user, List<OrderItem> orderItems) {
+
+
+
         if (user == null) {
             throw new IllegalArgumentException("Пользователь не может быть null");
         }
         if (orderItems == null || orderItems.isEmpty()) {
             throw new IllegalArgumentException("Заказ должен содержать хотя бы один элемент");
+        }
+        for (OrderItem item : orderItems) {
+            if (item.getPrice() == null) throw new IllegalArgumentException("Цена элемента не может быть null");
+            if (item.getCourse() == null) throw new IllegalArgumentException("Курс элемента не может быть null");
         }
 
         Order order = new Order();
@@ -97,7 +105,7 @@ public class OrderService {
         order.setOrderStatus(status);
         Order saved = orderRepository.save(order);
         entityManager.flush();   // принудительно синхронизировать с БД
-        entityManager.clear();   // очистить кэш первого уровня
+//        entityManager.clear();   // очистить кэш первого уровня
         return saved;
     }
 
@@ -205,6 +213,9 @@ public class OrderService {
     @Transactional
     public OrderDto createOrderFromCourseIdsAndReturnDto(Long userId, List<Long> courseIds,
                                                          Promocode promocode, BigDecimal discountedTotal) {
+        if (discountedTotal != null && discountedTotal.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Сумма со скидкой не может быть отрицательной");
+        }
         Order order = createOrderFromCourseIds(userId, courseIds);
         if (discountedTotal != null) {
             order.setTotalSum(discountedTotal);
@@ -213,7 +224,7 @@ public class OrderService {
             order.setPromoCode(promocode);
         }
         orderRepository.flush();
-        entityManager.clear();
+//        entityManager.clear();
         Order orderWithItems = getOrderByIdWithItems(order.getId());
         return orderMapper.toOrderDTO(orderWithItems);
     }

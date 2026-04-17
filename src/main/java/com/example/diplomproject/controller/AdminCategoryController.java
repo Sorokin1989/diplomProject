@@ -13,7 +13,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Controller
@@ -61,7 +60,7 @@ public class AdminCategoryController {
             if (newImages != null && newImages.length > 0) {
                 List<MultipartFile> nonEmptyFiles = Arrays.stream(newImages)
                         .filter(f -> f != null && !f.isEmpty())
-                        .collect(Collectors.toList());
+                        .toList();
                 if (!nonEmptyFiles.isEmpty()) {
                     log.info("Добавление {} изображений к категории id={}", nonEmptyFiles.size(), savedCategory.getId());
                     categoryService.addImagesToCategory(savedCategory.getId(), nonEmptyFiles.toArray(new MultipartFile[0]));
@@ -103,7 +102,7 @@ public class AdminCategoryController {
             if (newImages != null && newImages.length > 0) {
                 List<MultipartFile> nonEmptyFiles = Arrays.stream(newImages)
                         .filter(f -> f != null && !f.isEmpty())
-                        .collect(Collectors.toList());
+                        .toList();
                 if (!nonEmptyFiles.isEmpty()) {
                     log.info("Добавление {} новых изображений к категории id={}", nonEmptyFiles.size(), id);
                     categoryService.addImagesToCategory(id, nonEmptyFiles.toArray(new MultipartFile[0]));

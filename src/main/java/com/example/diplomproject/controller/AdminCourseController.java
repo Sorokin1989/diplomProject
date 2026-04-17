@@ -17,14 +17,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Controller
@@ -199,26 +193,9 @@ public class AdminCourseController {
 
             certificateService.deleteRevokedCertificatesForCourse(course);
 
-            // Сохраняем пути к изображениям до удаления курса (если нужно)
-//            List<String> imagePaths = course.getImages().stream()
-//                    .map(img -> img.getFilePath())
-//                    .collect(Collectors.toList());
-
             // Сначала удаляем курс из БД
             courseService.deleteCourseById(id);
             log.info("Course id={} ('{}') deleted", id, course.getTitle());
-
-            // Только после успешного удаления из БД удаляем физические файлы
-//            for (String filePath : imagePaths) {
-//                try {
-//                    Path fullPath = Paths.get(System.getProperty("user.dir"), filePath);
-//                    Files.deleteIfExists(fullPath);
-//                    log.debug("Deleted image file: {}", fullPath);
-//                } catch (Exception e) {
-//                    log.warn("Failed to delete image file: {} - {}", filePath, e.getMessage());
-//                }
-//            }
-
             redirectAttributes.addAttribute("success", "Курс \"" + course.getTitle() + "\" успешно удалён");
 
         } catch (DataIntegrityViolationException e) {
@@ -231,6 +208,7 @@ public class AdminCourseController {
         }
         return "redirect:/admin/courses";
     }
+
     @PostMapping("/{id}/images/{imageId}/main")
     public String setMainImage(@PathVariable Long id,
                                @PathVariable Long imageId,
@@ -263,12 +241,17 @@ public class AdminCourseController {
 
 
     @GetMapping("/{id}/materials")
-    public String showMaterialsForm(@PathVariable Long id, Model model) {
-        CourseDto courseDto = courseService.getCourseDtoById(id);
-        model.addAttribute("course", courseDto);
-        model.addAttribute("title", "Материалы курса");
-        model.addAttribute("content", "pages/admin/courses/materials :: materials-form");
-        return "layouts/main";
+    public String showMaterialsForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            CourseDto courseDto = courseService.getCourseDtoById(id);
+            model.addAttribute("course", courseDto);
+            model.addAttribute("title", "Материалы курса");
+            model.addAttribute("content", "pages/admin/courses/materials :: materials-form");
+            return "layouts/main";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Курс не найден");
+            return "redirect:/admin/courses";
+        }
     }
 
     @PostMapping("/{id}/materials")
@@ -295,5 +278,21 @@ public class AdminCourseController {
             redirectAttributes.addFlashAttribute("error", "Ошибка удаления: " + e.getMessage());
         }
         return "redirect:/admin/courses/" + id + "/materials";
+    }
+
+    @PostMapping("/{id}/images/{imageId}/delete")
+    public String deleteImage(@PathVariable Long id,
+                              @PathVariable Long imageId,
+                              RedirectAttributes redirectAttributes) {
+        log.info("POST /admin/courses/{}/images/{}/delete", id, imageId);
+        try {
+            courseService.deleteImage(imageId);
+            log.info("Image id={} deleted", imageId);
+            redirectAttributes.addFlashAttribute("success", "Изображение удалено");
+        } catch (Exception e) {
+            log.error("Error deleting image id={}: {}", imageId, e.getMessage(), e);
+            redirectAttributes.addFlashAttribute("error", "Не удалось удалить изображение: " + e.getMessage());
+        }
+        return "redirect:/admin/courses/edit/" + id;
     }
 }

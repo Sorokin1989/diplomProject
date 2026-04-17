@@ -51,6 +51,7 @@ public class CategoryService {
         return categoryRepository.findAll();
     }
 
+    @Transactional(readOnly = true)
     public Category getCategoryById(Long id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Категория не найдена"));
@@ -166,6 +167,7 @@ public class CategoryService {
         CategoryImage newMain = categoryImageRepository.findById(imageId)
                 .orElseThrow(() -> new NoSuchElementException("Изображение не найдено"));
         Category category = newMain.getCategory();
+        Hibernate.initialize(category.getImages()); // принудительная загрузка
         category.getImages().forEach(img -> img.setMain(false));
         newMain.setMain(true);
         categoryImageRepository.saveAll(category.getImages());

@@ -11,9 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/my-courses")
@@ -30,11 +28,13 @@ public class CourseAccessController {
 
     @GetMapping
     public String showMyCourses(@AuthenticationPrincipal User currentUser, Model model) {
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
         List<Course> courses = courseAccessService.getCoursesByUser(currentUser);
         List<CourseDto> courseDtos = courses.stream()
                 .map(courseMapper::toCourseDto)
-                .collect(Collectors.toList());
-
+                .toList();
         model.addAttribute("courses", courseDtos);
         model.addAttribute("title", "Мои курсы");
         model.addAttribute("content", "pages/user/my-courses :: my-courses-content");

@@ -71,13 +71,4 @@ public class Discount {
         createdAt=LocalDateTime.now();
     }
 
-    @PreUpdate
-    protected void onUpdate(){
-        if (startDate==null){
-            startDate=LocalDateTime.now();
-        }
-    }
-
-
-
 }

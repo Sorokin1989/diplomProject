@@ -25,13 +25,13 @@ public class OrderItemMapper {
         return dto;
     }
 
-    public OrderItem fromOrderItemDtoToEntity(OrderItemDto dto) {
-        if (dto == null) return null;
-
-        OrderItem item = new OrderItem();
-        item.setId(dto.getId());
-        item.setPrice(dto.getPrice());
-        // Примечание: course и другие связи должны устанавливаться отдельно в сервисе
-        return item;
-    }
+//    public OrderItem fromOrderItemDtoToEntity(OrderItemDto dto) {
+//        if (dto == null) return null;
+//
+//        OrderItem item = new OrderItem();
+//        item.setId(dto.getId());
+//        item.setPrice(dto.getPrice());
+//        // Примечание: course и другие связи должны устанавливаться отдельно в сервисе
+//        return item;
+//    }
 }

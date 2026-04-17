@@ -55,7 +55,8 @@ public class Order {
     private Payment payment;
 
     @ToString.Exclude
-    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CourseAccess> courseAccesses = new ArrayList<>();
 
     @Column(name = "discount_amount")

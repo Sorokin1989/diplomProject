@@ -1,11 +1,10 @@
 package com.example.diplomproject.controller;
 
-import com.example.diplomproject.dto.UserDto;
 import com.example.diplomproject.entity.User;
 import com.example.diplomproject.enums.Role;
 import com.example.diplomproject.mapper.UserMapper;
-import com.example.diplomproject.repository.UserRepository;
 import com.example.diplomproject.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,18 +15,16 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
+@Slf4j
 @Controller
 @RequestMapping("/admin/users")
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminUserController {
-
-    @Autowired
-    private UserRepository userRepository;
-
 
     private final UserService userService;
     private final UserMapper userMapper;
@@ -38,16 +35,11 @@ public class AdminUserController {
         this.userMapper = userMapper;
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public String listUsers(
-            @PageableDefault(size = 20, sort = "username", direction = Sort.Direction.ASC)
-            Pageable pageable,
-            Model model) {
+    public String listUsers(@PageableDefault(size = 20, sort = "username", direction = Sort.Direction.ASC) Pageable pageable,
+                            Model model) {
         Page<User> userPage = userService.getUsersByPages(pageable);
-        Page<UserDto> userDtoPage = userPage.map(userMapper::toUserDto);
-
-        model.addAttribute("users", userDtoPage);
+        model.addAttribute("users", userPage.map(userMapper::toUserDto));
         model.addAttribute("currentPage", userPage.getNumber() + 1);
         model.addAttribute("totalPages", userPage.getTotalPages());
         model.addAttribute("totalItems", userPage.getTotalElements());
@@ -56,78 +48,91 @@ public class AdminUserController {
         return "layouts/main";
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}/edit")
-    public String showAdminEditUserForm(@PathVariable Long id, Model model) {
-        User user = userService.getUserById(id);
-        UserDto userDto = userMapper.toUserDto(user);
-        model.addAttribute("user", userDto);
-        model.addAttribute("roles", Role.values());
-        model.addAttribute("title", "Редактирование пользователя");
-        model.addAttribute("content", "pages/admin/users/edit :: admin-user-edit-content");
-        return "layouts/main";
+    public String showAdminEditUserForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            User user = userService.getUserById(id);
+            model.addAttribute("user", userMapper.toUserDto(user));
+            model.addAttribute("roles", Role.values());
+            model.addAttribute("title", "Редактирование пользователя");
+            model.addAttribute("content", "pages/admin/users/edit :: admin-user-edit-content");
+            return "layouts/main";
+        } catch (Exception e) {
+            log.error("Пользователь с id={} не найден", id);
+            redirectAttributes.addFlashAttribute("error", "Пользователь не найден");
+            return "redirect:/admin/users";
+        }
     }
 
-
     @PostMapping("/{id}")
-    public String updateUserByAdmin(
-            @AuthenticationPrincipal User currentUser,
-            @PathVariable Long id,
-            @RequestParam String username,
-            @RequestParam String email,
-            @RequestParam(required = false) String role,
-            Model model) {
-
-        if (currentUser == null) {
-            return "redirect:/admin/users?error=" + URLEncoder.encode("Пользователь не аутентифицирован", StandardCharsets.UTF_8);
-        }
+    public String updateUserByAdmin(@AuthenticationPrincipal User currentUser,
+                                    @PathVariable Long id,
+                                    @RequestParam String username,
+                                    @RequestParam String email,
+                                    @RequestParam(required = false) String role,
+                                    RedirectAttributes redirectAttributes) {
         if (currentUser.getId().equals(id)) {
-            return "redirect:/admin/users/" + id + "/edit?error=" + URLEncoder.encode("Вы не можете редактировать свой профиль", StandardCharsets.UTF_8);
+            redirectAttributes.addFlashAttribute("error", "Вы не можете редактировать свой профиль");
+            return "redirect:/admin/users/" + id + "/edit";
         }
 
         try {
             User user = userService.getUserById(id);
+            if (user == null) {
+                redirectAttributes.addFlashAttribute("error", "Пользователь не найден");
+                return "redirect:/admin/users";
+            }
 
             if (!user.getUsername().equals(username) && userService.existsByUsername(username)) {
-                return "redirect:/admin/users/" + id + "/edit?error=" + URLEncoder.encode("Имя пользователя уже занято", StandardCharsets.UTF_8);
+                redirectAttributes.addFlashAttribute("error", "Имя пользователя уже занято");
+                return "redirect:/admin/users/" + id + "/edit";
             }
             if (!user.getEmail().equals(email) && userService.existsByEmail(email)) {
-                return "redirect:/admin/users/" + id + "/edit?error=" + URLEncoder.encode("Email уже используется", StandardCharsets.UTF_8);
+                redirectAttributes.addFlashAttribute("error", "Email уже используется");
+                return "redirect:/admin/users/" + id + "/edit";
             }
 
             user.setUsername(username);
             user.setEmail(email);
             if (role != null && !role.trim().isEmpty()) {
-                user.setRole(Role.valueOf(role));
+                try {
+                    user.setRole(Role.valueOf(role));
+                } catch (IllegalArgumentException e) {
+                    redirectAttributes.addFlashAttribute("error", "Некорректная роль");
+                    return "redirect:/admin/users/" + id + "/edit";
+                }
             }
 
             userService.updateUser(id, user);
-
-            return "redirect:/admin/users?success=" + URLEncoder.encode("Пользователь успешно обновлён", StandardCharsets.UTF_8);
+            redirectAttributes.addFlashAttribute("success", "Пользователь успешно обновлён");
+            return "redirect:/admin/users";
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return "redirect:/admin/users/" + id + "/edit?error=" + URLEncoder.encode("Ошибка обновления: " + e.getMessage(), StandardCharsets.UTF_8);
+            log.error("Ошибка обновления пользователя {}", id, e);
+            redirectAttributes.addFlashAttribute("error", "Ошибка обновления: " + e.getMessage());
+            return "redirect:/admin/users/" + id + "/edit";
         }
     }
 
-
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/delete")
     public String deleteUser(@AuthenticationPrincipal User currentUser,
-                             @PathVariable Long id) {
-        if (currentUser == null) {
-            return "redirect:/admin/users?error=" + URLEncoder.encode("Пользователь не аутентифицирован", StandardCharsets.UTF_8);
-        }
+                             @PathVariable Long id,
+                             RedirectAttributes redirectAttributes) {
         if (currentUser.getId().equals(id)) {
-            return "redirect:/admin/users?error=" + URLEncoder.encode("Нельзя удалить самого себя", StandardCharsets.UTF_8);
+            redirectAttributes.addFlashAttribute("error", "Нельзя удалить самого себя");
+            return "redirect:/admin/users";
         }
         try {
             userService.deleteUser(id);
-            return "redirect:/admin/users?success=" + URLEncoder.encode("Пользователь удалён", StandardCharsets.UTF_8);
+            redirectAttributes.addFlashAttribute("success", "Пользователь удалён");
         } catch (Exception e) {
-            e.printStackTrace();
-            return "redirect:/admin/users?error=" + URLEncoder.encode("Ошибка удаления: " + e.getMessage(), StandardCharsets.UTF_8);
+            log.error("Ошибка удаления пользователя {}", id, e);
+            redirectAttributes.addFlashAttribute("error", "Ошибка удаления: " + e.getMessage());
         }
+        return "redirect:/admin/users";
+    }
+
+    private String encode(String message) {
+        return URLEncoder.encode(message, StandardCharsets.UTF_8);
     }
 }

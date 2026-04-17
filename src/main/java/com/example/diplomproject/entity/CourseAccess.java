@@ -50,13 +50,4 @@ public class CourseAccess {
             expiresAt = now.plusYears(1);
         }
     }
-
-
-    @PreUpdate
-    protected void onUpdate(){
-        if (grantedAt==null){
-            grantedAt=LocalDateTime.now();
-        }
-    }
-
 }

@@ -1,7 +1,7 @@
 package com.example.diplomproject.controller;
 
-import com.example.diplomproject.dto.CartItemDto;
 import com.example.diplomproject.dto.CartDto;
+import com.example.diplomproject.dto.CartItemDto;
 import com.example.diplomproject.dto.OrderDto;
 import com.example.diplomproject.entity.Order;
 import com.example.diplomproject.entity.OrderItem;
@@ -13,18 +13,22 @@ import com.example.diplomproject.mapper.OrderMapper;
 import com.example.diplomproject.repository.OrderRepository;
 import com.example.diplomproject.service.*;
 import com.example.diplomproject.util.QrCodeGenerator;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Controller
 @RequestMapping("/orders")
 public class OrderController {
@@ -37,12 +41,17 @@ public class OrderController {
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
 
+    @Value("${app.base-url:http://localhost:8080}")
+    private String baseUrl;
+
     @Autowired
     public OrderController(CartService cartService,
                            PromocodeService promocodeService,
                            OrderService orderService,
                            CourseService courseService,
-                           CourseAccessService courseAccessService, OrderRepository orderRepository, OrderMapper orderMapper) {
+                           CourseAccessService courseAccessService,
+                           OrderRepository orderRepository,
+                           OrderMapper orderMapper) {
         this.cartService = cartService;
         this.promocodeService = promocodeService;
         this.orderService = orderService;
@@ -54,6 +63,9 @@ public class OrderController {
 
     @GetMapping
     public String listOrders(@AuthenticationPrincipal User currentUser, Model model) {
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
         List<OrderDto> orderDtos;
         if (isAdmin(currentUser)) {
             orderDtos = orderService.getAllOrderDtos();
@@ -72,16 +84,17 @@ public class OrderController {
     public String viewOrder(@PathVariable Long id,
                             @AuthenticationPrincipal User currentUser,
                             Model model) {
-        boolean isAdmin = currentUser != null && currentUser.getRole() == Role.ADMIN;
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
         OrderDto orderDto = orderService.getOrderDtoById(id);
         if (orderDto == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Заказ не найден");
         }
         if (!isAdmin(currentUser) && !orderDto.getUserId().equals(currentUser.getId())) {
-            return "error/403";
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Нет доступа к этому заказу");
         }
-
-        model.addAttribute("isAdmin", isAdmin);
+        model.addAttribute("isAdmin", isAdmin(currentUser));
         model.addAttribute("order", orderDto);
         model.addAttribute("availableStatuses", OrderStatus.values());
         model.addAttribute("title", "Заказ №" + orderDto.getId());
@@ -93,8 +106,8 @@ public class OrderController {
     public String updateOrderStatus(@PathVariable Long id,
                                     @RequestParam OrderStatus status,
                                     @AuthenticationPrincipal User currentUser) {
-        if (!isAdmin(currentUser)) {
-            return "error/403";
+        if (currentUser == null || !isAdmin(currentUser)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Доступ запрещён");
         }
         orderService.updateOrderStatus(id, status);
         return "redirect:/orders/" + id;
@@ -103,37 +116,36 @@ public class OrderController {
     @PostMapping("/{id}/cancel")
     public String cancelOrder(@PathVariable Long id,
                               @AuthenticationPrincipal User currentUser) {
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
         OrderDto orderDto = orderService.getOrderDtoById(id);
         if (orderDto == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Заказ не найден");
         }
         if (!orderDto.getUserId().equals(currentUser.getId())) {
-            return "error/403";
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Нет доступа");
         }
         if ("PENDING".equals(orderDto.getOrderStatus())) {
             orderService.updateOrderStatus(id, OrderStatus.CANCELLED);
         }
         return "redirect:/orders/" + id;
     }
-//
-//    @GetMapping("/create")
-//    public String showCreateForm(Model model, @AuthenticationPrincipal User currentUser) {
-//        // Получаем корзину текущего пользователя
-//        CartDto cartDto = cartService.getOrCreateCartDto(currentUser);
-//        model.addAttribute("cartItems", cartDto.getCartItems());
-//        model.addAttribute("totalPrice", cartService.getTotalPriceDto(currentUser));
-//        model.addAttribute("title", "Корзина");
-//        model.addAttribute("content", "pages/orders/create :: order-create-content");
-//        return "layouts/main";
-//    }
 
     @PostMapping("/checkout/process")
     public String processCheckout(@AuthenticationPrincipal User currentUser,
                                   @RequestParam(required = false) String promocode,
+                                  RedirectAttributes redirectAttributes,
                                   Model model) {
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
         CartDto cartDto = cartService.getOrCreateCartDto(currentUser);
+
+
         if (cartDto.getCartItems() == null || cartDto.getCartItems().isEmpty()) {
-            throw new IllegalArgumentException("Корзина пуста");
+            redirectAttributes.addFlashAttribute("error", "Корзина пуста");
+            return "redirect:/cart";
         }
 
         List<Long> courseIds = cartDto.getCartItems().stream()
@@ -144,16 +156,15 @@ public class OrderController {
         BigDecimal discountedTotal = total;
         Promocode promoEntity = null;
 
-        // Применяем промокод, если он передан
         if (promocode != null && !promocode.isEmpty()) {
             try {
-                // Используем applyPromocode – он сам проверит валидность и увеличит счётчик
+                // Применяем промокод – он сам проверит валидность и увеличит счётчик
                 discountedTotal = promocodeService.applyPromocode(total, promocode);
                 promoEntity = promocodeService.findByCode(promocode);
             } catch (IllegalArgumentException e) {
-                // Если промокод недействителен – игнорируем
                 discountedTotal = total;
                 promoEntity = null;
+                log.warn("Недействительный промокод при оформлении заказа: {}", promocode);
             }
         }
 
@@ -163,7 +174,7 @@ public class OrderController {
 
         cartService.clearCart(currentUser);
 
-        String paymentUrl = "http://localhost:8080/orders/" + orderDto.getId() + "/pay";
+        String paymentUrl = baseUrl + "/orders/" + orderDto.getId() + "/pay";
         String qrCodeBase64 = QrCodeGenerator.generateBase64(paymentUrl, 300, 300);
 
         model.addAttribute("order", orderDto);
@@ -175,24 +186,29 @@ public class OrderController {
         return "layouts/main";
     }
 
-
     @GetMapping("/create")
     public String redirectCreateToCheckout() {
-        return "redirect:/orders/checkout";  // ← правильный путь
+        return "redirect:/orders/checkout";
     }
 
     @PostMapping("/{id}/confirm-payment")
     public String confirmPayment(@PathVariable Long id,
                                  @AuthenticationPrincipal User user) {
-//        Order order = orderService.getOrderById(id);
+        if (user == null) {
+            return "redirect:/login";
+        }
         Order order = orderService.getOrderByIdWithItems(id);
+        if (order == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Заказ не найден");
+        }
+        // Проверка прав: только владелец или администратор
+        if (!order.getUser().getId().equals(user.getId()) && !isAdmin(user)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Нет доступа");
+        }
         if (order.getOrderStatus() == OrderStatus.PENDING) {
-            // Обновляем статус на PAID
             orderService.updateOrderStatus(id, OrderStatus.PAID);
-            // Выдаём доступ к курсам и сертификаты
             for (OrderItem item : order.getOrderItems()) {
                 courseAccessService.grantAccessToCourse(user, item.getCourse(), order);
-                // certificateService.generateCertificateForPurchase(user, item.getCourse());
             }
         }
         return "redirect:/orders/" + id;
@@ -200,6 +216,9 @@ public class OrderController {
 
     @GetMapping("/checkout")
     public String showCheckoutPage(@AuthenticationPrincipal User user, Model model) {
+        if (user == null) {
+            return "redirect:/login";
+        }
         CartDto cartDto = cartService.getOrCreateCartDto(user);
         BigDecimal total = cartService.getTotalPriceDto(user);
 
@@ -212,18 +231,27 @@ public class OrderController {
 
     @PostMapping("/clear-mine")
     public String clearMyOrders(@AuthenticationPrincipal User currentUser) {
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
         orderService.deleteOrdersByUser(currentUser);
         return "redirect:/orders";
     }
 
     @PostMapping("/hide-mine")
     public String hideMyOrders(@AuthenticationPrincipal User currentUser) {
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
         orderService.hideAllOrdersByUser(currentUser);
         return "redirect:/orders";
     }
 
     @PostMapping("/unhide-mine")
     public String unhideMyOrders(@AuthenticationPrincipal User currentUser) {
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
         orderService.unhideAllOrdersByUser(currentUser);
         return "redirect:/orders";
     }
@@ -232,13 +260,15 @@ public class OrderController {
     public String applyPromocode(@RequestParam String promocode,
                                  @AuthenticationPrincipal User user,
                                  Model model) {
+        if (user == null) {
+            return "redirect:/login";
+        }
         try {
             BigDecimal currentTotal = cartService.getTotalPriceDto(user);
             Promocode promo = promocodeService.findByCode(promocode);
             if (promo == null) {
                 model.addAttribute("promocodeError", "Промокод не найден");
             } else {
-                // Используем метод ТОЛЬКО для расчёта (без инкремента)
                 BigDecimal discountedTotal = promocodeService.calculateDiscount(currentTotal, promo);
                 if (discountedTotal.compareTo(currentTotal) == 0) {
                     model.addAttribute("promocodeError", "Промокод недействителен для данной суммы");
@@ -260,6 +290,6 @@ public class OrderController {
     }
 
     private boolean isAdmin(User user) {
-        return user != null && user.getRole() != null && "ADMIN".equalsIgnoreCase(String.valueOf(user.getRole()));
+        return user != null && user.getRole() == Role.ADMIN;
     }
 }

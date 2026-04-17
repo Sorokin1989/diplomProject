@@ -56,7 +56,6 @@ public class CartService {
         return cartItemService.addCourseToCart(cart, course);
     }
 
-    // Новый метод для DTO
     @Transactional
     public void addCourseToCart(User user, CourseDto courseDto) {
         Course course = courseService.getCourseEntityById(courseDto.getId());
@@ -73,6 +72,7 @@ public class CartService {
         cartItemService.removeCartItem(cartItemId);
     }
 
+    @Transactional(readOnly = true)
     public List<CartItem> getAllItems(User user) {
         return cartRepository.findByUser(user)
                 .map(cart -> cartItemService.getCartItemsByCart(cart))
@@ -85,6 +85,7 @@ public class CartService {
         cartItemService.clearCart(cart);
     }
 
+    @Transactional(readOnly = true)
     public BigDecimal getTotalPrice(User user) {
         return getAllItems(user).stream()
                 .filter(item -> item.getCourse() != null && item.getCourse().getPrice() != null)
@@ -92,28 +93,33 @@ public class CartService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
+    @Transactional(readOnly = true)
     public boolean isCourseInCart(User user, Course course) {
         return cartRepository.findByUser(user)
                 .map(cart -> cartItemService.isCourseInCart(cart, course))
                 .orElse(false);
     }
 
-    public CartDto getCartDtoForUser(User user) {
-        Cart cart = cartRepository.findByUser(user)
-                .orElseThrow(() -> new RuntimeException("Корзина не найдена"));
+    // ==================== DTO-методы для пользовательской части ====================
+
+    /**
+     * Возвращает DTO корзины. Если корзина не существует – создаёт её.
+     */
+    @Transactional
+    public CartDto getOrCreateCartDto(User user) {
+        Cart cart = getOrCreateCart(user); // переиспользуем существующую логику
         return cartMapper.toCartDTO(cart);
     }
 
-    // ==================== DTO-методы для пользовательской части ====================
-
+    /**
+     * Возвращает DTO корзины, но не создаёт новую, если её нет.
+     * В отличие от getOrCreateCartDto, при отсутствии корзины выбрасывает исключение.
+     * Полезно для read‑only операций, где создание корзины нежелательно.
+     */
     @Transactional(readOnly = true)
-    public CartDto getOrCreateCartDto(User user) {
+    public CartDto getCartDtoForUser(User user) {
         Cart cart = cartRepository.findByUser(user)
-                .orElseGet(() -> {
-                    Cart newCart = new Cart();
-                    newCart.setUser(user);
-                    return cartRepository.save(newCart);
-                });
+                .orElseThrow(() -> new RuntimeException("Корзина не найдена для пользователя: " + user.getUsername()));
         return cartMapper.toCartDTO(cart);
     }
 
@@ -130,9 +136,11 @@ public class CartService {
     public BigDecimal getTotalPriceDto(User user) {
         return getAllItemsDto(user).stream()
                 .map(CartItemDto::getPrice)
+                .filter(price -> price != null)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
+    @Transactional(readOnly = true)
     public int getCartItemCount(User user) {
         Cart cart = cartRepository.findByUser(user).orElse(null);
         if (cart == null) {

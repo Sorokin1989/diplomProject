@@ -39,21 +39,21 @@ public class CategoryMapper {
         return categoryDto;
     }
 
-    public Category fromCategoryDtoToEntity(CategoryDto categoryDto) {
-        if (categoryDto == null) return null;
-
-        Category category = new Category();
-
-        category.setId(categoryDto.getId());
-        category.setTitle(categoryDto.getTitle());
-        category.setDescription(categoryDto.getDescription());
-        // Поле imageUrl больше не устанавливается – изображения управляются через CategoryImageService
-
-        if (categoryDto.getCourseDtos() != null) {
-            category.setCourses(categoryDto.getCourseDtos().stream()
-                    .map(courseMapper::fromCourseDtoToEntity)
-                    .toList());
-        }
-        return category;
-    }
+//    public Category fromCategoryDtoToEntity(CategoryDto categoryDto) {
+//        if (categoryDto == null) return null;
+//
+//        Category category = new Category();
+//
+//        category.setId(categoryDto.getId());
+//        category.setTitle(categoryDto.getTitle());
+//        category.setDescription(categoryDto.getDescription());
+//        // Поле imageUrl больше не устанавливается – изображения управляются через CategoryImageService
+//
+//        if (categoryDto.getCourseDtos() != null) {
+//            category.setCourses(categoryDto.getCourseDtos().stream()
+//                    .map(courseMapper::fromCourseDtoToEntity)
+//                    .toList());
+//        }
+//        return category;
+//    }
 }

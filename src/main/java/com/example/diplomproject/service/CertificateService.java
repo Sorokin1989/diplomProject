@@ -6,10 +6,10 @@ import com.example.diplomproject.entity.User;
 import com.example.diplomproject.repository.CertificateRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,6 +25,9 @@ import java.util.NoSuchElementException;
 public class CertificateService {
 
     private final CertificateRepository certificateRepository;
+
+    @Value("${certificates.storage.path}")
+    private String storagePath;
 
     // Автоматическая выдача при покупке
 //    @Transactional
@@ -85,8 +88,7 @@ public class CertificateService {
 
     private String saveCertificateFile(MultipartFile file) {
         try {
-            String uploadDir = "uploads/certificates/";
-            Path uploadPath = Paths.get(uploadDir);
+            Path uploadPath = Paths.get(storagePath);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
@@ -98,21 +100,24 @@ public class CertificateService {
             String fileName = "CERT_" + System.currentTimeMillis() + extension;
             Path filePath = uploadPath.resolve(fileName);
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-            return "/uploads/certificates/" + fileName;
+            return fileName;
         } catch (IOException e) {
             throw new RuntimeException("Ошибка сохранения файла сертификата", e);
         }
     }
 
+    @Transactional(readOnly=true)
     public Certificate getCertificateById(Long id) {
         return certificateRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new NoSuchElementException("Сертификат не найден"));
     }
 
+    @Transactional(readOnly=true)
     public List<Certificate> getAllCertificates() {
         return certificateRepository.findAllWithUserAndCourse();
     }
 
+    @Transactional(readOnly= true)
     public List<Certificate> getCertificatesByUser(User user) {
         if (user == null) {
             throw new IllegalArgumentException("Пользователь не может быть null");
@@ -120,6 +125,7 @@ public class CertificateService {
         return certificateRepository.findByUserWithDetails(user);
     }
 
+    @Transactional(readOnly=true)
     public List<Certificate> getCertificatesByCourse(Course course) {
         if (course == null) {
             throw new IllegalArgumentException("Курс не может быть null");
@@ -127,6 +133,7 @@ public class CertificateService {
         return certificateRepository.findByCourse(course);
     }
 
+    @Transactional(readOnly = true)
     public boolean isCertificateIssued(User user, Course course) {
         return certificateRepository.existsByUserAndCourse(user, course);
     }
@@ -146,12 +153,34 @@ public class CertificateService {
     @Transactional
     public void deleteCertificate(Long id) {
         Certificate certificate = getCertificateById(id);
+        // Удаляем файл
+        deleteCertificateFile(certificate.getCertificateUrl());
+        // Удаляем запись
         certificateRepository.delete(certificate);
+        log.info("Сертификат {} удалён", id);
+    }
+
+    // Единый метод удаления файла по имени
+    private void deleteCertificateFile(String fileName) {
+        if (fileName == null || fileName.isBlank()) return;
+        Path filePath = Paths.get(storagePath).resolve(fileName).normalize();
+        try {
+            boolean deleted = Files.deleteIfExists(filePath);
+            if (deleted) {
+                log.info("Файл сертификата удалён: {}", fileName);
+            } else {
+                log.warn("Файл не найден: {}", fileName);
+            }
+        } catch (IOException e) {
+            log.error("Не удалось удалить файл: {}", fileName, e);
+            // Не бросаем исключение, чтобы запись удалилась (или бросаем, если хотите отката)
+        }
     }
 
     private String generateCertificateNumber() {
         return "CERT-" + System.currentTimeMillis() + "-" + (int) (Math.random() * 1000);
     }
+    @Transactional(readOnly = true)
     public List<Certificate> getActiveCertificatesByCourse(Course course) {
         if (course == null) {
             throw new IllegalArgumentException("Курс не может быть null");
@@ -160,15 +189,25 @@ public class CertificateService {
     }
     @Transactional
     public void deleteRevokedCertificatesForCourse(Course course) {
+        if (course == null) throw new IllegalArgumentException("Курс не может быть null");
+        List<Certificate> revoked = certificateRepository.findByCourseAndRevokedTrue(course);
+        for (Certificate cert : revoked) {
+            deleteCertificateFile(cert.getCertificateUrl());
+        }
         certificateRepository.deleteByCourseAndRevokedTrue(course);
     }
 
+    @Transactional(readOnly = true)
     public Certificate findByUserAndCourse(Long userId, Long courseId) {
         return certificateRepository.findByUserIdAndCourseId(userId, courseId).orElse(null);
     }
 
     @Transactional
-    public Certificate save(Certificate certificate) {
-        return certificateRepository.save(certificate);
+    public void activateCertificate(Long id) {
+        Certificate certificate = getCertificateById(id);
+        if (!certificate.isRevoked()) throw new IllegalStateException("Сертификат уже активен");
+        certificate.setRevoked(false);
+        certificate.setRevokedDate(null);
+        certificateRepository.save(certificate);
     }
 }

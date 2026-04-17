@@ -31,8 +31,13 @@ public class CourseAccessService {
 
     @Transactional
     public void grantAccessToCourse(User user, Course course, Order order) {
+
         if (user == null || course == null) {
             throw new IllegalArgumentException("Пользователь или Курс не может быть null");
+        }
+
+        if (order == null) {
+            throw new IllegalArgumentException("Заказ не может быть null");
         }
         if (courseAccessRepository.existsByUserAndCourse(user, course)) {
             return;
@@ -50,6 +55,7 @@ public class CourseAccessService {
      * Проверка наличия доступа у пользователя к курсу
      */
 
+    @Transactional(readOnly = true)
     public boolean hasAccessToUser(User user, Course course) {
         if (user == null || course == null) {
             return false;
@@ -57,22 +63,16 @@ public class CourseAccessService {
         return courseAccessRepository.existsByUserAndCourse(user, course);
     }
 
+    @Transactional(readOnly = true)
     public boolean hasAccessToUserForDto(User user, CourseDto courseDto) {
         if (user == null || courseDto == null || courseDto.getId() == null) {
             return false;
         }
         return courseAccessRepository.existsByUserAndCourseId(user, courseDto.getId());
     }
-    /**
-     * Получение всех курсов, к которым есть доступ у пользователя
-     */
-//    public List<Course> getCoursesByUser(User user) {
-//        if (user == null) {
-//            throw new IllegalArgumentException("Пользователь не может быть null");
-//        }
-//        return courseAccessRepository.findCoursesByUser(user);
-//    }
 
+
+    @Transactional(readOnly = true)
     public List<Course> getCoursesByUser(User user) {
         if (user == null) throw new IllegalArgumentException("Пользователь не может быть null");
         return courseAccessRepository.findCoursesByUserWithImages(user).stream()
@@ -83,6 +83,7 @@ public class CourseAccessService {
     /**
      * Получение всех пользователей, имеющих доступ к курсу
      */
+    @Transactional(readOnly = true)
     public List<User> getUsersByCourse(Course course) {
         if (course == null) {
             throw new IllegalArgumentException("Курс должен существовать");

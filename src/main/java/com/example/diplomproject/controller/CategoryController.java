@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
+
 @Controller
 @RequestMapping("/categories")
 public class CategoryController {
@@ -30,8 +32,7 @@ public class CategoryController {
     public String listCategories(Model model) {
         List<Category> categories = categoryService.getAllCategories();
         List<CategoryDto> categoryDtos = categories.stream()
-                .map(categoryMapper::toCategoryDTO)
-                .collect(Collectors.toList());
+                .map(categoryMapper::toCategoryDTO).toList();
 
         model.addAttribute("categories", categoryDtos);
         model.addAttribute("title", "Категории курсов");

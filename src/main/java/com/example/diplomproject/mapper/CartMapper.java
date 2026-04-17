@@ -11,8 +11,12 @@ import java.util.List;
 @Component
 public class CartMapper {
 
+    private final CartItemMapper cartItemMapper;
+
     @Autowired
-    private CartItemMapper cartItemMapper;
+    public CartMapper(CartItemMapper cartItemMapper) {
+        this.cartItemMapper = cartItemMapper;
+    }
 
     public CartDto toCartDTO(Cart cart) {
 
@@ -40,24 +44,21 @@ public class CartMapper {
 
         return cartDto;
     }
-
-    public Cart fromCartDtoToEntity(CartDto cartDto) {
-        if (cartDto == null) {
-            return null;
-        }
-        Cart cart = new Cart();
-
-        cart.setId(cartDto.getId());
-        cart.setSessionId(cartDto.getSessionId());
-        cart.setCreatedAt(cartDto.getCreatedAt());
-        cart.setUpdatedAt(cartDto.getUpdatedAt());
-
-        if (cartDto.getCartItems() != null) {
-            cart.setCartItems(cartDto.getCartItems().stream().
-                    map(cartItemDto -> cartItemMapper.fromCartItemDtoToEntity(cartItemDto)).toList());
-        }
-
-        return cart;
-
-    }
+//    public Cart fromCartDtoToEntity(CartDto cartDto) {
+//        if (cartDto == null) {
+//            return null;
+//        }
+//        Cart cart = new Cart();
+//
+//        cart.setId(cartDto.getId());
+//        cart.setSessionId(cartDto.getSessionId());
+//        cart.setCreatedAt(cartDto.getCreatedAt());
+//        cart.setUpdatedAt(cartDto.getUpdatedAt());
+//
+//        if (cartDto.getCartItems() != null) {
+//            cart.setCartItems(cartDto.getCartItems().stream().
+//                    map(cartItemDto -> cartItemMapper.fromCartItemDtoToEntity(cartItemDto)).toList());
+//        }
+//        return cart;
+//    }
 }

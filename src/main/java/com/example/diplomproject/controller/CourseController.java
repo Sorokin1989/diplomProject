@@ -29,6 +29,7 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 
+
 @Controller
 @RequestMapping("/courses")
 public class CourseController {
@@ -60,7 +61,12 @@ public class CourseController {
                               Model model) {
         List<CourseDto> courses;
         if (categoryId != null) {
-            Category category = categoryService.getCategoryById(categoryId);
+            Category category = null;
+            try {
+                category = categoryService.getCategoryById(categoryId);
+            } catch (IllegalArgumentException e) {
+                // категория не найдена
+            }
             if (category != null) {
                 model.addAttribute("category", categoryMapper.toCategoryDTO(category));
                 courses = courseService.getCourseDtosByCategoryId(categoryId);
@@ -80,33 +86,51 @@ public class CourseController {
     public String viewCourse(@PathVariable Long id,
                              @AuthenticationPrincipal User currentUser,
                              Model model) {
-        CourseDto courseDto = courseService.getCourseDtoById(id);
-        if (courseDto == null) {
+        CourseDto courseDto;
+        try {
+            courseDto = courseService.getCourseDtoById(id);
+        } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Курс не найден");
         }
-        List<ReviewDto> reviews = reviewService.getReviewDtosByCourseId(id);
+        // Получаем отзывы с учётом прав пользователя (сервис сам фильтрует)
+        List<ReviewDto> visibleReviews = reviewService.getVisibleReviewDtosByCourseId(id, currentUser);
+        double averageRating = reviewService.averageRatingForCourse(id);
+        int reviewCount = reviewService.getApprovedReviewCount(id);
+
         boolean purchased = false;
         boolean hasCertificate = false;
         boolean hasMaterials = false;
+        boolean canReview = false;
 
         if (currentUser != null) {
             purchased = courseAccessService.hasAccessToUserForDto(currentUser, courseDto);
             if (purchased) {
                 Certificate cert = certificateService.findByUserAndCourse(currentUser.getId(), id);
                 hasCertificate = (cert != null && !cert.isRevoked() && cert.getCertificateUrl() != null);
-                // Используем поле materialsPath из DTO
                 hasMaterials = (courseDto.getMaterialsPath() != null && !courseDto.getMaterialsPath().isEmpty());
+
+                // Проверяем, есть ли у пользователя активный отзыв (PENDING или APPROVED)
+                canReview = !reviewService.hasUserActiveReview(currentUser.getId(), id);
             }
         }
+
         model.addAttribute("course", courseDto);
         model.addAttribute("purchased", purchased);
         model.addAttribute("hasCertificate", hasCertificate);
         model.addAttribute("hasMaterials", hasMaterials);
         model.addAttribute("title", courseDto.getTitle());
         model.addAttribute("content", "pages/courses/detail :: detail-content");
-        model.addAttribute("reviews", reviews != null ? reviews : Collections.emptyList());
+        model.addAttribute("reviews", visibleReviews);
+        model.addAttribute("averageRating", averageRating);
+        model.addAttribute("reviewCount", reviewCount);
+        model.addAttribute("canReview", canReview);
+
         return "layouts/main";
     }
+
+//    private boolean isAdmin(User currentUser) {
+//        return currentUser != null && currentUser.getRole() == Role.ADMIN;
+//    }
 
     @GetMapping("/search")
     public String searchCourses(@RequestParam(required = false) String title, Model model) {
@@ -126,7 +150,12 @@ public class CourseController {
         if (user == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Необходимо авторизоваться");
         }
-        Course course = courseService.getCourseEntityById(id);
+        Course course;
+        try {
+            course = courseService.getCourseEntityById(id);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Курс не найден");
+        }
         if (!courseAccessService.hasAccessToUser(user, course)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Курс не оплачен");
         }

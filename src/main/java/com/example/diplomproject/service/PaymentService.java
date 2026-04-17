@@ -7,8 +7,6 @@ import com.example.diplomproject.repository.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -58,12 +56,10 @@ public class PaymentService {
             throw new IllegalStateException("Невозможно подтвердить платёж со статусом " + payment.getPaymentStatus());
         }
         payment.setPaymentStatus(PaymentStatus.SUCCESS);
-        return paymentRepository.save(payment);
+         paymentRepository.save(payment);
+        return payment;
     }
 
-    /**
-     * Отмена платежа
-     */
     @Transactional
     public Payment cancelPayment(Long paymentId) {
         Payment payment = getPaymentById(paymentId);
@@ -71,12 +67,13 @@ public class PaymentService {
             throw new IllegalStateException("Невозможно отменить платёж со статусом " + payment.getPaymentStatus());
         }
         payment.setPaymentStatus(PaymentStatus.CANCELLED);
-        return paymentRepository.save(payment);
+        return payment;
     }
 
     /**
      * Получение платежа по ID
      */
+    @Transactional(readOnly = true)
     public Payment getPaymentById(Long id) {
         return paymentRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Платёж с таким ID отсутствует"));
@@ -85,6 +82,7 @@ public class PaymentService {
     /**
      * Проверка статуса платежа
      */
+    @Transactional(readOnly = true)
     public boolean isPaymentSuccessful(Long paymentId) {
         Payment payment = getPaymentById(paymentId);
         return PaymentStatus.SUCCESS.equals(payment.getPaymentStatus());
@@ -93,6 +91,7 @@ public class PaymentService {
     /**
      * Поиск платежа по заказу
      */
+    @Transactional(readOnly = true)
     public Optional<Payment> getPaymentByOrder(Order order) {
         return paymentRepository.findByOrder(order);
     }

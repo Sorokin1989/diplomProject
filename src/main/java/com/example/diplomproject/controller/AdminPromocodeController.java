@@ -11,6 +11,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.NoSuchElementException;
+
 @Slf4j
 @Controller
 @RequestMapping("/admin/promocodes")
@@ -52,13 +54,18 @@ public class AdminPromocodeController {
     }
 
     @GetMapping("/edit/{id}")
-    public String showEditForm(@PathVariable Long id, Model model) {
-        Promocode promocode = promocodeService.getPromocodeById(id);
-        model.addAttribute("promocode", promocode);
-        model.addAttribute("discountTypes", DiscountType.values());
-        model.addAttribute("title", "Редактирование промокода");
-        model.addAttribute("content", "pages/admin/promocodes/form :: promo-form");
-        return "layouts/main";
+    public String showEditForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Promocode promocode = promocodeService.getPromocodeById(id);
+            model.addAttribute("promocode", promocode);
+            model.addAttribute("discountTypes", DiscountType.values());
+            model.addAttribute("title", "Редактирование промокода");
+            model.addAttribute("content", "pages/admin/promocodes/form :: promo-form");
+            return "layouts/main";
+        } catch (NoSuchElementException e) {
+            redirectAttributes.addFlashAttribute("error", "Промокод не найден");
+            return "redirect:/admin/promocodes";
+        }
     }
 
     @PostMapping("/{id}")
@@ -67,11 +74,14 @@ public class AdminPromocodeController {
                                   RedirectAttributes redirectAttributes) {
         try {
             promocodeService.updatePromocode(id, promocode);
-            redirectAttributes.addAttribute("success", "Промокод обновлён");
+            redirectAttributes.addFlashAttribute("success", "Промокод обновлён");
+            return "redirect:/admin/promocodes";
+        } catch (NoSuchElementException e) {
+            redirectAttributes.addFlashAttribute("error", "Промокод не найден");
             return "redirect:/admin/promocodes";
         } catch (Exception e) {
             log.error("Ошибка обновления промокода {}", id, e);
-            redirectAttributes.addAttribute("error", "Ошибка обновления: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Ошибка обновления: " + e.getMessage());
             return "redirect:/admin/promocodes/edit/" + id;
         }
     }
@@ -80,11 +90,15 @@ public class AdminPromocodeController {
     public String deletePromocode(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             promocodeService.deletePromocode(id);
-            redirectAttributes.addAttribute("success", "Промокод деактивирован");
+            redirectAttributes.addFlashAttribute("success", "Промокод удалён");
+            return "redirect:/admin/promocodes";
+        } catch (NoSuchElementException e) {
+            redirectAttributes.addFlashAttribute("error", "Промокод не найден");
+            return "redirect:/admin/promocodes";
         } catch (Exception e) {
             log.error("Ошибка удаления промокода {}", id, e);
-            redirectAttributes.addAttribute("error", "Ошибка удаления: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Ошибка удаления: " + e.getMessage());
+            return "redirect:/admin/promocodes";
         }
-        return "redirect:/admin/promocodes";
     }
 }

@@ -3,7 +3,6 @@ package com.example.diplomproject.mapper;
 import com.example.diplomproject.dto.CartItemDto;
 import com.example.diplomproject.entity.CartItem;
 import org.springframework.stereotype.Component;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -32,20 +31,19 @@ public class CartItemMapper {
 
         return cartItemDto;
     }
-
-    public CartItem fromCartItemDtoToEntity(CartItemDto cartItemDto){
-
-        if (cartItemDto==null){
-            return null;
-        }
-        CartItem cartItem=new CartItem();
-        cartItem.setId(cartItemDto.getId());
-        cartItem.setPrice(cartItemDto.getPrice());
-        cartItem.setAddedAt(cartItemDto.getAddedAt());
-
-        return cartItem;
-
-
-    }
+//    public CartItem fromCartItemDtoToEntity(CartItemDto cartItemDto){
+//
+//        if (cartItemDto==null){
+//            return null;
+//        }
+//        CartItem cartItem=new CartItem();
+//        cartItem.setId(cartItemDto.getId());
+//        cartItem.setPrice(cartItemDto.getPrice());
+//        cartItem.setAddedAt(cartItemDto.getAddedAt());
+//
+//        return cartItem;
+//
+//
+//    }
 
 }

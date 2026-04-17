@@ -97,4 +97,8 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return UserDetails.super.isEnabled();
     }
+
+    public boolean isAdmin() {
+        return role == Role.ADMIN;
+    }
 }

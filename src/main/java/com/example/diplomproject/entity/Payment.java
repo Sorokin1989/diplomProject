@@ -66,9 +66,4 @@ public class Payment {
             this.currency = "RUB";
         }
     }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
 }

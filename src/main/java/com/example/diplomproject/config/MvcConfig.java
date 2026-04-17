@@ -9,8 +9,13 @@ public class MvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Внешняя папка uploads в корне проекта (или в абсолютном пути)
-        registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:uploads/");
+        registry.addResourceHandler("/uploads/categories/**")
+                .addResourceLocations("file:uploads/categories/");
+        registry.addResourceHandler("/uploads/courses/**")
+                .addResourceLocations("file:uploads/courses/");
+        registry.addResourceHandler("/uploads/materials/**")
+                .addResourceLocations("file:uploads/materials/");
+        registry.addResourceHandler("/uploads/certificates/**")
+                .addResourceLocations("file:uploads/certificates/");
     }
 }

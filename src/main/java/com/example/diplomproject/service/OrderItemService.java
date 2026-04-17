@@ -33,7 +33,7 @@ public class OrderItemService {
     @Transactional(readOnly = true)
     public OrderItem getOrderItemById(Long id) {
         return orderItemRepository.findById(id).
-                orElseThrow(()-> new NoSuchElementException("Такого заказа нет"));
+                orElseThrow(()-> new NoSuchElementException("Элемент заказа не найден с id: " + id));
     }
 
     /**
@@ -61,6 +61,9 @@ public class OrderItemService {
      */
     @Transactional
     public OrderItem updateOrderItem(Long id, OrderItem updatedOrderItem) {
+        if (updatedOrderItem == null) {
+            throw new IllegalArgumentException("Обновляемые данные не могут быть null");
+        }
         OrderItem existingOrderItem = getOrderItemById(id);
 
         if (updatedOrderItem.getPrice() != null && updatedOrderItem.getPrice().compareTo(java.math.BigDecimal.ZERO) >= 0) {

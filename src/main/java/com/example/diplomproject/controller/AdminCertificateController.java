@@ -1,6 +1,9 @@
 package com.example.diplomproject.controller;
 
 import com.example.diplomproject.entity.Certificate;
+import com.example.diplomproject.entity.Course;
+import com.example.diplomproject.entity.User;
+import com.example.diplomproject.enums.Role;
 import com.example.diplomproject.service.CertificateService;
 import com.example.diplomproject.service.CourseService;
 import com.example.diplomproject.service.UserService;
@@ -12,6 +15,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.stream.Collectors;
 
 @Slf4j
 @Controller
@@ -34,7 +39,9 @@ public class AdminCertificateController {
 
     @GetMapping("/new")
     public String showCreateForm(Model model) {
-        model.addAttribute("users", userService.getAllUsers());
+        model.addAttribute("users", userService.getAllUsers().stream()
+                .filter(user -> user.getRole() != Role.ADMIN)
+                .collect(Collectors.toList()));
         // Для админки используем метод, возвращающий сущности
         model.addAttribute("courses", courseService.getAllCoursesForAdmin());
         model.addAttribute("title", "Создание сертификата");
@@ -47,23 +54,36 @@ public class AdminCertificateController {
                                     @RequestParam("courseId") Long courseId,
                                     @RequestParam("certificateFile") MultipartFile file,
                                     RedirectAttributes redirectAttributes) {
+        if (file == null || file.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Файл сертификата не выбран");
+            return "redirect:/admin/certificates/new";
+        }
+        User user = userService.getUserById(userId);
+        if (user == null) {
+            redirectAttributes.addFlashAttribute("error", "Пользователь не найден");
+            return "redirect:/admin/certificates/new";
+        }
+        Course course = courseService.getCourseEntityById(courseId);
+        if (course == null) {
+            redirectAttributes.addFlashAttribute("error", "Курс не найден");
+            return "redirect:/admin/certificates/new";
+        }
         try {
-            certificateService.createManualCertificateWithFile(
-                    userService.getUserById(userId),
-                    courseService.getCourseEntityById(courseId), // изменено
-                    file
-            );
-            redirectAttributes.addAttribute("success", "Сертификат успешно создан и загружен");
+            certificateService.createManualCertificateWithFile(user, course, file);
+            redirectAttributes.addFlashAttribute("success", "Сертификат успешно создан и загружен");
         } catch (Exception e) {
             log.error("Ошибка создания сертификата", e);
-            redirectAttributes.addAttribute("error", "Ошибка: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Ошибка: " + e.getMessage());
         }
         return "redirect:/admin/certificates";
     }
-
     @GetMapping("/{id}")
-    public String viewCertificate(@PathVariable Long id, Model model) {
+    public String viewCertificate(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
         Certificate certificate = certificateService.getCertificateById(id);
+        if (certificate == null) {
+            redirectAttributes.addFlashAttribute("error", "Сертификат не найден");
+            return "redirect:/admin/certificates";
+        }
         model.addAttribute("certificate", certificate);
         model.addAttribute("title", "Просмотр сертификата");
         model.addAttribute("content", "pages/admin/certificates/view :: admin-certificate-view");
@@ -72,25 +92,39 @@ public class AdminCertificateController {
 
     @PostMapping("/{id}/revoke")
     public String revokeCertificate(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        Certificate certificate = certificateService.getCertificateById(id);
+        if (certificate == null) {
+            redirectAttributes.addFlashAttribute("error", "Сертификат не найден");
+            return "redirect:/admin/certificates";
+        }
         try {
             certificateService.revokeCertificate(id);
-            redirectAttributes.addAttribute("success", "Сертификат отозван");
+            redirectAttributes.addFlashAttribute("success", "Сертификат отозван");
         } catch (Exception e) {
             log.error("Ошибка отзыва сертификата {}", id, e);
-            redirectAttributes.addAttribute("error", "Ошибка отзыва: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Ошибка отзыва: " + e.getMessage());
         }
         return "redirect:/admin/certificates";
     }
     @PostMapping("/{id}/activate")
     public String activateCertificate(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        Certificate certificate = certificateService.getCertificateById(id);
-        if (certificate.isRevoked()) {
-            certificate.setRevoked(false);
-            certificate.setRevokedDate(null);
-            certificateService.save(certificate);
+        try {
+            certificateService.activateCertificate(id);
             redirectAttributes.addFlashAttribute("success", "Сертификат активирован");
-        } else {
-            redirectAttributes.addFlashAttribute("error", "Сертификат уже активен");
+        } catch (Exception e) {
+            log.error("Ошибка активации сертификата {}", id, e);
+            redirectAttributes.addFlashAttribute("error", "Ошибка активации: " + e.getMessage());
+        }
+        return "redirect:/admin/certificates";
+    }
+
+    @PostMapping("/{id}/delete")
+    public String deleteCertificate(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            certificateService.deleteCertificate(id);
+            redirectAttributes.addFlashAttribute("success", "Сертификат удалён");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Ошибка удаления: " + e.getMessage());
         }
         return "redirect:/admin/certificates";
     }

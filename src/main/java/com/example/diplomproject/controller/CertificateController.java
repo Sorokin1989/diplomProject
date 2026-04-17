@@ -20,14 +20,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.server.ResponseStatusException;
-
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.core.io.Resource;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 
 @Controller
 @RequestMapping("/certificates")
@@ -35,21 +34,24 @@ public class CertificateController {
 
     private final CertificateService certificateService;
     private final CertificateMapper certificateMapper;
-    private final CourseAccessService courseAccessService;
 
     @Autowired
-    public CertificateController(CertificateService certificateService, CertificateMapper certificateMapper, CourseAccessService courseAccessService) {
+    public CertificateController(CertificateService certificateService, CertificateMapper certificateMapper) {
         this.certificateService = certificateService;
         this.certificateMapper = certificateMapper;
-        this.courseAccessService = courseAccessService;
+
     }
 
     @GetMapping
     public String listUserCertificates(@AuthenticationPrincipal User user, Model model) {
+
+        if (user == null) {
+            return "redirect:/login";
+        }
         List<Certificate> certificates = certificateService.getCertificatesByUser(user);
         List<CertificateDto> certificateDtos = certificates.stream()
                 .map(certificateMapper::toCertificateDto)
-                .collect(Collectors.toList());
+                .toList();
 
         model.addAttribute("certificates", certificateDtos);
         model.addAttribute("title", "Мои сертификаты");
@@ -58,16 +60,23 @@ public class CertificateController {
     }
 
     @GetMapping("/{id}")
-    public String viewCertificate(@PathVariable Long id, Model model) {
+    public String viewCertificate(@PathVariable Long id, @AuthenticationPrincipal User currentUser, Model model) {
         Certificate certificate = certificateService.getCertificateById(id);
-        CertificateDto certificateDto = certificateMapper.toCertificateDto(certificate);
 
+        // Проверка: текущий пользователь - владелец или администратор
+        if (currentUser == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        }
+        if (!certificate.getUser().getId().equals(currentUser.getId()) && !currentUser.isAdmin()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Нет доступа к этому сертификату");
+        }
+
+        CertificateDto certificateDto = certificateMapper.toCertificateDto(certificate);
         model.addAttribute("certificate", certificateDto);
         model.addAttribute("title", "Сертификат");
         model.addAttribute("content", "pages/certificates/view :: certificate-view-content");
         return "layouts/main";
     }
-
     @GetMapping("/download/{courseId}")
     public ResponseEntity<Resource> downloadCertificate(@PathVariable Long courseId,
                                                         @AuthenticationPrincipal User user) {
@@ -78,18 +87,19 @@ public class CertificateController {
         if (certificate == null || certificate.isRevoked() || certificate.getCertificateUrl() == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Сертификат не найден или отозван");
         }
-        if (!courseAccessService.hasAccessToUser(user, certificate.getCourse())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Доступ запрещён");
+
+        // Безопасное построение пути
+        String fileName = certificate.getCertificateUrl(); // "123.pdf"
+        Path basePath = Paths.get("uploads/certificates").toAbsolutePath().normalize();
+        Path filePath = basePath.resolve(fileName).normalize();
+
+        if (!filePath.startsWith(basePath)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Некорректный путь к файлу");
         }
+
         try {
-            // Убираем ведущий слеш, если есть
-            String relativePath = certificate.getCertificateUrl().startsWith("/")
-                    ? certificate.getCertificateUrl().substring(1)
-                    : certificate.getCertificateUrl();
-            Path filePath = Paths.get(relativePath).normalize();
             Resource resource = new UrlResource(filePath.toUri());
             if (resource.exists() && resource.isReadable()) {
-                // Определяем MIME-тип по расширению файла
                 String contentType = determineContentType(filePath);
                 return ResponseEntity.ok()
                         .contentType(MediaType.parseMediaType(contentType))

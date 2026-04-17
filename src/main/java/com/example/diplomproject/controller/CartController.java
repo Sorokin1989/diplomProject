@@ -6,6 +6,7 @@ import com.example.diplomproject.dto.CourseDto;
 import com.example.diplomproject.entity.User;
 import com.example.diplomproject.service.CartService;
 import com.example.diplomproject.service.CourseService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -39,7 +40,7 @@ public class CartController {
             return "redirect:/login";
         }
         CartDto cartDto = cartService.getOrCreateCartDto(user);
-        List<CartItemDto> items = cartDto.getCartItems();
+        List<CartItemDto> items = cartDto.getCartItems() != null ? cartDto.getCartItems() : List.of();
         BigDecimal total = cartService.getTotalPriceDto(user);
 
         model.addAttribute("title", "Корзина");
@@ -57,21 +58,21 @@ public class CartController {
                             RedirectAttributes redirectAttributes,
                             HttpServletRequest request) {
 
-        CourseDto dto=courseService.getCourseDtoById(id);
-        if (dto == null) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Курс не найден");
-            String referer = request.getHeader("Referer");
-            return "redirect:" + (referer != null && referer.contains("/courses") ? referer : "/courses");
+        if (user == null) {
+            return "redirect:/login";
         }
-
         try {
+            CourseDto dto = courseService.getCourseDtoById(id);
             cartService.addCourseToCart(user, dto);
             redirectAttributes.addFlashAttribute("successMessage", "Курс добавлен в корзину");
+        } catch (EntityNotFoundException | IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Курс не найден");
         } catch (IllegalStateException e) {
-            // Ловим исключение, которое возникает, если курс уже в корзине
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage()); // "Курс уже добавлен в корзину"
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (Exception e) {
+            log.error("Unexpected error adding to cart: {}", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Ошибка при добавлении курса");
         }
-        // Возвращаемся на страницу, с которой пришли (Referer)
         String referer = request.getHeader("Referer");
         if (referer != null && (referer.contains("/courses") || referer.contains("/categories"))) {
             return "redirect:" + referer;
@@ -81,26 +82,41 @@ public class CartController {
 
     @PostMapping("/remove/{cartItemId}")
     public String removeCartItem(@AuthenticationPrincipal User user,
-                                 @PathVariable Long cartItemId) {
-        if (user == null) {
-            return "redirect:/login";
+                                 @PathVariable Long cartItemId,
+                                 RedirectAttributes redirectAttributes) {
+        if (user == null) return "redirect:/login";
+        try {
+            cartService.removeCourseFromCart(user, cartItemId);
+            redirectAttributes.addFlashAttribute("successMessage", "Товар удалён из корзины");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (Exception e) {
+            log.error("Error removing cart item: {}", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Ошибка при удалении товара");
         }
-        cartService.removeCourseFromCart(user, cartItemId);
         return "redirect:/cart";
     }
 
     @PostMapping("/clear")
-    public String clearCart(@AuthenticationPrincipal User user) {
-        if (user == null) {
-            return "redirect:/login";
+    public String clearCart(@AuthenticationPrincipal User user,
+                            RedirectAttributes redirectAttributes) {
+        if (user == null) return "redirect:/login";
+        try {
+            cartService.clearCart(user);
+            redirectAttributes.addFlashAttribute("successMessage", "Корзина очищена");
+        } catch (Exception e) {
+            log.error("Error clearing cart: {}", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Ошибка при очистке корзины");
         }
-        cartService.clearCart(user);
         return "redirect:/cart";
     }
 
     @GetMapping("/count")
     @ResponseBody
     public Map<String, Integer> getCartCount(@AuthenticationPrincipal User user) {
+        if (user == null) {
+            return Map.of("count", 0);
+        }
         int count = cartService.getCartItemCount(user);
         return Map.of("count", count);
     }

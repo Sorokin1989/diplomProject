@@ -41,12 +41,12 @@ public class UserMapper {
 
         if (user.getOrders() != null) {
             userDto.setOrderDtos(user.getOrders().stream().
-                    map(order -> orderMapper.toOrderDTO(order)).toList());
+                    map(orderMapper::toOrderDTO).toList());
         }
 
         if (user.getCertificates() != null) {
             userDto.setCertificateDtos(user.getCertificates().stream().
-                    map(certificate -> certificateMapper.toCertificateDto(certificate)).toList());
+                    map(certificateMapper::toCertificateDto).toList());
         }
 
         if (user.getCart() != null) {
@@ -57,12 +57,12 @@ public class UserMapper {
 
         if (user.getReviews() != null) {
             userDto.setReviewDtos(user.getReviews().stream().
-                    map(review -> reviewMapper.toReviewDTO(review)).toList());
+                    map(reviewMapper::toReviewDTO).toList());
         }
 
         if (user.getCourseAccesses() != null) {
             userDto.setCourseAccessDtos(user.getCourseAccesses().stream().
-                    map(courseaccess -> courseAccessMapper.toCourseAccessDto(courseaccess)).toList());
+                    map(courseAccessMapper::toCourseAccessDto).toList());
         }
         userDto.setBonusPoints(user.getBonusPoints());
         return userDto;

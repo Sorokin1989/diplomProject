@@ -1269,6 +1269,7 @@ ul.nav-list {
     gap: 0.75rem;
     padding-top: 0.75rem;
     border-top: 1px solid #f0e6eb;
+    margin-top: auto;
 }
 
 .edit-btn-small, .delete-btn-small {
@@ -1285,12 +1286,14 @@ ul.nav-list {
     border: none;
     background: none;
     font-family: inherit;
+
 }
 
 .edit-btn-small {
     background: linear-gradient(100deg, #f0eef8, #e7e1f5);
     color: #8461c2;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+
 }
 
 .edit-btn-small:hover {
@@ -1982,7 +1985,7 @@ ul.nav-list {
 /* Блок с контактной информацией */
 .contact-info-block {
     flex: 1;
-    min-width: 260px;
+    min-width: 320px;
     background: #faf5ff;
     border-radius: 24px;
     padding: 2rem 1.5rem;
@@ -2042,6 +2045,12 @@ ul.nav-list {
     text-decoration: none;   /* убирает подчёркивание текста */
     border-bottom: none;     /* на случай, если линия от border */
     outline: none;           /* убирает обводку при клике (опционально) */
+}
+.max-btn{
+    width: 32px;
+    height: 32px;
+    border-radius: 20%;
+
 }
 
 .social-links a:hover {
@@ -3115,6 +3124,7 @@ ul.nav-list {
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
     background: white;
     padding: 0.5rem;
+    margin-top: 1.5rem;
 }
 
 .confirm-payment-form {
@@ -3220,14 +3230,8 @@ ul.nav-list {
     flex: 1;                    /* занимает всё доступное пространство */
 }
 
-/* Блок с ценой и кнопками прижимаем к низу */
-.category-meta {
-    margin-top: auto;           /* прижимает цену вниз */
-}
 
-.admin-actions {
-    margin-top: 0.5rem;         /* отступ от цены (опционально) */
-}
+
 
 /* ===== СТРАНИЦА УПРАВЛЕНИЯ МАТЕРИАЛАМИ КУРСА ===== */
 .materials-container {

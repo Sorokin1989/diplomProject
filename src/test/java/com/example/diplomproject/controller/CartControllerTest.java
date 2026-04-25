@@ -82,6 +82,7 @@ class CartControllerTest {
 
     @Test
     void viewCart_unauthenticatedUser_shouldRedirectToLogin() throws Exception {
+        SecurityContextHolder.clearContext();
         mockMvc.perform(get("/cart"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/login"));

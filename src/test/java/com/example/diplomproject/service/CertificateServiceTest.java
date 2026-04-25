@@ -7,10 +7,12 @@ import com.example.diplomproject.repository.CertificateRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -39,8 +41,12 @@ class CertificateServiceTest {
     private Course course;
     private Certificate certificate;
 
+    @TempDir
+    Path tempDir;
+
     @BeforeEach
     void setUp() {
+        ReflectionTestUtils.setField(certificateService, "storagePath", tempDir.toString());
         user = new User();
         user.setId(1L);
         user.setUsername("testuser");

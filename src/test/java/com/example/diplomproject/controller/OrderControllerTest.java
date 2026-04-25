@@ -415,12 +415,14 @@ class OrderControllerTest {
 
         Promocode promo = new Promocode();
         when(promocodeService.findByCode("SAVE10")).thenReturn(promo);
-        when(promocodeService.calculateDiscount(any(), eq(promo))).thenReturn(BigDecimal.valueOf(90));
+        // Правильно: сумма скидки = 10
+        when(promocodeService.calculateDiscount(any(), eq(promo))).thenReturn(BigDecimal.valueOf(10));
 
         mockMvc.perform(post("/orders/apply-promocode")
                         .param("promocode", "SAVE10"))
                 .andExpect(status().isOk())
-                .andExpect(model().attribute("discountedTotal", BigDecimal.valueOf(90)))
+                // Итоговая цена после скидки = 90
+                .andExpect(model().attribute("newTotal", BigDecimal.valueOf(90)))
                 .andExpect(model().attribute("promocodeApplied", true));
         clearAuthentication();
     }

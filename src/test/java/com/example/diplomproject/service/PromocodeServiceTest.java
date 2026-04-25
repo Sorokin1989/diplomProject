@@ -150,7 +150,7 @@ class PromocodeServiceTest {
     @Test
     void calculateDiscount_shouldReturnCorrectPercent() {
         BigDecimal result = promocodeService.calculateDiscount(BigDecimal.valueOf(100), activePromocode);
-        assertThat(result).isEqualByComparingTo("90.00");
+        assertThat(result).isEqualByComparingTo("10.00"); // ← исправлено с 90.00 на 10.00
     }
 
     @Test

@@ -32,6 +32,8 @@ public class OrderDto {
     private String paymentStatus;
     private BigDecimal discountAmount;
     private String promoCode;
+    private BigDecimal discountValue;
+    private String discountType;
 
 
 

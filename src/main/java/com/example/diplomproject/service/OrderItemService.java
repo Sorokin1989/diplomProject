@@ -82,5 +82,13 @@ public class OrderItemService {
         orderItemRepository.delete(orderItem);
     }
 
+    @Transactional
+    public boolean existsByCourseId(Long id){
+        if (id==null){
+            return false;
+        }
+        return orderItemRepository.existsByCourseId(id);
+    }
+
 
 }

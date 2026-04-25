@@ -54,6 +54,10 @@ public class OrderMapper {
 
         if(order.getPromoCode()!=null){
         orderDto.setPromoCode(order.getPromoCode().getCode());
+        orderDto.setDiscountValue(order.getPromoCode().getValue());
+            if (order.getPromoCode().getDiscountType() != null) {
+                orderDto.setDiscountType(order.getPromoCode().getDiscountType().name());
+            }
         }
         return orderDto;
     }

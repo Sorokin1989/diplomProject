@@ -129,11 +129,12 @@ public class PromocodeService {
             throw new IllegalArgumentException("Промокод недействителен или не подходит для данной суммы");
         }
 
-        BigDecimal discountedPrice = calculateDiscount(price, promocode);
+        BigDecimal discountAmount = calculateDiscount(price, promocode);
+        BigDecimal finalPrice=price.subtract(discountAmount).max(BigDecimal.ZERO);
         // Увеличиваем счётчик ТОЛЬКО при реальном применении
         promocode.setUsedCount(promocode.getUsedCount() + 1);
         promocodeRepository.save(promocode);
-        return discountedPrice;
+        return finalPrice;
     }
 
     // ==================== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ====================
@@ -142,26 +143,34 @@ public class PromocodeService {
         if (!isPromocodeActive(promocode) || price.compareTo(promocode.getMinOrderAmount()) < 0) {
             return BigDecimal.ZERO;
         }
-        BigDecimal discount;
         if (promocode.getDiscountType() == DiscountType.PERCENT) {
-            BigDecimal percent = promocode.getValue().divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
-            discount = price.multiply(percent).setScale(2, RoundingMode.HALF_UP);
+            // value хранит целое число процентов (например, 50)
+            return price.multiply(promocode.getValue())
+                    .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
         } else {
-            discount = promocode.getValue();
+            // фиксированная скидка
+            BigDecimal discount = promocode.getValue();
+            return discount.compareTo(price) > 0 ? price : discount;
         }
+    }
+
+    public BigDecimal calculatePriceAfterDiscount(BigDecimal price, Promocode promocode) {
+        if (!isPromocodeActive(promocode) || price.compareTo(promocode.getMinOrderAmount()) < 0) {
+            return price;
+        }
+        BigDecimal discount = calculateDiscount(price, promocode);
         BigDecimal result = price.subtract(discount);
-        return result.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : result;
+        return result.max(BigDecimal.ZERO);
     }
 
     public boolean isPromocodeActive(Promocode promocode) {
         if (promocode == null) return false;
         LocalDateTime now = LocalDateTime.now();
         return promocode.isActive()
-                && now.isAfter(promocode.getValidFrom())
-                && now.isBefore(promocode.getValidTo())
+                && !now.isBefore(promocode.getValidFrom())   // now >= validFrom
+                && now.isBefore(promocode.getValidTo())      // now < validTo
                 && promocode.getUsedCount() < promocode.getUsageLimit();
     }
-
 //    @Transactional
 //    public void incrementUsage(String code) {
 //        Promocode promocode = promocodeRepository.findByCode(code)

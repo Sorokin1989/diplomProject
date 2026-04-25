@@ -3,11 +3,13 @@ package com.example.diplomproject.mapper;
 import com.example.diplomproject.dto.OrderItemDto;
 import com.example.diplomproject.entity.OrderItem;
 import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
 
 @Component
 public class OrderItemMapper {
+    private static final Logger log = LoggerFactory.getLogger(OrderItemMapper.class);
 
     public OrderItemDto toOrderItemDto(OrderItem orderItem) {
         if (orderItem == null) return null;
@@ -18,9 +20,10 @@ public class OrderItemMapper {
 
         if (orderItem.getCourse() != null) {
             dto.setCourseId(orderItem.getCourse().getId());
-            dto.setCourseTitle(orderItem.getCourseTitle());
+            dto.setCourseTitle(orderItem.getCourse().getTitle());
         } else {
             dto.setCourseTitle("Курс удален");
+
         }
         return dto;
     }

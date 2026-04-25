@@ -217,14 +217,19 @@ public class OrderService {
             throw new IllegalArgumentException("Сумма со скидкой не может быть отрицательной");
         }
         Order order = createOrderFromCourseIds(userId, courseIds);
-        if (discountedTotal != null) {
+        BigDecimal originalTotal=order.getTotalSum();
+        if (originalTotal != null) {
             order.setTotalSum(discountedTotal);
+            BigDecimal discountAmount =originalTotal.subtract(discountedTotal);
+            if(discountAmount.compareTo(BigDecimal.ZERO)>0){
+                order.setDiscountAmount(discountAmount);
+            }
         }
         if (promocode != null) {
             order.setPromoCode(promocode);
         }
         orderRepository.flush();
-//        entityManager.clear();
+        entityManager.clear();
         Order orderWithItems = getOrderByIdWithItems(order.getId());
         return orderMapper.toOrderDTO(orderWithItems);
     }

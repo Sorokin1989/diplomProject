@@ -262,6 +262,12 @@ public class ReviewService {
         reviewRepository.save(review);
     }
 
+    @Transactional(readOnly = true)
+    public boolean existsByCourseId(Long id) {
+        if (id == null) return false;
+        return reviewRepository.existsByCourseId(id);
+    }
+
     /**
      * Редактировать отзыв от имени администратора (без изменения статуса модерации)
      */

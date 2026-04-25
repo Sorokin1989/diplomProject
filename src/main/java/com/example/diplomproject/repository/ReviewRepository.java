@@ -6,6 +6,9 @@ import com.example.diplomproject.entity.Review;
 import com.example.diplomproject.entity.User;
 import com.example.diplomproject.enums.ModerationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
@@ -39,5 +42,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     boolean existsByUserAndCourseAndModerationStatusIn(User user, Course course, List<ModerationStatus> statuses);
 
     List<Review> findByModerationStatus(ModerationStatus status);
+
+    boolean existsByCourseId(Long courseId);
 
 }

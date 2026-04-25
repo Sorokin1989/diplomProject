@@ -4,6 +4,7 @@ import com.example.diplomproject.entity.Course;
 import com.example.diplomproject.entity.CourseAccess;
 import com.example.diplomproject.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -17,7 +18,9 @@ public interface CourseAccessRepository extends JpaRepository<CourseAccess, Long
 
     List<Course> findCoursesByUser(User user);
 
-    List<User> findUsersByCourse(Course course);
+//    List<User> findUsersByCourse(Course course);
+    @Query("SELECT ca.user FROM CourseAccess ca WHERE ca.course = :course")
+    List<User> findUsersByCourse(@Param("course") Course course);
 
 
     Optional<CourseAccess> findByUserAndCourse(User user, Course course);
@@ -27,4 +30,5 @@ public interface CourseAccessRepository extends JpaRepository<CourseAccess, Long
     List<Course> findCoursesByUserWithImages(@Param("user") User user);
 
     boolean existsByUserAndCourseId(User user, Long id);
+    boolean existsByCourseId(Long courseId);
 }

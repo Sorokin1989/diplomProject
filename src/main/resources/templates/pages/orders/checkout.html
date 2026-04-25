@@ -24,7 +24,7 @@
         <div class="cart-summary">
             <div class="summary-row">
                 <span>Итого:</span>
-                <span th:text="${discountedTotal != null ? discountedTotal + ' ₽' : totalPrice + ' ₽'}"></span>
+                <span th:text="${newTotal != null ? newTotal + ' ₽' : totalPrice + ' ₽'}"></span>
             </div>
 
             <form th:action="@{/orders/apply-promocode}" method="post" class="promocode-form">
@@ -35,7 +35,7 @@
                 </div>
                 <div th:if="${promocodeError}" class="error-message" th:text="${promocodeError}"></div>
                 <div th:if="${promocodeApplied}" class="success-message">
-                    Скидка применена! Итого: <strong th:text="${discountedTotal} + ' ₽'"></strong>
+                    Скидка применена! Итого: <strong  th:text="${newTotal != null ? newTotal : totalPrice} + ' ₽'"></strong>
                 </div>
             </form>
 

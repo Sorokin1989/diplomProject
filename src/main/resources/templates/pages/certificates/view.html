@@ -33,7 +33,7 @@
 
     <div class="certificate-actions">
         <a th:href="@{/certificates}" class="btn-secondary">← Вернуться к списку</a>
-        <a th:href="@{'/uploads/certificates/' + ${certificate.certificateUrl}}" class="btn-primary" target="_blank" th:if="${certificate.certificateUrl != null && !certificate.revoked}" download>
+        <a th:href="@{/certificates/download-file/{id}(id=${certificate.id})}" class="btn-primary" th:if="${certificate.certificateUrl != null && !certificate.revoked}">
             <i class="fas fa-download"></i> Скачать сертификат
         </a>
     </div>

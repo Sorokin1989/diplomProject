@@ -1,10 +1,53 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<div th:fragment="admin-course-access-content" class="categories-card">
+    <div class="brand">
+        <h1>Школа красоты</h1>
+        <p>учебный центр индустрии красоты</p>
+    </div>
 
-</body>
-</html>
+    <div class="form-header">
+        <div th:if="${success}" class="message-box success">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${success}">Успешно</span>
+        </div>
+        <div th:if="${error}" class="message-box error">
+            <i class="fas fa-circle-exclamation"></i>
+            <span th:text="${error}">Ошибка</span>
+        </div>
+        <h2>Управление доступом к курсам</h2>
+        <p>Выберите курс, чтобы отозвать доступ у пользователей</p>
+    </div>
+
+    <div style="display: flex; justify-content: flex-start; margin-bottom: 1.5rem;">
+        <a th:href="@{/admin}" class="btn-secondary">
+            <i class="fas fa-arrow-left"></i> Назад
+        </a>
+    </div>
+
+    <!-- Таблица курсов -->
+    <div class="users-table-container">
+        <table class="users-table">
+            <thead>
+            <tr><th>ID</th><th>Название курса</th><th>Действие</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="course : ${courses}">
+                <td th:text="${course.id}">1</td>
+                <td th:text="${course.title}">Название курса</td>
+                <td>
+                    <a th:href="@{/admin/course-access/course/{courseId}(courseId=${course.id})}" class="edit-btn-small">
+                        <i class="fas fa-users"></i> Управлять доступом
+                    </a>
+                </td>
+            </tr>
+            <tr th:if="${courses.empty}">
+                <td colspan="3">Курсы не найдены</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <hr>
+    <div class="home-link">
+        <a th:href="@{/admin}">Вернуться в админ-панель</a>
+    </div>
+</div>

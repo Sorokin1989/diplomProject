@@ -1,10 +1,69 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<div th:fragment="admin-course-access-manage" class="categories-card">
+    <div class="brand">
+        <h1>Школа красоты</h1>
+        <p>учебный центр индустрии красоты</p>
+    </div>
 
-</body>
-</html>
+    <div class="form-header">
+        <div th:if="${success}" class="message-box success">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${success}">Успешно</span>
+        </div>
+        <div th:if="${error}" class="message-box error">
+            <i class="fas fa-circle-exclamation"></i>
+            <span th:text="${error}">Ошибка</span>
+        </div>
+        <h2>Управление доступом: <span th:text="${course.title}"></span></h2>
+        <p>Отзыв доступа у пользователей</p>
+    </div>
+
+    <div style="display: flex; justify-content: flex-start; margin-bottom: 1.5rem;">
+        <a th:href="@{/admin/course-access}" class="btn-secondary">
+            <i class="fas fa-arrow-left"></i> Назад к курсам
+        </a>
+    </div>
+
+    <h3>Пользователи с доступом</h3>
+    <div class="users-table-container">
+        <table class="users-table">
+            <thead>
+            <tr><th>ID</th><th>Имя пользователя</th><th>Email</th><th>Действие</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="user : ${usersWithAccess}">
+                <td th:text="${user.id}">1</td>
+                <td th:text="${user.username}">username</td>
+                <td th:text="${user.email}">email</td>
+                <td>
+                    <form th:action="@{/admin/course-access/revoke}" method="post">
+                        <input type="hidden" name="courseId" th:value="${course.id}"/>
+                        <input type="hidden" name="userId" th:value="${user.id}"/>
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="delete-btn-small" onclick="return confirm('Отозвать доступ?')">
+                            <i class="fas fa-ban"></i> Отозвать
+                        </button>
+                    </form>
+                </td>
+                <td>
+                    <form th:action="@{/admin/course-access/grant}" method="post">
+                        <input type="hidden" name="courseId" th:value="${course.id}"/>
+                        <input type="hidden" name="userId" th:value="${user.id}"/>
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="delete-btn-small" onclick="return confirm('Активировать доступ?')">
+                            <i class="fas fa-ban"></i> Активировать
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${usersWithAccess.empty}">
+                <td colspan="4">Нет пользователей с доступом</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <hr>
+    <div class="home-link">
+        <a th:href="@{/admin}">Вернуться в админ-панель</a>
+    </div>
+</div>

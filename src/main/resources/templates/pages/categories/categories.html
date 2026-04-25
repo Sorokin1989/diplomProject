@@ -12,7 +12,7 @@
             <div class="category-card">
                 <div class="category-icon-user">
                     <img th:if="${category.imageUrl != null}"
-                         th:src="${category.imageUrl}"
+                         th:src="@{${category.imageUrl}}"
                          alt="Category image">
                     <i th:unless="${category.imageUrl != null}" class="fas fa-folder"></i>
                 </div>

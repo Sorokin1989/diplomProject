@@ -1,6 +1,7 @@
 package com.example.diplomproject.service;
 
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -9,48 +10,39 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @Service
 public class FileStorageService {
 
-    private final Path categoriesRoot = Paths.get("uploads/categories/");
-    private final Path coursesRoot = Paths.get("uploads/courses/");
+    @Value("${app.upload.path}")
+    private String uploadPath;
+
+    private Path categoriesRoot;
+    private Path coursesRoot;
+    private Path materialsRoot;
+    private Path certificatesRoot;
 
     @PostConstruct
     public void init() throws IOException {
+        Path base = Paths.get(uploadPath).normalize();
+        categoriesRoot = base.resolve("categories");
+        coursesRoot = base.resolve("courses");
+        materialsRoot = base.resolve("materials");
+        certificatesRoot = base.resolve("certificates");
+
         Files.createDirectories(categoriesRoot);
         Files.createDirectories(coursesRoot);
+        Files.createDirectories(materialsRoot);
+        Files.createDirectories(certificatesRoot);
     }
 
-    // ========== Сохранение нескольких изображений ==========
-    public List<String> saveCategoryImages(MultipartFile[] files) throws IOException {
-        List<String> savedPaths = new ArrayList<>();
-        for (MultipartFile file : files) {
-            String path = saveCategoryImage(file);
-            if (path != null) savedPaths.add(path);
-        }
-        return savedPaths;
-    }
-
-    public List<String> saveCourseImages(MultipartFile[] files) throws IOException {
-        List<String> savedPaths = new ArrayList<>();
-        for (MultipartFile file : files) {
-            String path = saveCourseImage(file);
-            if (path != null) savedPaths.add(path);
-        }
-        return savedPaths;
-    }
-
-    // ========== Сохранение одного изображения ==========
     public String saveCategoryImage(MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) return null;
         String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
         Path target = categoriesRoot.resolve(filename);
         Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
-        return "/uploads/categories/" + filename;
+        return "/uploads/categories/" + filename; // относительный путь без uploadPath
     }
 
     public String saveCourseImage(MultipartFile file) throws IOException {
@@ -61,26 +53,22 @@ public class FileStorageService {
         return "/uploads/courses/" + filename;
     }
 
-    // ========== Удаление файла ==========
-    public void deleteFile(String filePath) throws IOException {
-        if (filePath == null || filePath.isEmpty()) return;
+    public String saveMaterialsFile(MultipartFile file, String subPath) throws IOException {
+        // Например, subPath = "materials/" + fileName
+        Path target = materialsRoot.resolve(subPath.substring("materials/".length()));
+        Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+        return subPath;
+    }
 
-        Path root = null;
-        if (filePath.startsWith("/uploads/categories/")) {
-            root = categoriesRoot;
-        } else if (filePath.startsWith("/uploads/courses/")) {
-            root = coursesRoot;
+    public void deleteFile(String relativePath) throws IOException {
+        if (relativePath == null || relativePath.isEmpty()) return;
+        // Убираем ведущий слеш и возможный префикс "uploads/" или сам uploadPath
+        String cleanPath = relativePath.replaceFirst("^/?(uploads/)?", "");
+        Path base = Paths.get(uploadPath).normalize();
+        Path filePath = base.resolve(cleanPath).normalize();
+        if (!filePath.startsWith(base)) {
+            throw new SecurityException("Попытка доступа за пределы базовой папки: " + cleanPath);
         }
-
-        if (root != null) {
-            String fileName = filePath.substring(filePath.lastIndexOf('/') + 1);
-            Path file = root.resolve(fileName);
-            Files.deleteIfExists(file);
-        } else {
-            // fallback для совместимости (если путь не соответствует ожидаемым префиксам)
-            String relativePath = filePath.startsWith("/") ? filePath.substring(1) : filePath;
-            Path path = Paths.get(relativePath);
-            Files.deleteIfExists(path);
-        }
+        Files.deleteIfExists(filePath);
     }
 }

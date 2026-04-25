@@ -9,6 +9,7 @@ import com.example.diplomproject.entity.User;
 import com.example.diplomproject.mapper.CategoryMapper;
 import com.example.diplomproject.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -34,6 +35,9 @@ import java.util.List;
 @RequestMapping("/courses")
 public class CourseController {
 
+    @Value("${app.upload.path}")
+    private String uploadPath;
+
     private final CourseService courseService;
     private final CategoryService categoryService;
     private final CategoryMapper categoryMapper;
@@ -58,7 +62,11 @@ public class CourseController {
 
     @GetMapping
     public String listCourses(@RequestParam(value = "categoryId", required = false) Long categoryId,
+                              @AuthenticationPrincipal User user,
                               Model model) {
+
+        boolean isAdmin=user!=null && user.isAdmin();
+
         List<CourseDto> courses;
         if (categoryId != null) {
             Category category = null;
@@ -78,6 +86,7 @@ public class CourseController {
         }
         model.addAttribute("courses", courses);
         model.addAttribute("title", "Курсы");
+        model.addAttribute("isAdmin",isAdmin);
         model.addAttribute("content", "pages/courses/courses :: user-courses-content");
         return "layouts/main";
     }
@@ -163,7 +172,14 @@ public class CourseController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Материалы не загружены");
         }
         try {
-            Path filePath = Paths.get(course.getMaterialsPath()).normalize();
+//            Path filePath = Paths.get(course.getMaterialsPath()).normalize();
+            Path basePath = Paths.get(uploadPath).toAbsolutePath().normalize();
+//           Path filePath = basePath.resolve(course.getMaterialsPath()).normalize();
+            String rawPath = course.getMaterialsPath();
+            String cleanPath = rawPath != null ? rawPath.replaceFirst("^uploads/", "") : "";
+            Path filePath = basePath.resolve(cleanPath).normalize();
+
+
             Resource resource = new UrlResource(filePath.toUri());
             if (resource.exists() && resource.isReadable()) {
                 String encodedFilename = URLEncoder.encode(course.getTitle() + ".zip", StandardCharsets.UTF_8)

@@ -5,8 +5,7 @@ import com.example.diplomproject.entity.Category;
 import com.example.diplomproject.entity.Course;
 import com.example.diplomproject.entity.CourseImage;
 import com.example.diplomproject.mapper.CourseMapper;
-import com.example.diplomproject.repository.CourseImageRepository;
-import com.example.diplomproject.repository.CourseRepository;
+import com.example.diplomproject.repository.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
@@ -14,6 +13,7 @@ import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,6 +30,10 @@ import java.util.stream.Collectors;
 
 @Service
 public class CourseService {
+
+    @Value("${app.upload.path}")
+    private String uploadPath;
+
     @PersistenceContext
     private EntityManager entityManager;
     private final CourseMapper courseMapper;
@@ -43,7 +47,7 @@ public class CourseService {
     @Autowired
     public CourseService(CourseMapper courseMapper, CourseRepository courseRepository,
                          CourseImageRepository courseImageRepository,
-                         FileStorageService fileStorageService) {
+                         FileStorageService fileStorageService, CartItemRepository cartItemRepository, CourseAccessRepository courseAccessRepository, OrderItemRepository orderItemRepository, ReviewRepository reviewRepository) {
         this.courseMapper = courseMapper;
         this.courseRepository = courseRepository;
         this.courseImageRepository = courseImageRepository;
@@ -166,6 +170,7 @@ public class CourseService {
 
     @Transactional
     public void deleteCourseById(Long id) {
+
         Course course = getCourseEntityById(id);
         List<String> imagePaths = course.getImages().stream()
                 .map(CourseImage::getFilePath)
@@ -315,15 +320,14 @@ public class CourseService {
     // Вспомогательный метод – сохранение файла на диск
     private String saveMaterialsFile(MultipartFile file, Long courseId) {
         try {
-            String uploadDir = "uploads/materials/";
-            Path uploadPath = Paths.get(uploadDir);
+            Path uploadPath = Paths.get(this.uploadPath).resolve("materials").normalize();
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
             String fileName = String.format("course_%d_%d.zip", courseId, System.currentTimeMillis());
             Path filePath = uploadPath.resolve(fileName);
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-            return uploadDir + fileName; // относительный путь для БД
+            return "materials/" + fileName; // относительный путь для БД
         } catch (IOException e) {
             throw new RuntimeException("Ошибка сохранения файла материалов", e);
         }
@@ -332,12 +336,13 @@ public class CourseService {
     @Transactional
     public void deleteCourseMaterials(Long courseId) {
         Course course = getCourseEntityById(courseId);
-        String materialsPath = course.getMaterialsPath();
+        String materialsPath = course.getMaterialsPath(); // например, "materials/course_1_xxx.zip"
         if (materialsPath != null && !materialsPath.isEmpty()) {
             try {
-                Path filePath = Paths.get(materialsPath).normalize();
+                Path basePath = Paths.get(uploadPath).normalize();
+                Path filePath = basePath.resolve(materialsPath).normalize();
                 Files.deleteIfExists(filePath);
-                log.info("Файл материалов удалён: {}", materialsPath);
+                log.info("Файл материалов удалён: {}", filePath);
             } catch (IOException e) {
                 log.warn("Не удалось удалить файл материалов: {}", materialsPath, e);
             }

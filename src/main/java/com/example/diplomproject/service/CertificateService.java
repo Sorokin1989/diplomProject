@@ -26,8 +26,8 @@ public class CertificateService {
 
     private final CertificateRepository certificateRepository;
 
-    @Value("${certificates.storage.path}")
-    private String storagePath;
+    @Value("${app.upload.path}")
+    private String uploadPath;
 
     // Автоматическая выдача при покупке
 //    @Transactional
@@ -88,19 +88,19 @@ public class CertificateService {
 
     private String saveCertificateFile(MultipartFile file) {
         try {
-            Path uploadPath = Paths.get(storagePath);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
+            Path basePath = Paths.get(uploadPath).resolve("certificates").normalize();
+            if (!Files.exists(basePath)) {
+                Files.createDirectories(basePath);
             }
-            String originalFilename = file.getOriginalFilename();
             String extension = "";
+            String originalFilename = file.getOriginalFilename();
             if (originalFilename != null && originalFilename.contains(".")) {
                 extension = originalFilename.substring(originalFilename.lastIndexOf("."));
             }
             String fileName = "CERT_" + System.currentTimeMillis() + extension;
-            Path filePath = uploadPath.resolve(fileName);
+            Path filePath = basePath.resolve(fileName);
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-            return fileName;
+            return "certificates/" + fileName; // относительный путь для БД
         } catch (IOException e) {
             throw new RuntimeException("Ошибка сохранения файла сертификата", e);
         }
@@ -163,7 +163,16 @@ public class CertificateService {
     // Единый метод удаления файла по имени
     private void deleteCertificateFile(String fileName) {
         if (fileName == null || fileName.isBlank()) return;
-        Path filePath = Paths.get(storagePath).resolve(fileName).normalize();
+        // Используем uploadPath, а не storagePath
+        Path basePath = Paths.get(uploadPath).normalize();
+        Path filePath = basePath.resolve(fileName).normalize();
+
+        // Защита от выхода за пределы базовой папки
+        if (!filePath.startsWith(basePath)) {
+            log.warn("Некорректный путь: {}", fileName);
+            return;
+        }
+
         try {
             boolean deleted = Files.deleteIfExists(filePath);
             if (deleted) {
@@ -173,7 +182,6 @@ public class CertificateService {
             }
         } catch (IOException e) {
             log.error("Не удалось удалить файл: {}", fileName, e);
-            // Не бросаем исключение, чтобы запись удалилась (или бросаем, если хотите отката)
         }
     }
 

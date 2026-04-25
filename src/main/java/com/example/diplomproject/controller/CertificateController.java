@@ -5,9 +5,10 @@ import com.example.diplomproject.entity.Certificate;
 import com.example.diplomproject.entity.User;
 import com.example.diplomproject.mapper.CertificateMapper;
 import com.example.diplomproject.service.CertificateService;
-import com.example.diplomproject.service.CourseAccessService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.UrlResource;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -17,20 +18,21 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.server.ResponseStatusException;
-import java.net.MalformedURLException;
+
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import org.springframework.core.io.Resource;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 
 @Controller
 @RequestMapping("/certificates")
 public class CertificateController {
+
+    @Value("${app.upload.path}")
+    private String uploadPath;
 
     private final CertificateService certificateService;
     private final CertificateMapper certificateMapper;
@@ -77,6 +79,7 @@ public class CertificateController {
         model.addAttribute("content", "pages/certificates/view :: certificate-view-content");
         return "layouts/main";
     }
+
     @GetMapping("/download/{courseId}")
     public ResponseEntity<Resource> downloadCertificate(@PathVariable Long courseId,
                                                         @AuthenticationPrincipal User user) {
@@ -88,44 +91,76 @@ public class CertificateController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Сертификат не найден или отозван");
         }
 
-        // Безопасное построение пути
-        String fileName = certificate.getCertificateUrl(); // "123.pdf"
-        Path basePath = Paths.get("uploads/certificates").toAbsolutePath().normalize();
-        Path filePath = basePath.resolve(fileName).normalize();
+        // Получаем имя файла (без пути)
+        String fileName = Paths.get(certificate.getCertificateUrl()).getFileName().toString();
+        Path basePath = Paths.get(uploadPath).toAbsolutePath().normalize();
+        Path filePath = basePath.resolve("certificates").resolve(fileName).normalize();
 
         if (!filePath.startsWith(basePath)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Некорректный путь к файлу");
         }
 
-        try {
-            Resource resource = new UrlResource(filePath.toUri());
-            if (resource.exists() && resource.isReadable()) {
-                String contentType = determineContentType(filePath);
-                return ResponseEntity.ok()
-                        .contentType(MediaType.parseMediaType(contentType))
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filePath.getFileName().toString() + "\"")
-                        .body(resource);
-            } else {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Файл сертификата не найден");
-            }
-        } catch (MalformedURLException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Ошибка чтения файла");
+        // Проверяем, что файл существует и читается
+        if (!Files.isRegularFile(filePath) || !Files.isReadable(filePath)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Файл сертификата не найден или не читается");
         }
+
+        // Используем FileSystemResource вместо UrlResource
+        Resource resource = new FileSystemResource(filePath.toFile());
+        // Определяем content-type (можно упростить)
+        String lowerFileName = filePath.getFileName().toString().toLowerCase();
+        String contentType;
+        if (lowerFileName.endsWith(".png")) {
+            contentType = "image/png";
+        } else if (lowerFileName.endsWith(".jpg") || lowerFileName.endsWith(".jpeg")) {
+            contentType = "image/jpeg";
+        } else if (lowerFileName.endsWith(".pdf")) {
+            contentType = "application/pdf";
+        } else {
+            contentType = "application/octet-stream";
+        }
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                .body(resource);
     }
 
-    private String determineContentType(Path filePath) {
-        String fileName = filePath.getFileName().toString().toLowerCase();
-        if (fileName.endsWith(".pdf")) {
-            return "application/pdf";
-        } else if (fileName.endsWith(".png")) {
-            return "image/png";
-        } else if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg")) {
-            return "image/jpeg";
-        } else if (fileName.endsWith(".gif")) {
-            return "image/gif";
-        } else {
-            // По умолчанию - бинарный поток
-            return "application/octet-stream";
+    @GetMapping("/download-file/{id}")
+    public ResponseEntity<Resource> downloadCertificateFile(@PathVariable Long id,
+                                                        @AuthenticationPrincipal User user) {
+        Certificate certificate = certificateService.getCertificateById(id);
+        if (certificate == null || certificate.isRevoked() || certificate.getCertificateUrl() == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Сертификат не найден или отозван");
         }
+        if (!certificate.getUser().getId().equals(user.getId()) && !user.isAdmin()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Нет доступа");
+        }
+
+        String fileName = Paths.get(certificate.getCertificateUrl()).getFileName().toString();
+        Path basePath = Paths.get(uploadPath).toAbsolutePath().normalize();
+        Path filePath = basePath.resolve("certificates").resolve(fileName).normalize();
+
+        if (!filePath.startsWith(basePath)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Некорректный путь");
+        }
+        if (!Files.isRegularFile(filePath) || !Files.isReadable(filePath)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Файл сертификата не найден");
+        }
+
+        Resource resource = new FileSystemResource(filePath.toFile());
+        String contentType = determineContentTypeByExtension(fileName);
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                .body(resource);
+    }
+
+    private String determineContentTypeByExtension(String fileName) {
+        String lower = fileName.toLowerCase();
+        if (lower.endsWith(".png")) return "image/png";
+        if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) return "image/jpeg";
+        if (lower.endsWith(".pdf")) return "application/pdf";
+        return "application/octet-stream";
     }
 }

@@ -105,5 +105,9 @@ public class CourseAccessService {
 
         courseAccessRepository.delete(access);
     }
+    @Transactional(readOnly = true)
+    public boolean existsByCourseId(Long id) {
+        return id != null && courseAccessRepository.existsByCourseId(id);
+    }
 
 }

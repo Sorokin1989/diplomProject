@@ -94,6 +94,12 @@ public class OrderController {
         if (!isAdmin(currentUser) && !orderDto.getUserId().equals(currentUser.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Нет доступа к этому заказу");
         }
+        // Если заказ в статусе PENDING и это не админ, генерируем QR-код для оплаты
+        if (!isAdmin(currentUser) && "PENDING".equals(orderDto.getOrderStatus())) {
+            String paymentUrl = baseUrl + "/orders/" + id + "/pay";
+            String qrCodeBase64 = QrCodeGenerator.generateBase64(paymentUrl, 300, 300);
+            model.addAttribute("qrCode", qrCodeBase64);
+        }
         model.addAttribute("isAdmin", isAdmin(currentUser));
         model.addAttribute("order", orderDto);
         model.addAttribute("availableStatuses", OrderStatus.values());
@@ -224,6 +230,7 @@ public class OrderController {
 
         model.addAttribute("cartItems", cartDto.getCartItems());
         model.addAttribute("totalPrice", total);
+        model.addAttribute("newTotal", total);
         model.addAttribute("title", "Оформление заказа");
         model.addAttribute("content", "pages/orders/checkout :: checkout-content");
         return "layouts/main";
@@ -269,11 +276,13 @@ public class OrderController {
             if (promo == null) {
                 model.addAttribute("promocodeError", "Промокод не найден");
             } else {
-                BigDecimal discountedTotal = promocodeService.calculateDiscount(currentTotal, promo);
-                if (discountedTotal.compareTo(currentTotal) == 0) {
+                BigDecimal discountAmount = promocodeService.calculateDiscount(currentTotal, promo);
+                BigDecimal newTotal = currentTotal.subtract(discountAmount);
+                if (newTotal.compareTo(currentTotal) == 0) {
                     model.addAttribute("promocodeError", "Промокод недействителен для данной суммы");
                 } else {
-                    model.addAttribute("discountedTotal", discountedTotal);
+                    model.addAttribute("newTotal", newTotal);
+                    model.addAttribute("discountAmount", discountAmount);
                     model.addAttribute("promocodeApplied", true);
                     model.addAttribute("appliedPromocode", promocode);
                 }

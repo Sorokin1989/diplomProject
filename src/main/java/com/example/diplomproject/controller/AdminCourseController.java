@@ -4,11 +4,11 @@ import com.example.diplomproject.dto.CourseDto;
 import com.example.diplomproject.entity.Category;
 import com.example.diplomproject.entity.Certificate;
 import com.example.diplomproject.entity.Course;
-import com.example.diplomproject.service.CategoryService;
-import com.example.diplomproject.service.CertificateService;
-import com.example.diplomproject.service.CourseService;
+import com.example.diplomproject.repository.OrderItemRepository;
+import com.example.diplomproject.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -26,17 +26,27 @@ import java.util.List;
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminCourseController {
 
+
     private final CourseService courseService;
     private final CategoryService categoryService;
     private final CertificateService certificateService;
+    private final CourseAccessService courseAccessService;
+    private final CartItemService cartItemService;
+    private final ReviewService reviewService;
+    private final OrderItemService orderItemService;
+
 
     @Autowired
     public AdminCourseController(CourseService courseService,
                                  CategoryService categoryService,
-                                 CertificateService certificateService) {
+                                 CertificateService certificateService, CourseAccessService courseAccessService, CartItemService cartItemService, ReviewService reviewService, OrderItemService orderItemService) {
         this.courseService = courseService;
         this.categoryService = categoryService;
         this.certificateService = certificateService;
+        this.courseAccessService = courseAccessService;
+        this.cartItemService = cartItemService;
+        this.reviewService = reviewService;
+        this.orderItemService = orderItemService;
     }
 
     @GetMapping
@@ -175,37 +185,63 @@ public class AdminCourseController {
     @PostMapping("/delete/{id}")
     public String deleteCourse(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         log.info("POST /admin/courses/delete/{}", id);
-        try {
-            Course course = courseService.getCourseEntityById(id);
-            if (course == null) {
-                log.warn("Course id={} not found for deletion", id);
-                redirectAttributes.addAttribute("error", "Курс не найден");
-                return "redirect:/admin/courses";
-            }
 
-            List<Certificate> active = certificateService.getActiveCertificatesByCourse(course);
-            if (!active.isEmpty()) {
-                log.warn("Cannot delete course id={}, active certificates: {}", id, active.size());
-                redirectAttributes.addAttribute("error",
-                        "Невозможно удалить курс. На него выдано " + active.size() + " активных сертификат(ов). Сначала отзовите их.");
-                return "redirect:/admin/courses";
-            }
-
-            certificateService.deleteRevokedCertificatesForCourse(course);
-
-            // Сначала удаляем курс из БД
-            courseService.deleteCourseById(id);
-            log.info("Course id={} ('{}') deleted", id, course.getTitle());
-            redirectAttributes.addAttribute("success", "Курс \"" + course.getTitle() + "\" успешно удалён");
-
-        } catch (DataIntegrityViolationException e) {
-            log.error("Integrity violation while deleting course id={}: {}", id, e.getMessage());
-            redirectAttributes.addAttribute("error",
-                    "Невозможно удалить курс, так как он добавлен в корзины пользователей. Сначала удалите его из корзин.");
-        } catch (Exception e) {
-            log.error("Error deleting course id={}: {}", id, e.getMessage(), e);
-            redirectAttributes.addAttribute("error", "Ошибка удаления: " + e.getMessage());
+        Course course = courseService.getCourseEntityById(id);
+        if (course == null) {
+            redirectAttributes.addAttribute("error", "Курс не найден");
+            return "redirect:/admin/courses";
         }
+
+        // 1. Сертификаты
+        List<Certificate> active = certificateService.getActiveCertificatesByCourse(course);
+        if (!active.isEmpty()) {
+            redirectAttributes.addAttribute("error",
+                    "Невозможно удалить курс. На него выдано " + active.size() + " активных сертификатов. Сначала отзовите их.");
+            return "redirect:/admin/courses";
+        }
+
+        // 2. Доступ к курсу (course_access)
+        boolean hasAccess = courseAccessService.existsByCourseId(id);
+        if (hasAccess) {
+            redirectAttributes.addAttribute("error",
+                    "Невозможно удалить курс — у пользователей уже есть доступ. Сначала удалите доступы.");
+            return "redirect:/admin/courses";
+        }
+
+        // 3. Корзины
+        boolean inCart = cartItemService.existsByCourseId(id);
+        if (inCart) {
+            redirectAttributes.addAttribute("error",
+                    "Невозможно удалить курс — он добавлен в корзины пользователей. Очистите корзины.");
+            return "redirect:/admin/courses";
+        }
+
+        // 4. Отзывы (новая проверка)
+        boolean hasReviews = reviewService.existsByCourseId(id);
+        if (hasReviews) {
+            redirectAttributes.addAttribute("error",
+                    "Невозможно удалить курс — на него есть отзывы пользователей. Сначала удалите все отзывы о курсе.");
+            return "redirect:/admin/courses";
+        }
+
+        // 5. Проверка order_items (заказы)
+        boolean inOrderItems = orderItemService.existsByCourseId(id);
+        if (inOrderItems) {
+            redirectAttributes.addAttribute("error",
+                    "Невозможно удалить курс — он присутствует в оформленных заказах.");
+            return "redirect:/admin/courses";
+        }
+
+        // 5. Если всё чисто — удаляем
+        try {
+            certificateService.deleteRevokedCertificatesForCourse(course);
+            courseService.deleteCourseById(id);
+            redirectAttributes.addAttribute("success", "Курс \"" + course.getTitle() + "\" успешно удалён");
+        } catch (Exception e) {
+            log.error("Error deleting course id={}", id, e);
+            redirectAttributes.addAttribute("error", "Ошибка при удалении: " + e.getMessage());
+        }
+
         return "redirect:/admin/courses";
     }
 

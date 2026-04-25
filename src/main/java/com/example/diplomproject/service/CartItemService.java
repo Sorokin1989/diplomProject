@@ -98,4 +98,9 @@ public class CartItemService {
         }
         return cartItemRepository.findByCartAndCourse(cart, course) != null;
     }
+    @Transactional(readOnly = true)
+    public boolean existsByCourseId(Long id) {
+        if (id == null) return false;
+        return cartItemRepository.existsByCourseId(id);
+    }
 }

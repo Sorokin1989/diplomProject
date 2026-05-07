@@ -51,6 +51,23 @@ public class CourseAccessService {
 
     }
 
+    // CourseAccessService.java
+    @Transactional
+    public void grantAccessToCourse(User user, Course course) {
+        if (user == null || course == null) {
+            throw new IllegalArgumentException("Пользователь или Курс не может быть null");
+        }
+        if (courseAccessRepository.existsByUserAndCourse(user, course)) {
+            return;
+        }
+        CourseAccess courseAccess = new CourseAccess();
+        courseAccess.setUser(user);
+        courseAccess.setCourse(course);
+        courseAccess.setOrder(null);      // без привязки к заказу
+        courseAccess.setGrantedAt(LocalDateTime.now());
+        courseAccessRepository.save(courseAccess);
+    }
+
     /**
      * Проверка наличия доступа у пользователя к курсу
      */

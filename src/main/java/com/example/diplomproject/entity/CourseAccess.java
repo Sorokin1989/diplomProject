@@ -25,8 +25,8 @@ public class CourseAccess {
     @JoinColumn(name = "course_id", nullable=false)
     private Course course;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional=false)
-    @JoinColumn(name = "order_id", nullable=false)
+    @ManyToOne(fetch = FetchType.LAZY, optional=true)
+    @JoinColumn(name = "order_id", nullable=true)
     private Order order;
 
     @Column(name = "granted_at", nullable = false)

@@ -101,13 +101,27 @@ public class OrderService {
 
     @Transactional
     public Order updateOrderStatus(Long orderId, OrderStatus status) {
-        Order order = getOrderById(orderId);
+        Order order =orderRepository.findByIdWithItems(orderId)
+                .orElseThrow(()->new NoSuchElementException("Order not found with id: " + orderId));
+        OrderStatus oldStatus=order.getOrderStatus();
         order.setOrderStatus(status);
-        Order saved = orderRepository.save(order);
+        Order saved=orderRepository.save(order);
         entityManager.flush();   // принудительно синхронизировать с БД
-//        entityManager.clear();   // очистить кэш первого уровня
+        entityManager.clear();   // очистить кэш первого уровня
+
+        if(status==OrderStatus.PAID && oldStatus!=OrderStatus.PAID){
+            User user=order.getUser();
+
+            List<Course> courses=order.getOrderItems().stream().
+                    map(OrderItem::getCourse ).toList();
+            for (Course course:courses){
+                courseAccessService.grantAccessToCourse(user , course,order);
+            }
+        }
+
         return saved;
     }
+
 
     @Transactional(readOnly = true)
     public List<Order> getOrdersByUser(User user) {

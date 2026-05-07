@@ -14,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,6 +29,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 @Service
 public class CourseService {
@@ -103,16 +106,28 @@ public class CourseService {
      * Поиск курсов по названию (частичное совпадение, без учёта регистра).
      */
     @Transactional(readOnly = true)
-    public List<CourseDto> searchCourseDtosByTitle(String title) {
+    public Page<CourseDto> searchCourseDtosByTitle(String title, Pageable pageable) {
         if (title == null || title.trim().isEmpty()) {
-            return getAllCourses();
+            return getAllCourses(pageable);
         }
-        List<Course> courses = courseRepository.findByTitleContainingIgnoreCaseWithImages(title.trim());
-        return courses.stream()
-                .filter(this::isCategoryExists)
-                .map(courseMapper::toCourseDto)
-                .collect(Collectors.toList());
+        String safeTitle = escapeLike(title.trim());
+        Page<Course> coursePage = courseRepository
+                .findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndCategoryIsNotNull(safeTitle, safeTitle, pageable);
+        return coursePage.map(courseMapper::toCourseDto);
     }
+
+    // Метод для получения всех курсов с пагинацией (и отбором только с категорией)
+    @Transactional(readOnly = true)
+    public Page<CourseDto> getAllCourses(Pageable pageable) {
+        Page<Course> coursePage = courseRepository.findByCategoryIsNotNull(pageable);
+        return coursePage.map(courseMapper::toCourseDto);
+    }
+
+    // Вспомогательный метод экранирования
+    private String escapeLike(String value) {
+        return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+    }
+
 
     // ==================== АДМИНСКАЯ ЧАСТЬ (возвращаем Entity) ====================
 

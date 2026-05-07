@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin/course-access")
@@ -54,10 +56,21 @@ public class AdminCourseAccessController {
         }
         List<User> usersWithAccess = courseAccessService.getUsersByCourse(course);
         List<User> allUsers = userService.getAllUsers();
+
+        Set<Long> usersWithAccessIds = usersWithAccess.stream()
+                .map(User::getId)
+                .collect(Collectors.toSet());
+
+        List<User> usersWithoutAccess = allUsers.stream()
+                .filter(user -> !usersWithAccessIds.contains(user.getId()))
+                .collect(Collectors.toList());
+
         model.addAttribute("course", course);
         model.addAttribute("usersWithAccess", usersWithAccess);
+        model.addAttribute("usersWithoutAccess", usersWithoutAccess);
         model.addAttribute("allUsers", allUsers);
         model.addAttribute("title", "Управление доступом: " + course.getTitle());
+        model.addAttribute("courseAccessService", courseAccessService);
         model.addAttribute("content", "pages/admin/course-access/manage :: admin-course-access-manage");
         return "layouts/main";
     }
@@ -66,23 +79,23 @@ public class AdminCourseAccessController {
     @PostMapping("/grant")
     public String grantAccess(@RequestParam Long courseId,
                               @RequestParam Long userId,
-                              @RequestParam Long orderId,
+//                              @RequestParam Long orderId,
                               RedirectAttributes redirectAttributes) {
         try {
             Course course = courseService.getCourseEntityById(courseId);
             User user = userService.getUserById(userId);
-            Order order = orderRepository.findById(orderId).orElse(null);
+//            Order order = orderRepository.findById(orderId).orElse(null);
 
-            if (course == null || user == null || order == null) {
+            if (course == null || user == null) {
                 redirectAttributes.addFlashAttribute("error", "Курс, пользователь или заказ не найдены");
                 return "redirect:/admin/course-access/course/" + courseId;
             }
-            if (!order.getUser().getId().equals(userId)) {
-                redirectAttributes.addFlashAttribute("error", "Заказ не соответствует пользователю или курсу");
-                return "redirect:/admin/course-access/course/" + courseId;
-            }
+//            if (!order.getUser().getId().equals(userId)) {
+//                redirectAttributes.addFlashAttribute("error", "Заказ не соответствует пользователю или курсу");
+//                return "redirect:/admin/course-access/course/" + courseId;
+//            }
 
-            courseAccessService.grantAccessToCourse(user, course, order);
+            courseAccessService.grantAccessToCourse(user, course);
             redirectAttributes.addFlashAttribute("success", "Доступ успешно выдан");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Ошибка: " + e.getMessage());

@@ -12,6 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -21,6 +24,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.net.MalformedURLException;
 import java.net.URLEncoder;
@@ -142,14 +146,28 @@ public class CourseController {
 //    }
 
     @GetMapping("/search")
-    public String searchCourses(@RequestParam(required = false) String title, Model model) {
-        List<CourseDto> courses = courseService.searchCourseDtosByTitle(title);
-        model.addAttribute("courses", courses);
+    public String searchCourses(@RequestParam(required = false) String title,
+                                @RequestParam(defaultValue = "0") int page,
+                                @RequestParam(defaultValue = "10") int size,
+                                Model model, RedirectAttributes redirectAttributes) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<CourseDto> coursePage;
+        if (title == null || title.trim().isEmpty()) {
+            coursePage = courseService.getAllCourses(pageable);
+        } else {
+            coursePage = courseService.searchCourseDtosByTitle(title, pageable);
+        }
+        model.addAttribute("coursePage", coursePage);
+        model.addAttribute("courses", coursePage.getContent());
+        redirectAttributes.addFlashAttribute("successMessage", "Курс добавлен в корзину");
+        redirectAttributes.addFlashAttribute("errorMessage", "Курс не найден");
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", coursePage.getTotalPages());
         model.addAttribute("searchTitle", title);
         model.addAttribute("title", title != null && !title.isEmpty()
                 ? "Результаты поиска: " + title
                 : "Все курсы");
-        model.addAttribute("content", "pages/courses/courses :: user-courses-content");
+        model.addAttribute("content", "pages/courses/search :: search-content");
         return "layouts/main";
     }
 

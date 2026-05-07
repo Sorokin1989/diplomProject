@@ -25,7 +25,7 @@ public class Course {
     @Column(nullable = false, unique = true)
     private String title;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
     @Column(precision = 10, scale = 2)

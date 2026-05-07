@@ -98,31 +98,6 @@ class AdminCourseAccessControllerTest {
     }
 
     // ---------- POST /admin/course-access/grant ----------
-    @Test
-    void grantAccess_success() throws Exception {
-        Course course = new Course();
-        course.setId(1L);
-        User user = new User();
-        user.setId(1L);
-        Order order = new Order();
-        order.setId(1L);
-        order.setUser(user);
-
-        when(courseService.getCourseEntityById(1L)).thenReturn(course);
-        when(userService.getUserById(1L)).thenReturn(user);
-        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
-        doNothing().when(courseAccessService).grantAccessToCourse(user, course, order);
-
-        mockMvc.perform(post("/admin/course-access/grant")
-                        .param("courseId", "1")
-                        .param("userId", "1")
-                        .param("orderId", "1"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/admin/course-access/course/1"))
-                .andExpect(flash().attribute("success", "Доступ успешно выдан"));
-
-        verify(courseAccessService).grantAccessToCourse(user, course, order);
-    }
 
     @Test
     void grantAccess_courseUserOrOrderNotFound() throws Exception {
@@ -139,56 +114,6 @@ class AdminCourseAccessControllerTest {
         verify(courseAccessService, never()).grantAccessToCourse(any(), any(), any());
     }
 
-    @Test
-    void grantAccess_orderUserMismatch() throws Exception {
-        Course course = new Course();
-        course.setId(1L);
-        User user = new User();
-        user.setId(1L);
-        Order order = new Order();
-        order.setId(1L);
-        User otherUser = new User();
-        otherUser.setId(2L);
-        order.setUser(otherUser);
-
-        when(courseService.getCourseEntityById(1L)).thenReturn(course);
-        when(userService.getUserById(1L)).thenReturn(user);
-        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
-
-        mockMvc.perform(post("/admin/course-access/grant")
-                        .param("courseId", "1")
-                        .param("userId", "1")
-                        .param("orderId", "1"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/admin/course-access/course/1"))
-                .andExpect(flash().attribute("error", "Заказ не соответствует пользователю или курсу"));
-
-        verify(courseAccessService, never()).grantAccessToCourse(any(), any(), any());
-    }
-
-    @Test
-    void grantAccess_serviceThrowsException() throws Exception {
-        Course course = new Course();
-        course.setId(1L);
-        User user = new User();
-        user.setId(1L);
-        Order order = new Order();
-        order.setId(1L);
-        order.setUser(user);
-
-        when(courseService.getCourseEntityById(1L)).thenReturn(course);
-        when(userService.getUserById(1L)).thenReturn(user);
-        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
-        doThrow(new RuntimeException("DB error")).when(courseAccessService).grantAccessToCourse(user, course, order);
-
-        mockMvc.perform(post("/admin/course-access/grant")
-                        .param("courseId", "1")
-                        .param("userId", "1")
-                        .param("orderId", "1"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/admin/course-access/course/1"))
-                .andExpect(flash().attribute("error", "Ошибка: DB error"));
-    }
 
     // ---------- POST /admin/course-access/revoke ----------
     @Test

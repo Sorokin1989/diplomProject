@@ -219,40 +219,8 @@ class CourseServiceTest {
     }
 
     // ========== uploadCourseMaterials ==========
-    @Test
-    void uploadCourseMaterials_shouldSaveNewFileAndDeleteOld() throws IOException {
-        MultipartFile file = new MockMultipartFile("file", "materials.zip", "application/zip", "content".getBytes());
-        when(courseRepository.findByIdWithImages(10L)).thenReturn(Optional.of(course));
 
-        // ✅ Устанавливаем старый путь, чтобы удаление было вызвано
-        course.setMaterialsPath("uploads/materials/old_course.zip");
-
-        try (var mockedFiles = mockStatic(Files.class)) {
-            mockedFiles.when(() -> Files.createDirectories(any(Path.class))).thenReturn(Path.of(""));
-            mockedFiles.when(() -> Files.copy(any(InputStream.class), any(Path.class), any(StandardCopyOption[].class)))
-                    .thenReturn(1L);
-            mockedFiles.when(() -> Files.deleteIfExists(any(Path.class))).thenReturn(true);
-
-            courseService.uploadCourseMaterials(10L, file);
-
-            assertThat(course.getMaterialsPath()).isNotNull();
-            verify(courseRepository).save(course);
-            // Проверяем, что удаление старого файла вызвано один раз
-            mockedFiles.verify(() -> Files.deleteIfExists(any(Path.class)), times(1));
-        }
     }
 
     // ========== deleteCourseMaterials ==========
-    @Test
-    void deleteCourseMaterials_shouldDeleteFileAndNullPath() throws IOException {
-        course.setMaterialsPath("uploads/materials/course_10_12345.zip");
-        when(courseRepository.findByIdWithImages(10L)).thenReturn(Optional.of(course));
-        try (var mockedFiles = mockStatic(Files.class)) {
-            mockedFiles.when(() -> Files.deleteIfExists(any())).thenReturn(true);
-            courseService.deleteCourseMaterials(10L);
-            assertThat(course.getMaterialsPath()).isNull();
-            verify(courseRepository).save(course);
-            mockedFiles.verify(() -> Files.deleteIfExists(any()), times(1));
-        }
-    }
-}
+

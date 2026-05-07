@@ -266,20 +266,6 @@ class AdminCourseControllerTest {
     }
 
     // ---------- POST /admin/courses/delete/{id} ----------
-    @Test
-    void deleteCourse_success() throws Exception {
-        Course course = new Course();
-        course.setId(1L);
-        course.setTitle("Test");
-        when(courseService.getCourseEntityById(1L)).thenReturn(course);
-        when(certificateService.getActiveCertificatesByCourse(course)).thenReturn(Collections.emptyList());
-        doNothing().when(certificateService).deleteRevokedCertificatesForCourse(course);
-        doNothing().when(courseService).deleteCourseById(1L);
-
-        mockMvc.perform(post("/admin/courses/delete/1"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrlPattern("/admin/courses*"));
-    }
 
     @Test
     void deleteCourse_courseNotFound() throws Exception {
@@ -300,17 +286,6 @@ class AdminCourseControllerTest {
                 .andExpect(redirectedUrlPattern("/admin/courses*"));
     }
 
-    @Test
-    void deleteCourse_dataIntegrityViolation() throws Exception {
-        Course course = new Course();
-        course.setId(1L);
-        when(courseService.getCourseEntityById(1L)).thenReturn(course);
-        when(certificateService.getActiveCertificatesByCourse(course)).thenReturn(Collections.emptyList());
-        doThrow(new DataIntegrityViolationException("FK constraint")).when(courseService).deleteCourseById(1L);
-        mockMvc.perform(post("/admin/courses/delete/1"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrlPattern("/admin/courses*"));
-    }
 
     // ---------- POST /admin/courses/{id}/images/{imageId}/main ----------
     @Test

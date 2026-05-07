@@ -15,7 +15,7 @@
             <div class="cart-item" th:each="item : ${cartItems}">
                 <div class="item-image">
                     <img th:if="${item.imageUrl != null}"
-                         th:src="${item.imageUrl}"
+                         th:src="@{${item.imageUrl.startsWith('/') ? item.imageUrl : '/' + item.imageUrl}}"
                          alt="course image"
                          style="width: 80px; height: 80px; object-fit: cover; border-radius: 12px;">
                     <i th:unless="${item.imageUrl != null}" class="fas fa-graduation-cap" style="font-size: 2.5rem;"></i>
@@ -40,7 +40,7 @@
                 <span>Сумма:</span>
                 <span th:text="${totalPrice != null ? totalPrice + ' ₽' : '0 ₽'}">0 ₽</span>
             </div>
-            <button class="checkout-btn" id="checkoutBtn" onclick="checkout()">Оформить заказ</button>
+            <a th:href="@{/orders/checkout}" class="checkout-btn">Оформить заказ</a>
             <button class="btn-secondary clear-cart-btn" onclick="clearCart()">Очистить корзину</button>
             <div class="home-link" style="margin-top: 1rem; text-align: center;">
                 <a th:href="@{/categories}">Продолжить покупки</a>

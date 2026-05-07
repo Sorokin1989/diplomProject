@@ -31,7 +31,9 @@
             <div class="category-icon">
                 <a th:href="@{/admin/courses(categoryId=${category.id})}">
                     <!-- Используем mainImageUrl вместо imageUrl -->
-                    <img th:if="${category.mainImageUrl}" th:src="${category.mainImageUrl}" alt="category image">
+                    <img th:if="${category.mainImageUrl}"
+                         th:src="@{${category.mainImageUrl.startsWith('/') ? category.mainImageUrl : '/' + category.mainImageUrl}}"
+                         alt="category image">
                     <i th:unless="${category.mainImageUrl}" class="fas fa-folder"></i>
                 </a>
             </div>

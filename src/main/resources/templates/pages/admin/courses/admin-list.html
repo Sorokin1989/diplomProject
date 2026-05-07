@@ -30,7 +30,7 @@
         <div th:each="course : ${courses}" class="category-card">
             <div class="category-icon">
                 <!-- Используем mainImageUrl вместо imageUrl -->
-                <img th:if="${course.mainImageUrl}" th:src="${course.mainImageUrl}" alt="course image">
+                <img th:if="${course.mainImageUrl}"  th:src="@{${course.mainImageUrl.startsWith('/') ? course.mainImageUrl : '/' + course.mainImageUrl}}" alt="course image">
                 <i th:unless="${course.mainImageUrl}" class="fas fa-graduation-cap"></i>
             </div>
             <div class="category-info">

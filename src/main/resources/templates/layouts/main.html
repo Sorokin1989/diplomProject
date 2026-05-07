@@ -19,6 +19,11 @@
 <script th:src="@{/js/order-create.js}" defer></script>
 <script th:src="@{/js/message.js}" defer></script>
 <script th:src="@{/js/main.js}" defer></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    window.contextPath = /*[[@{/}]]*/ '';
+    /*]]>*/
+</script>
 
 </body>
 </html>

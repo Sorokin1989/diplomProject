@@ -81,20 +81,13 @@
         <h3>Оплата заказа</h3>
         <p>Сумма к оплате: <strong th:text="${order.totalSum} + ' ₽'"></strong></p>
 
-        <!-- Если передан QR-код (после создания заказа) -->
-        <div th:if="${qrCode != null}" class="qr-container">
-            <p>Отсканируйте QR-код в приложении вашего банка:</p>
-            <img th:src="'data:image/png;base64,' + ${qrCode}" alt="QR-код для оплаты"  class="qr-code">
+        <div class="social-links">
+            <a href="https://vk.com/visage_studio_rus"
+               target="_blank"
+               rel="noopener noreferrer"
+               aria-label="VK"><i class="fab fa-vk"></i></a>
         </div>
-
-        <!-- Кнопка подтверждения оплаты (для демо-режима) -->
-        <form th:action="@{/orders/{id}/confirm-payment(id=${order.id})}" method="post" class="confirm-payment-form">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-            <button type="submit" class="btn-primary" onclick="return confirm('Подтвердить оплату? После этого доступ к курсам будет открыт.')">
-                Я оплатил
-            </button>
-        </form>
-        <p class="payment-note">* После нажатия кнопки статус заказа изменится на "Оплачен", и вам откроется доступ к курсам.</p>
+        <p class="payment-note">* После нажатия кнопки "VK" напишите нам сообщение, мы сообщим как произвести оплату.</p>
     </div>
 
     <!-- Сообщение для отменённого заказа -->

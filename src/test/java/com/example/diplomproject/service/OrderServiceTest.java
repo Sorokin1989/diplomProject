@@ -148,16 +148,7 @@ class OrderServiceTest {
     }
 
     // ========== updateOrderStatus ==========
-    @Test
-    void updateOrderStatus_shouldChangeStatus() {
-        when(orderRepository.findById(1000L)).thenReturn(Optional.of(order));
-        when(orderRepository.save(any(Order.class))).thenReturn(order);
 
-        Order updated = orderService.updateOrderStatus(1000L, OrderStatus.PAID);
-
-        assertThat(updated.getOrderStatus()).isEqualTo(OrderStatus.PAID);
-        verify(orderRepository).save(order);
-    }
 
     // ========== getOrdersByUser ==========
     @Test

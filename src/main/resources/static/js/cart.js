@@ -23,7 +23,7 @@ function removeItem(itemId) {
         headers[csrf.header] = csrf.token;
     }
 
-    fetch('/cart/remove/' + itemId, {
+    fetch(window.contextPath+'cart/remove/' + itemId, {
         method: 'POST',
         headers: headers
     })
@@ -47,7 +47,7 @@ function clearCart() {
         headers[csrf.header] = csrf.token;
     }
 
-    fetch('/cart/clear', {
+    fetch(window.contextPath+'cart/clear', {
         method: 'POST',
         headers: headers
     })
@@ -61,6 +61,6 @@ function clearCart() {
         .catch(() => alert('Ошибка сети. Попробуйте позже.'));
 }
 
-function checkout() {
-    window.location.href = '/orders/checkout';   // было '/checkout'
-}
+// function checkout() {
+//     window.location.href = '/orders/checkout';   // было '/checkout'
+// }
